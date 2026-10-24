@@ -12,10 +12,17 @@ Frequent notes so work is recoverable.
 - `programs_rem/CHESS47.txt` kept in sync.
 - Parity-test skeleton in `tests/test_chess47.py`.
 
+## 2026-10-24 — Basic move input
+
+- Key other than 0 now calls LBL 20.
+- LBL 20 appends a dummy move string (" e2e4") to register 60 and redraws the board + move list.
+- Prompt updated to "0 END  1 MOVE".
+- Rem version synced.
+
 ## Next immediate steps
 
-1. Wire basic move input and update the move-list string on the right.
-2. Add first legal-move checks (pawns and knights as starting point).
+1. Replace dummy move with real algebraic input and board update.
+2. Add first legal-move checks (pawns and knights).
 3. Capture screens with c47sim and store in `docs/`.
 4. Expand parity checks against known positions.
 
