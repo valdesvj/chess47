@@ -17,6 +17,9 @@ DO 01
   RCL 20
   82
   X≠Y?
+  IF 01
+    XEQ 20
+  ENDIF 01
 WHILE 01
 ENDDO 01
 20.30
@@ -130,7 +133,6 @@ XEQ 11
 XEQ 12
 RTN
 LBL 11
-// Draw board squares with AGRAPH (simple grid)
 21
 GRFNT
 "CHESS 47"
@@ -147,7 +149,7 @@ DO 02
   DSE 21
 WHILE 02
 ENDDO 02
-"0 END"
+"0 END  1 MOVE"
 20
 180
 ATEXT Z
@@ -174,7 +176,6 @@ DO 03
   8
   +
   ATEXT Z
-  // Simple square outline via AGRAPH columns
   RCL 23
   16
   ×
@@ -228,7 +229,6 @@ X=12?
 "k"
 RTN
 LBL 12
-// Move list on the right (split screen)
 10
 GRFNT
 RCL 60
@@ -241,11 +241,18 @@ ATEXT Z
 ATEXT Z
 RTN
 LBL 13
-// Draw one square outline column (simple)
 STO 27
 RCL 26
 RCL 25
 AGRAPH 27
+RTN
+LBL 20
+// Basic move entry: append a dummy move for now and redraw list
+RCL 60
+" e2e4"
++
+STO 60
+XEQ 03
 RTN
 LBL 10
 Date→ℌ
