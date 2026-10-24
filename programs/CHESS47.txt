@@ -1,5 +1,5 @@
 LBL "CHESS"
-LocR 9
+LocR 10
 STOS R.00
 LASTx
 STO R.08
@@ -7,6 +7,7 @@ XEQ 01
 DO 01
   PAUSE 50
   KEY? 20
+  XEQ 10
   RCL 20
   82
   X≠Y?
@@ -18,6 +19,7 @@ R-CLR
 GRMOD
 20
 GRFNT
+DELITM "BD"
 CLLCD
 RCL R.08
 STO L
@@ -118,7 +120,7 @@ LBL 03
 CLLCD
 21
 GRFNT
-"CHESS 47 - MINI"
+"CHESS 47"
 220
 10
 ATEXT Z
@@ -128,7 +130,6 @@ GRFNT
 STO 21
 DO 02
   RCL 21
-  8
   XEQ 04
   DSE 21
 WHILE 02
@@ -139,9 +140,8 @@ ENDDO 02
 ATEXT Z
 RTN
 LBL 04
-STO 22
 RCL 21
-20
+22
 ×
 40
 +
@@ -161,7 +161,7 @@ DO 03
   10
   +
   ATEXT Z
-  20
+  22
   STO+ 23
   DSE 24
 WHILE 03
@@ -170,7 +170,56 @@ RTN
 LBL 05
 X=0?
 "."
-X≠0?
+X=1?
 "P"
+X=2?
+"p"
+X=3?
+"N"
+X=4?
+"n"
+X=5?
+"B"
+X=6?
+"b"
+X=7?
+"R"
+X=8?
+"r"
+X=9?
+"Q"
+X=10?
+"q"
+X=11?
+"K"
+X=12?
+"k"
+RTN
+LBL 10
+Date→ℌ
+Time→ℰ
+ℌℰ→J
+RCL 57
+X<>Y
+STO 57
+X<>Y
+-
+86400
+×
+30
+÷
+IP
+X≠0?
+1
+1
+X<>Y
+-
+STO 58
+1
+RCL 58
+-
+82
+×
+STO 20
 RTN
 END
