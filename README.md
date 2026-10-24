@@ -2,7 +2,7 @@
 
 A mini chess engine for the **C47 / R47** RPN calculator firmware.
 
-Matrix-based board representation, inspired by Micro-Max (H.G. Muller). Target: DM42n / C47 / R47 with STRUCT, ATEXT and GRFNT.
+Matrix-based board representation, inspired by Micro-Max (H.G. Muller). Target: DM42n / C47 / R47 with STRUCT, ATEXT and GRFNT. Planned use of 64-bit bitwise operations for bitboard-style move generation (same technique as Logic 47).
 
 ---
 
@@ -23,12 +23,12 @@ Your stack and LASTx are kept. Standby is handled the same way as Elements 47.
 - [x] Repository and initial skeleton
 - [x] Micro-Max-style piece encoding (1–12) and ATEXT display
 - [x] STRUCT control flow, stack/LASTx preservation, standby detection, matrix cleanup
-- [ ] Legal move generator
+- [ ] Legal move generator (prefer 64-bit bitboards + bitwise ops)
 - [ ] Material evaluation
 - [ ] Shallow search (1–2 ply)
 - [ ] Improved / graphic display
 
-Further versions will be checked in the C47 simulator (same approach as Almanac 47, Elements 47 and Logic 47). Reference: C47 matrix app note AN0020, ATEXT/GRFNT in recent firmware.
+Further versions will be checked in the C47 simulator (same approach as Almanac 47, Elements 47 and Logic 47). References: C47 matrix app note AN0020, 64-bit bitwise (as in Logic 47), ATEXT/GRFNT and STRUCT in recent firmware. Advanced functions (EIGEN, XFCNS) available for experimental use.
 
 ---
 
