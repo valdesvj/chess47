@@ -1,0 +1,235 @@
+LBL "CHESS"
+// Mini chess engine skeleton for C47/R47. Matrix board + ATEXT display.
+// Stack and LASTx preserved. Standby handled. Inspired by Micro-Max.
+LocR 10
+STOS R.00
+LASTx
+STO R.08
+XEQ 01
+DO 01
+  PAUSE 50
+  KEY? 20
+  XEQ 10
+  RCL 20
+  82
+  X≠Y?
+WHILE 01
+ENDDO 01
+// Clean exit: restore modes, delete matrix, return stack
+20.30
+R-CLR
+0
+GRMOD
+20
+GRFNT
+DELITM "BD"
+CLLCD
+RCL R.08
+STO L
+RCLS R.00
+RTN
+LBL 01
+// Create 8x8 matrix BD and initialise starting position
+8
+ENTER
+8
+NEWMAT
+STO "BD"
+XEQ 02
+XEQ 03
+RTN
+LBL 02
+// Fill starting position (Micro-Max style integer codes)
+// 1=WP 2=BP 3=WN 4=BN 5=WB 6=BB 7=WR 8=BR 9=WQ 10=BQ 11=WK 12=BK 0=empty
+INDEX "BD"
+1
+ENTER
+STOIJ
+1
+STOSEQ
+3
+STOSEQ
+5
+STOSEQ
+7
+STOSEQ
+9
+STOSEQ
+5
+STOSEQ
+3
+STOSEQ
+1
+STOSEQ
+2
+ENTER
+1
+STOIJ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+2
+STOSEQ
+7
+ENTER
+1
+STOIJ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+1
+STOSEQ
+8
+ENTER
+1
+STOIJ
+2
+STOSEQ
+4
+STOSEQ
+6
+STOSEQ
+8
+STOSEQ
+10
+STOSEQ
+6
+STOSEQ
+4
+STOSEQ
+2
+STOSEQ
+RTN
+LBL 03
+// Draw title and board with ATEXT
+CLLCD
+21
+GRFNT
+"CHESS 47"
+220
+10
+ATEXT Z
+10
+GRFNT
+8
+STO 21
+DO 02
+  RCL 21
+  XEQ 04
+  DSE 21
+WHILE 02
+ENDDO 02
+"0 END"
+20
+10
+ATEXT Z
+RTN
+LBL 04
+// Draw one rank
+RCL 21
+22
+×
+40
++
+STO 23
+8
+STO 24
+DO 03
+  INDEX "BD"
+  RCL 21
+  RCL 24
+  STOIJ
+  RCLEL
+  XEQ 05
+  RCL 23
+  20
+  ×
+  10
+  +
+  ATEXT Z
+  22
+  STO+ 23
+  DSE 24
+WHILE 03
+ENDDO 03
+RTN
+LBL 05
+// Map piece code to display character
+X=0?
+"."
+X=1?
+"P"
+X=2?
+"p"
+X=3?
+"N"
+X=4?
+"n"
+X=5?
+"B"
+X=6?
+"b"
+X=7?
+"R"
+X=8?
+"r"
+X=9?
+"Q"
+X=10?
+"q"
+X=11?
+"K"
+X=12?
+"k"
+RTN
+LBL 10
+// Standby detection (same pattern as Elements 47)
+Date→ℌ
+Time→ℰ
+ℌℰ→J
+RCL 57
+X<>Y
+STO 57
+X<>Y
+-
+86400
+×
+30
+÷
+IP
+X≠0?
+1
+1
+X<>Y
+-
+STO 58
+1
+RCL 58
+-
+82
+×
+STO 20
+RTN
+END
