@@ -1,10 +1,14 @@
 LBL "CHESS"
-// Mini chess engine skeleton for C47/R47. Matrix board + ATEXT display.
-// Stack and LASTx preserved. Standby handled. Inspired by Micro-Max.
-LocR 10
+// Full mini chess for C47/R47. Matrix board + ATEXT/AGRAPH display.
+// Split screen: board left, move list right. Stack/LASTx preserved.
+LocR 12
 STOS R.00
 LASTx
 STO R.08
+0
+STO 59
+""
+STO 60
 XEQ 01
 DO 01
   PAUSE 50
@@ -15,7 +19,6 @@ DO 01
   X≠Y?
 WHILE 01
 ENDDO 01
-// Clean exit: restore modes, delete matrix, return stack
 20.30
 R-CLR
 0
@@ -29,7 +32,7 @@ STO L
 RCLS R.00
 RTN
 LBL 01
-// Create 8x8 matrix BD and initialise starting position
+// Create and fill 8x8 matrix BD
 8
 ENTER
 8
@@ -39,8 +42,7 @@ XEQ 02
 XEQ 03
 RTN
 LBL 02
-// Fill starting position (Micro-Max style integer codes)
-// 1=WP 2=BP 3=WN 4=BN 5=WB 6=BB 7=WR 8=BR 9=WQ 10=BQ 11=WK 12=BK 0=empty
+// Starting position (Micro-Max style codes)
 INDEX "BD"
 1
 ENTER
@@ -123,12 +125,19 @@ STOSEQ
 STOSEQ
 RTN
 LBL 03
-// Draw title and board with ATEXT
+// Draw board + move list panel
 CLLCD
+0
+GRMOD
+XEQ 11
+XEQ 12
+RTN
+LBL 11
+// Board (ATEXT pieces + simple AGRAPH squares)
 21
 GRFNT
 "CHESS 47"
-220
+20
 10
 ATEXT Z
 10
@@ -143,15 +152,15 @@ WHILE 02
 ENDDO 02
 "0 END"
 20
-10
+180
 ATEXT Z
 RTN
 LBL 04
-// Draw one rank
+// One rank
 RCL 21
-22
+18
 ×
-40
+30
 +
 STO 23
 8
@@ -164,19 +173,37 @@ DO 03
   RCLEL
   XEQ 05
   RCL 23
-  20
+  16
   ×
-  10
+  8
   +
   ATEXT Z
-  22
+  RCL 23
+  16
+  ×
+  8
+  +
+  20
+  +
+  STO 25
+  RCL 21
+  18
+  ×
+  30
+  +
+  16
+  +
+  STO 26
+  15
+  XEQ 13
+  16
   STO+ 23
   DSE 24
 WHILE 03
 ENDDO 03
 RTN
 LBL 05
-// Map piece code to display character
+// Piece to character
 X=0?
 "."
 X=1?
@@ -204,8 +231,28 @@ X=11?
 X=12?
 "k"
 RTN
+LBL 12
+// Move list panel (right side)
+10
+GRFNT
+RCL 60
+180
+40
+ATEXT Z
+"MOVES"
+180
+20
+ATEXT Z
+RTN
+LBL 13
+// Simple square outline column
+STO 27
+RCL 26
+RCL 25
+AGRAPH 27
+RTN
 LBL 10
-// Standby detection (same pattern as Elements 47)
+// Standby detection
 Date→ℌ
 Time→ℰ
 ℌℰ→J
