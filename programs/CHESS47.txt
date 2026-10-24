@@ -1,8 +1,14 @@
 LBL "CHESS"
-LocR 10
+// Full mini chess for C47/R47. Matrix board + ATEXT/AGRAPH display.
+// Split screen: board left, move list right. Stack/LASTx preserved.
+LocR 12
 STOS R.00
 LASTx
 STO R.08
+0
+STO 59
+""
+STO 60
 XEQ 01
 DO 01
   PAUSE 50
@@ -118,10 +124,17 @@ STOSEQ
 RTN
 LBL 03
 CLLCD
+0
+GRMOD
+XEQ 11
+XEQ 12
+RTN
+LBL 11
+// Draw board squares with AGRAPH (simple grid)
 21
 GRFNT
 "CHESS 47"
-220
+20
 10
 ATEXT Z
 10
@@ -136,14 +149,14 @@ WHILE 02
 ENDDO 02
 "0 END"
 20
-10
+180
 ATEXT Z
 RTN
 LBL 04
 RCL 21
-22
+18
 ×
-40
+30
 +
 STO 23
 8
@@ -156,12 +169,31 @@ DO 03
   RCLEL
   XEQ 05
   RCL 23
-  20
+  16
   ×
-  10
+  8
   +
   ATEXT Z
-  22
+  // Simple square outline via AGRAPH columns
+  RCL 23
+  16
+  ×
+  8
+  +
+  20
+  +
+  STO 25
+  RCL 21
+  18
+  ×
+  30
+  +
+  16
+  +
+  STO 26
+  15
+  XEQ 13
+  16
   STO+ 23
   DSE 24
 WHILE 03
@@ -194,6 +226,26 @@ X=11?
 "K"
 X=12?
 "k"
+RTN
+LBL 12
+// Move list on the right (split screen)
+10
+GRFNT
+RCL 60
+180
+40
+ATEXT Z
+"MOVES"
+180
+20
+ATEXT Z
+RTN
+LBL 13
+// Draw one square outline column (simple)
+STO 27
+RCL 26
+RCL 25
+AGRAPH 27
 RTN
 LBL 10
 Date→ℌ
