@@ -6,29 +6,29 @@ Matrix-based board representation, inspired by Micro-Max (H.G. Muller). Target: 
 
 ---
 
-## Chess 47 (initial skeleton)
+## Chess 47 (current skeleton)
 
-`CHESS` sets up an 8×8 board matrix `BD`, displays a simple text board, and waits for a key. **0** ends cleanly.
-Your stack and LASTx are kept.
+`CHESS` creates an 8×8 matrix `BD`, fills it with Micro-Max-style piece codes, draws a text board with ATEXT / GRFNT, and waits for a key. **0** ends cleanly.
+Your stack and LASTx are kept. Standby is handled the same way as Elements 47.
 
 | | C47 / R47 |
 |---|---|
 | File | `programs/CHESS47.txt` |
 | Needs | firmware 00.109.05.00a0.ALPHA (5 Oct 2026) or later (STRUCT, ATEXT, GRFNT) |
-| Memory | matrix `BD` and a few work registers |
-| At the end (0) | work registers cleared; **the user's stack and LASTx kept** |
+| Memory | matrix `BD` and work registers |
+| At the end (0) | matrix deleted, work registers cleared (R-CLR); **the user's stack and LASTx kept**; GRFNT 20 and GRMOD 0 restored |
 
 **Status**
 
 - [x] Repository and initial skeleton
-- [ ] Proper Micro-Max-style piece encoding
+- [x] Micro-Max-style piece encoding (1–12) and ATEXT display
+- [x] STRUCT control flow, stack/LASTx preservation, standby detection, matrix cleanup
 - [ ] Legal move generator
 - [ ] Material evaluation
 - [ ] Shallow search (1–2 ply)
-- [ ] Improved display
-- [ ] Full stack preservation and standby handling (same pattern as Elements 47 / Logic 47)
+- [ ] Improved / graphic display
 
-Tested so far only as a skeleton. Further versions will be checked in the C47 simulator (same approach as Almanac 47, Elements 47 and Logic 47).
+Further versions will be checked in the C47 simulator (same approach as Almanac 47, Elements 47 and Logic 47). Reference: C47 matrix app note AN0020, ATEXT/GRFNT in recent firmware.
 
 ---
 
