@@ -17,6 +17,9 @@ DO 01
   RCL 20
   82
   X≠Y?
+  IF 01
+    XEQ 20
+  ENDIF 01
 WHILE 01
 ENDDO 01
 20.30
@@ -150,7 +153,7 @@ DO 02
   DSE 21
 WHILE 02
 ENDDO 02
-"0 END"
+"0 END  1 MOVE"
 20
 180
 ATEXT Z
@@ -250,6 +253,14 @@ STO 27
 RCL 26
 RCL 25
 AGRAPH 27
+RTN
+LBL 20
+// Basic move entry: append a dummy move and redraw
+RCL 60
+" e2e4"
++
+STO 60
+XEQ 03
 RTN
 LBL 10
 // Standby detection
