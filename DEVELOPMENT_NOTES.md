@@ -4,7 +4,8 @@
 
 - Matrix-based board (`BD`, 8×8) using firmware matrix commands (NEWMAT, INDEX, STOIJ, RCLEL, STOSEQ) for the primary representation and display.
 - Alternative or complementary **64-bit bitboard** representation using the firmware's 64-bit integer mode and bitwise commands (AND, OR, XOR, NOT, BS?, BC?, shifts). One 64-bit word per piece type or occupancy — the same technique used in Logic 47 for whole-table evaluation. This is the natural high-speed path for move generation.
-- Display with ATEXT and GRFNT (firmware 00.109.05.00a0.ALPHA or later).
+- Display with ATEXT, GRFNT and simple AGRAPH (firmware 00.109.05.00a0.ALPHA or later).
+- Split screen: board left, move list right.
 - STRUCT control flow (IF/DO/REPEAT) for clarity and speed on DM42n / R47.
 - Full user-state preservation (stack, LASTx) and standby handling matching Elements 47 / Logic 47 / Almanac 47.
 - Clean exit: delete matrices, clear work registers only, restore GRMOD / GRFNT.
@@ -26,11 +27,18 @@ Display maps these to ASCII characters (P/p, N/n, …).
 
 Bitboards can be derived from the matrix (or maintained in parallel) for fast attack generation.
 
+## Progress log
+
+- 2026-10-24: Initial skeleton with matrix board, ATEXT display, STRUCT, stack preservation, standby, clean exit.
+- 2026-10-24: Added split-screen layout (board + move-list placeholder), simple AGRAPH square outlines.
+- 2026-10-24: Created `docs/` and `tests/` folders with parity-test skeleton and progress notes. Synced `programs_rem/`.
+- Next: legal move generator (bitboard-first), then material evaluation, then shallow search, then richer AGRAPH pieces and move recording.
+
 ## References
 
 - C47 matrix application note AN0020 (Matrix and Vector) and EIGEN functions.
 - Firmware support for 64-bit integers and bitwise operations (used successfully in Logic 47).
-- ATEXT / GRFNT and STRUCT (AN0007) in recent firmware.
+- ATEXT / GRFNT / AGRAPH and STRUCT (AN0007) in recent firmware.
 - Existing programs in almanac47, elements47, logic47, zones47 for stack, standby, matrix and bitwise patterns.
 
 ## Next steps
@@ -38,6 +46,6 @@ Bitboards can be derived from the matrix (or maintained in parallel) for fast at
 1. Legal move generator — preferably bitboard-based (64-bit bitwise) with a matrix fallback or hybrid for display.
 2. Material evaluation (simple integer or matrix sum).
 3. 1-ply then 2-ply search.
-4. Simulator tests (Python C47 simulator from Almanac 47) plus cross-check of bitboard results.
+4. Simulator tests (Python C47 simulator from Almanac 47) plus cross-check of bitboard results. Screens go in `docs/`.
 
 All changes are validated by the author before release.
