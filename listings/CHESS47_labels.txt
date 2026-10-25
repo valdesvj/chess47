@@ -56,7 +56,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :SQXY:     53  X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
 :DRAWSQ:   54  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its
 :INIT:     55  ======== the start ========
-:PSTALL:   56  the matrix PT. For each square s (white's view): f the file 0-7, r the rank 0-7, cen
+:PSTALL:   56  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
 :PSQ:      57  the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a valu
-:PSTO:     58  X = the kind t: R43 into PT (t + 7, R42) and -R43 into (7 - t, R44)
+:PSTO:     58  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
 :GLYPHS:   59  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the

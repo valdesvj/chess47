@@ -6,7 +6,7 @@ algorithm in Python) and python/layout.py (the reference picture).
   2. the reference: chess47ref's move generator gives the published perft counts (promotion to a queen only:
      the positions without under-promotion; with it, python-chess's counts without the under-promotions)
   3. the start screen: the board pixel for pixel layout.mock (the cursor frame on e2 taken off), the panel's texts
-  4. the move generator: for positions (FEN) the moves of :GEN: in the matrix ML (the captures from column 1 by the
+  4. the move generator: for positions (FEN) the moves of :GEN: in the row 2 of BD (the captures from column 1 by the
      value taken, the others from column 120 down), in that order, as chess47ref.order(gen) (castling, en passant,
      promotion, checks, pins: the legal filter is the caller's)
   5. the search: for positions, levels 1 and 2, the move and the value of :THINK: as chess47ref.search
@@ -111,10 +111,10 @@ def main():
         p = R.Pos.fen(fen)
         shots, c = S.run([], prog=prog)
         setpos(c, p)
-        c.reg['32'], c.reg['38'], c.reg['39'] = D(p.sd), D(1), D(1)
+        c.reg['32'], c.reg['38'], c.reg['39'] = D(p.sd), D(2), D(1)
         c.run('TGEN', maxsteps=10 ** 8)
         nc, nq = int(c.reg['37']), int(c.reg['72'])
-        row = c.mats['ML'][0]
+        row = c.mats['BD'][1]
         got = [int(row[i]) % 100000 for i in range(nc)] + [int(row[119 - i]) for i in range(nq)]
         k = nc + nq
         p.opts = set(R.ENGINE)
@@ -164,7 +164,7 @@ def main():
           % (c.reg.get('TW'), c.reg.get('TB')))
     shots, c = S.run([S.HAND, S.HAND, S.END], stack=(11, 12, 13, 14))
     check(c.ended and c.s == [D(11), D(12), D(13), D(14)] and all(c.reg.get(str(r), D(0)) == 0 for r in range(20, 100))
-          and not any(k in c.mats for k in ('BD', 'PT', 'ML', 'UN', 'GL', 'GH', 'OB'))
+          and not any(k in c.mats for k in ('BD', 'GL', 'GH', 'OB'))
           and not any(k in c.reg for k in ('TK', 'TW', 'TB')),
           '0 after two moves: your stack back, R20-R99 cleared, the matrices and the clock deleted')
 

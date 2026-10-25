@@ -3,10 +3,11 @@ REM You play the white pieces against the C47 (+ hands your side to the C47: it 
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate. No draw by repetition or by the 50 moves.
 REM The engine (a port of the matrix "mini engine" idea of Micro-Max, H.G. Muller): the board is the 10 x 12 mailbox
-REM of a 1 x 120 matrix BD (column s = 10 row + col + 1: a1 22 ... h1 29 ... a8 92 ... h8 99, the border 8); a move
+REM of the row 1 of the matrix BD (column s = 10 row + col + 1: a1 22 ... h1 29 ... a8 92 ... h8 99, the border 8); a move
 REM is from x 1000 + to; the score SC (material + piece-square, white positive) is kept up to date by each move from
-REM the matrix PT (13 x 99: row piece + 7, column the square: the signed value of that piece there); the moves of
-REM a ply go in a row of the matrix ML, the undo data in a row of UN. The search: 2 plies (level 2) or 1, alpha-beta
+REM the table PT (row piece + 11, column the square: the signed value of that piece there); the moves of a ply go
+REM in a row ML, the undo data in a row UN. Board, ML, PT and UN are the rows of ONE matrix BD (20 x 120: row 1 the
+REM board, 2-4 the move lists of the root, the replies, the moves played; 5-17 PT; 18-20 UN): one INDEX, no switching. The search: 2 plies (level 2) or 1, alpha-beta
 REM cuts, the captures first; python/chess47ref.py is the same algorithm in Python (the tests compare the two).
 REM The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white short, 2 white long, 4 black short,
 REM 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
@@ -16,7 +17,7 @@ REM the same square drops it); + the C47 plays the side to move (you take the ot
 REM (CRAZY: random legal moves, a crazy face by the title);
 REM 0 ends. The C47 thinks about 15-30 s at level 2 (the simulator's step count), 1-3 s at level 1.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
-REM R20-R99 are cleared, the matrices BD PT ML UN GL deleted, WSIZE 64, GRMOD 0 and GRFNT 20 set.
+REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, GRMOD 0 and GRFNT 20 set.
 REM Registers: R20 the side to move (+1 white, -1 black), R21 the en passant square (0 none), R22 the castling word,
 REM R23 SC, R24 R25 the white and black king's squares, R26 the level, R27 your side, R28 the cursor, R29 the
 REM square picked (0 none); R30-R39 the move generator (R30 the square, R31 its piece x its colour, R32 the colour,
@@ -60,9 +61,6 @@ R-CLR
 0
 STO 99
 DELITM "BD"
-DELITM "PT"
-DELITM "ML"
-DELITM "UN"
 DELITM "GL"
 DELITM "GH"
 DELITM "OB"
@@ -209,7 +207,6 @@ IF
     XEQ :QEVAL:
     RTN
   ENDIF
-  INDEX "ML"
   RCL 38
   121
   RCL- 72
@@ -219,7 +216,6 @@ IF
   ×
   RCL+ 33
   STOEL
-  INDEX "BD"
   RTN
 ENDIF
 RCL 39
@@ -244,7 +240,6 @@ RCL 37
 1
 +
 STO 49
-INDEX "ML"
 DO
   RCL 49
   1
@@ -290,7 +285,6 @@ RCL 48
 STOEL
 1
 STO+ 37
-INDEX "BD"
 RTN
 REM ---- LBL :MLK: Z = a row of ML, Y = its captures, X = k: X = its k-th move (the captures, then the others
 REM from column 120 down; a capture's code without its value) ----
@@ -304,12 +298,10 @@ ELSE
   X<>Y
   DROP
 ENDIF
-INDEX "ML"
 STOIJ
 RCLEL
 100000
 MOD
-INDEX "BD"
 RTN
 REM ---- LBL :GPAWN: a pawn: one step if empty, two from its first row (row 5.5 - 2.5 c) if both are empty; the
 REM captures at +9 c and +11 c (a piece of the other colour: |y c + 3.5| <= 2.5; or the en passant square) ----
@@ -707,15 +699,13 @@ ENDDO
 STO 55
 RTN
 REM ======== make and unmake ========
-REM ---- LBL :VAL: Y = a square, X = a piece: X = its signed value there (PT, row piece + 7) ----
+REM ---- LBL :VAL: Y = a square, X = a piece: X = its signed value there (PT: the row piece + 11 of BD) ----
 LBL :VAL:
-7
+11
 +
 X<>Y
-INDEX "PT"
 STOIJ
 RCLEL
-INDEX "BD"
 RTN
 REM ---- LBL :MAKE: plays R40 at the ply R46: the undo data in the row R46 of UN (the move, the piece, the piece
 REM taken, the en passant square, SC, the flag) and R56 + R46 (the castling word); SC by the values of PT; en
@@ -743,8 +733,9 @@ RCL 42
 STOIJ
 RCLEL
 STO 44
-INDEX "UN"
 RCL 46
+17
++
 1
 STOIJ
 RCL 40
@@ -757,7 +748,6 @@ RCL 21
 STOSEQ
 RCL 23
 STOSEQ
-INDEX "BD"
 56
 RCL+ 46
 STO 49
@@ -911,13 +901,13 @@ XEQ :CRSQ:
 RCL 20
 CHS
 STO 20
-INDEX "UN"
 RCL 46
+17
++
 6
 STOIJ
 RCL 47
 STOEL
-INDEX "BD"
 RTN
 REM ---- LBL :ROOKS: the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d) ----
 LBL :ROOKS:
@@ -1001,8 +991,9 @@ ENDIF
 RTN
 REM ---- LBL :UNMK: takes back the move of the ply R46 (its row of UN, the castling word R56 + R46) ----
 LBL :UNMK:
-INDEX "UN"
 RCL 46
+17
++
 1
 STOIJ
 RCLSEQ
@@ -1017,7 +1008,6 @@ RCLSEQ
 STO 23
 RCLSEQ
 STO 47
-INDEX "BD"
 56
 RCL+ 46
 STO 49
@@ -1109,7 +1099,7 @@ STO 61
 STO 62
 RCL 20
 STO 32
-1
+2
 STO 38
 1
 STO 39
@@ -1125,7 +1115,7 @@ STO 63
 DO
   1
   STO+ 63
-  1
+  2
   RCL 68
   RCL 63
   XEQ :MLK:
@@ -1294,7 +1284,7 @@ LBL :REPLY:
 RCL 60
 CHS
 STO 32
-2
+3
 STO 38
 3
 STO 39
@@ -1477,7 +1467,7 @@ REM played at the ply 3 and taken back until one does not leave the king attacke
 LBL :ANYMV:
 RCL 20
 STO 32
-3
+4
 STO 38
 1
 STO 39
@@ -1499,7 +1489,7 @@ DO
   ELSE
     1
     STO+ 66
-    3
+    4
     RCL 69
     RCL 66
     XEQ :MLK:
@@ -1687,7 +1677,7 @@ RCL+ 28
 STO 62
 RCL 20
 STO 32
-3
+4
 STO 38
 1
 STO 39
@@ -1709,7 +1699,7 @@ DO
   ELSE
     1
     STO+ 63
-    3
+    4
     RCL 64
     RCL 63
     XEQ :MLK:
@@ -1804,7 +1794,7 @@ STO 62
 STO 61
 RCL 20
 STO 32
-3
+4
 STO 38
 1
 STO 39
@@ -1829,7 +1819,7 @@ DO
   1
   +
   STO 64
-  3
+  4
   RCL 69
   RCL 64
   XEQ :MLK:
@@ -2671,22 +2661,10 @@ DROP
 156
 212
 ATEXT Z
-1
+20
 120
 NEWMAT
 STO "BD"
-13
-99
-NEWMAT
-STO "PT"
-3
-120
-NEWMAT
-STO "ML"
-3
-6
-NEWMAT
-STO "UN"
 32
 24
 NEWMAT
@@ -2949,13 +2927,12 @@ XEQ :CLOCK:
 DROP
 INDEX "BD"
 RTN
-REM ---- LBL :PSTALL: the matrix PT. For each square s (white's view): f the file 0-7, r the rank 0-7, cen
+REM ---- LBL :PSTALL: the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the rank 0-7, cen
 REM 6 - (|2f - 7| + |2r - 7|) / 2; for each kind t the value V(t) + pst (as python/chess47ref.py): P 6 (r - 1) + 8
 REM on d e of the ranks 2-4, N 5 cen - 15, B 3 cen - 6, R 10 on the 7th rank, Q 2 cen - 6, K -4 cen + 10 on the 1st;
-REM V 100 300 320 500 900 20000. Row t + 7 (white) at s, row 7 - t (black) minus it at the mirror square
+REM V 100 300 320 500 900 20000. Row t + 11 (white) at s, row 11 - t (black) minus it at the mirror square
 REM s + 10 (11 - 2 row) ----
 LBL :PSTALL:
-INDEX "PT"
 22
 STO 42
 DO
@@ -3107,16 +3084,16 @@ ENDIF
 6
 XEQ :PSTO:
 RTN
-REM ---- LBL :PSTO: X = the kind t: R43 into PT (t + 7, R42) and -R43 into (7 - t, R44) ----
+REM ---- LBL :PSTO: X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44) ----
 LBL :PSTO:
 STO 45
-7
+11
 +
 RCL 42
 STOIJ
 RCL 43
 STOEL
-7
+11
 RCL- 45
 RCL 44
 STOIJ
