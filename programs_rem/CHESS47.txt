@@ -88,8 +88,9 @@ REM the answer, and the pieces that can reply are reached first). Into
 REM the row R38 of ML: the captures from
 REM column 1 (R37 of them, by the value taken: LBL :ADD:), the others from column 120 down (R72 of them); LBL :MLK:
 REM reads the k-th in that order.
-REM The squares 22-99 in order; a piece of the colour: x = its piece x the colour is 1-6 (|x - 3.5| <= 2.5: the
-REM border 8 x the colour is +-8, out) ----
+REM The squares 22-99 in order, counted down by DSE 31 (up: 78 to 1, the square 100 - R31; down: 99.021, the square
+REM IP R31; the cut sets R31 = 0: the loop ends); a piece of the colour: x = its piece x the colour is 1-6
+REM (|x - 3.5| <= 2.5: the border 8 x the colour is +-8, out) ----
 LBL :GEN:
 0
 STO 37
@@ -111,47 +112,63 @@ IF
   RCL 32
   STO 99
 ENDIF
-60.5
-39.5
-RCL× 99
--
-STO 30
-DO
-  RCL 99
-  STO+ 30
-  1
-  RCL 30
-  STOIJ
-  RCLEL
-  RCL× 32
+RCL 99
+X>0?
+IF
+  78
   STO 31
-  3.5
-  -
-  ABS
-  2.5
-  X≥Y?
-  XEQ :GENSQ:
-  60.5
-  RCL- 30
-  RCL× 99
-  38.5
-  +
-  1
-  RCL- 70
-  ×
-  X>0?
-WHILE
-ENDDO
+  DO
+    100
+    RCL- 31
+    STO 30
+    1
+    RCL 30
+    STOIJ
+    RCLEL
+    RCL× 32
+    STO 34
+    3.5
+    -
+    ABS
+    2.5
+    X≥Y?
+    XEQ :GENSQ:
+    DSE 31
+  WHILE
+  ENDDO
+ELSE
+  99.021
+  STO 31
+  DO
+    RCL 31
+    IP
+    STO 30
+    1
+    RCL 30
+    STOIJ
+    RCLEL
+    RCL× 32
+    STO 34
+    3.5
+    -
+    ABS
+    2.5
+    X≥Y?
+    XEQ :GENSQ:
+    DSE 31
+  WHILE
+  ENDDO
+ENDIF
 RTN
-REM ---- LBL :GENSQ: the moves of the piece on R30 (R31 its kind) ----
+REM ---- LBL :GENSQ: the moves of the piece on R30 (R34 its kind; LBL :GSLIDE: reads it, then R34 is its direction) ----
 LBL :GENSQ:
-RCL 31
+RCL 34
 1
 X=Y?
 IF
   XEQ :GPAWN:
 ELSE
-  RCL 31
+  RCL 34
   2
   X=Y?
   IF
@@ -161,7 +178,7 @@ ELSE
     STO 36
     XEQ :GSTEP:
   ELSE
-    RCL 31
+    RCL 34
     6
     X=Y?
     IF
@@ -409,14 +426,14 @@ LBL :GSLIDE:
 STO 35
 96
 STO 36
-RCL 31
+RCL 34
 4
 X=Y?
 IF
   92
   STO 35
 ENDIF
-RCL 31
+RCL 34
 3
 X=Y?
 IF
@@ -1446,7 +1463,7 @@ RCL× 23
 STO 65
 RTN
 REM ---- LBL :QEVAL: the quiet reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :DELTA:, R65 the least, the
-REM cut R70 when R65 <= R61 (then the others are skipped) ----
+REM cut R70 when R65 <= R61 (then the others are skipped; R31 = 0 ends the scan of LBL :GEN:) ----
 LBL :QEVAL:
 RCL 70
 X≠0?
@@ -1467,6 +1484,8 @@ X≤Y?
 IF
   1
   STO 70
+  0
+  STO 31
 ENDIF
 RTN
 REM ---- LBL :CEVAL: the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, the
@@ -1493,6 +1512,8 @@ X≤Y?
 IF
   1
   STO 70
+  0
+  STO 31
 ENDIF
 RTN
 REM ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the

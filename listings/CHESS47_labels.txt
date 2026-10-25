@@ -1,7 +1,7 @@
 CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt), what it does
 
 :GEN:      00  ======== the move generator ========
-:GENSQ:    01  the moves of the piece on R30 (R31 its kind)
+:GENSQ:    01  the moves of the piece on R30 (R34 its kind; LBL :GSLIDE: reads it, then R34 is its direct
 :ADD:      02  the move R30 -> R33 into the row R38 of ML. A quiet move (the target empty) at the column
 :MLK:      03  Z = a row of ML, Y = its captures, X = k: X = its k-th move (the captures, then the others
 :GPAWN:    04  a pawn: one step if empty, two from its first row (row 5.5 - 2.5 c) if both are empty; the
