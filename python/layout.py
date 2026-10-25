@@ -257,7 +257,8 @@ if __name__ == '__main__':
 
 def knight_steps():
     """The steps of the marker REM ==== KNIGHTS: row 21 of BD, column s (a square of the board): the 64-bit mask of
-    the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "BD" set)."""
+    the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "BD" set); bit 63 (h8) as a
+    negative real, the value of the word in 2COMPL."""
     out = []
     for r in range(8):
         for f in range(8):
@@ -266,5 +267,6 @@ def knight_steps():
             for dr, df in ((1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)):
                 if 0 <= r + dr < 8 and 0 <= f + df < 8:
                     m |= 1 << (8 * (r + dr) + f + df)
+            m = m - (1 << 64) if m >> 63 else m                  # signed (2COMPL): SINT never gets 2^63 or more
             out += ['21', str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
     return out

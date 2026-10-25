@@ -60,9 +60,39 @@
   of every game checked against the rules. docs/MATCHES.md.
 - New commands to try on the C47: XOR, →REAL (and AND OR NOT BS?, as Logic 47).
 
-## Plans (v0.3)
+## Oct 25, 2026 - v0.3.0: about 3 times faster, the same moves (branch claude/chess47-speed)
 
-- Speed: a list of the pieces' squares instead of the scan of 78 squares; the attack tests with bitboards (AND).
+The twin (chess47ref.py) is unchanged: every step below keeps the moves and the values; tests/test_chess47.py all OK
+after each one. Steps of :THINK: at level 2 over the three positions of the profile (Kiwipete, an Italian, a closed
+Giuoco), 0.17 ms a step: v0.2 872 000 (46-55 s a move), v0.3 about 263 000 (13-19 s). The README has the table.
+
+- Lazy replies (mode 3 of :GEN:, R39 = 3): :ADD: values each reply as it is generated (:QEVAL: quiet, :CEVAL: capture)
+  and sets the cut R70 when it refutes the root move; the scan starts on the replying side's own back rank (R99 the
+  step +1 / -1), where the pieces that can reply are. The order of the replies does not change the value of the cut.
+- :RECAP: values a capture reply without playing it (:DELTA: for SC, the attack test with the from-square emptied for
+  the time of the test); :ATT: a tighter ray loop.
+- One matrix BD 22 x 120: row 1 the board, 2-4 the move lists (root 2, replies 3, played / ANYMV / TRYMV / CRAZY 4),
+  5-17 PT (row piece + 11), 18-20 UN (row ply + 17), 21 the knight masks, 22 the square bits. INDEX "BD" once.
+- Knight bitboards: NW NB (named variables, reals: →REAL to store, SINT to recall), bit 8 (row - 2) + col - 1 of the
+  square s = 10 row + col + 1. :NUPD: (in :MAKE: after the capture is read, in :UNMK: after the board is restored)
+  XORs the bits of a knight that moves or is taken; :NINIT: builds row 22 (the bits, :BIT:) and the words from the
+  board (INIT, and the tests' TGEN / TTHK). :ATT: the knight part is mask (row 21) AND the word: 12 steps instead of
+  the 8 probes R80-R87. ATT went from 17 % of the time to 12 %. Bit 63 (h8) is negative (2COMPL): the masks are
+  written signed by layout.knight_steps(), :BIT: gives -2^63 for h8, so SINT never gets 2^63 or more; c47sim's →REAL
+  gives the signed value (marked chess47).
+- The scan of :GEN: counted with DSE 31 (as Zones 47): up 78 -> 1 (the square 100 - R31), down 99.021 (IP R31); the
+  end test is DSE (one step instead of nine); the cut sets R31 = 0. The piece's kind is in R34 for :GENSQ: and
+  :GSLIDE: (R34 is its direction after that). GEN went from 32 900 steps to 24 500.
+- Tried and left out: the root moves sorted by a static value (QSORT) before the search: it saved as many steps in the
+  replies as it cost. A piece list or occupancy bitboards for the scan: the knight words showed that keeping words up
+  to date in every MAKE and UNMK costs about what they save (NUPD 5 400 steps against 15 000 saved in ATT); for the
+  occupancy, en passant and castling add updates, and the scan is already 9 % of the time.
+- The profile now: GSLIDE 14 %, ATT 12 %, GEN 9 %, ADD 9 %, DELTA 8 %, MAKE 7 %, GSTEP 7 %.
+- New commands to try on the C47: →REAL (with a negative word: bit 63). DSE ran in Zones 47; AND OR NOT XOR BS? in
+  Logic 47.
+
+## Plans (v0.4)
+
 - A capture search at the leaves, then 3 plies at level 3 when the speed allows.
 - Chess960 (Fischer Random): a start position from its number 0-959, castling from any squares (a branch of its own).
 

@@ -15,8 +15,9 @@
 - Text on the C47 screen: ATEXT in GRFNT 21 (GRFNT 10 for the small text). Restore GRFNT 20 and GRMOD 0 before
   the program ends. GRMOD and GRFNT take X: write `3 GRMOD`. AGRAPH words always through SINT.
 - Key waits: DO / 0 / PAUSE 10 / KEY? 98 / XEQ :CLOCK: / X≠0? / WHILE / ENDDO (the clock each second). R-CLR with a count (20.79, then R99).
-- Only commands already run on a C47 in Almanac 47, Elements 47 or Zones 47, except the bitwise ones (AND OR NOT
-  XOR BS?, as Logic 47) and →REAL: say so in the README until Victor has run them; a new command: ask Victor to try it.
+- Only commands already run on a C47 in Almanac 47, Elements 47, Zones 47 or Logic 47 (the bitwise ones AND OR NOT
+  XOR BS?), except →REAL: say so in the README until Victor has run it; a new command: ask Victor to try it.
+- The knight words NW NB use all 64 bits (h8 = bit 63, negative in 2COMPL): never give SINT 2^63 or more.
 - Check every change in the simulator (python3 python/chess47sim.py writes docs/*.png) and with
   python3 tests/test_chess47.py; the engine's play with python3 tools/match47.py (docs/MATCHES.md).
 - python/c47sim.py, stdfont.py, tinyfont.py come from Almanac 47 (the bitwise block from Logic 47): a fix is
