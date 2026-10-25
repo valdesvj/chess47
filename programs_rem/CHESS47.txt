@@ -80,7 +80,11 @@ STO L
 RCLS R.00
 RTN
 REM ======== the move generator ========
-REM ---- LBL :GEN: the moves of the colour R32 into the row R38 of ML (castling when R39 = 1): the captures from
+REM ---- LBL :GEN: the moves of the colour R32. R39: 1 all of them and castling, 0 all of them, 2 the captures only,
+REM 3 each move valued at once (LBL :QEVAL:, LBL :CEVAL:) until the cut R70 (the other modes set R70 = 0), the squares
+REM from the colour's own side (black: 99 down to 22; R99 the step +1 / -1: the order of the replies does not change
+REM the answer, and the pieces that can reply are reached first). Into
+REM the row R38 of ML: the captures from
 REM column 1 (R37 of them, by the value taken: LBL :ADD:), the others from column 120 down (R72 of them); LBL :MLK:
 REM reads the k-th in that order.
 REM The squares 22-99 in order; a piece of the colour: x = its piece x the colour is 1-6 (|x - 3.5| <= 2.5: the
@@ -90,10 +94,29 @@ LBL :GEN:
 STO 37
 0
 STO 72
-21
+RCL 39
+3
+X≠Y?
+IF
+  0
+  STO 70
+ENDIF
+1
+STO 99
+RCL 39
+3
+X=Y?
+IF
+  RCL 32
+  STO 99
+ENDIF
+60.5
+39.5
+RCL× 99
+-
 STO 30
 DO
-  1
+  RCL 99
   STO+ 30
   1
   RCL 30
@@ -107,9 +130,15 @@ DO
   2.5
   X≥Y?
   XEQ :GENSQ:
-  99
-  RCL 30
-  X<Y?
+  60.5
+  RCL- 30
+  RCL× 99
+  38.5
+  +
+  1
+  RCL- 70
+  ×
+  X>0?
 WHILE
 ENDDO
 RTN
@@ -141,7 +170,8 @@ ELSE
       STO 36
       XEQ :GSTEP:
       RCL 39
-      X≠0?
+      1
+      X=Y?
       XEQ :GCAST:
     ELSE
       XEQ :GSLIDE:
@@ -166,8 +196,19 @@ STOIJ
 RCLEL
 X=0?
 IF
+  RCL 39
+  2
+  X=Y?
+  RTN
   1
   STO+ 72
+  RCL 39
+  3
+  X=Y?
+  IF
+    XEQ :QEVAL:
+    RTN
+  ENDIF
   INDEX "ML"
   RCL 38
   121
@@ -181,6 +222,15 @@ IF
   INDEX "BD"
   RTN
 ENDIF
+RCL 39
+3
+X=Y?
+IF
+  XEQ :CEVAL:
+  RTN
+ENDIF
+DROP
+DROP
 ABS
 100000
 ×
@@ -1120,9 +1170,87 @@ DO
 WHILE
 ENDDO
 RTN
+REM ---- LBL :CHKQ: after the root move R41 -> R42 (flag R47): can it give check? X = 1 when the other king (R48 its
+REM register 24.5 + R60 / 2, R49 its square) is on a line, a diagonal or a knight's jump from the target or from the
+REM square left (a discovered check), or after en passant or castling; else 0 (no attack test needed: the king was not
+REM attacked before the move) ----
+LBL :CHKQ:
+RCL 47
+X≠0?
+IF
+  1
+  RTN
+ENDIF
+24.5
+RCL 60
+0.5
+×
++
+STO 48
+RCL IND 48
+STO 49
+RCL 42
+XEQ :ALIGN:
+X≠0?
+RTN
+RCL 41
+XEQ :ALIGN:
+RTN
+REM ---- LBL :ALIGN: X = a square q, R49 the king's square: dr, dc the rows and columns between them; X = 1 when
+REM dr dc (|dr| - |dc|) = 0 (a line or a diagonal) or |dr dc| = 2 (a knight's jump), else 0 ----
+LBL :ALIGN:
+1
+-
+STO 48
+10
+÷
+IP
+RCL 49
+1
+-
+10
+÷
+IP
+-
+STO 47
+RCL 48
+10
+MOD
+RCL 49
+1
+-
+10
+MOD
+-
+STO 48
+RCL× 47
+ABS
+2
+X=Y?
+IF
+  1
+  RTN
+ENDIF
+RCL 47
+ABS
+RCL 48
+ABS
+-
+RCL× 47
+RCL× 48
+X=0?
+IF
+  1
+  RTN
+ENDIF
+0
+RTN
 REM ---- LBL :MATEQ: level 2, after the root move: it checks the other king, does not leave its own attacked and
 REM the other side has no legal move (LBL :ANYMV:): a mate, R65 = 29000, X = 1; else X = 0 ----
 LBL :MATEQ:
+XEQ :CHKQ:
+X=0?
+RTN
 RCL 60
 XEQ :KATT:
 X=0?
@@ -1168,70 +1296,80 @@ RTN
 -30000
 STO 65
 RTN
-REM ---- LBL :REPLY: level 2: the replies of the other side (no castling) in the row 2 of ML, in its order; R65
-REM the least R60 x SC over them (the king taken: about -20000), stopped when it is not above the best R61. A
-REM capture is played (LBL :RECAP:: answered by its recapture when R60 attacks the square), the others are not
-REM (LBL :DELTA: works out what they would do to SC) ----
+REM ---- LBL :REPLY: level 2: the replies of the other side (no castling), each valued as it is generated (mode 3:
+REM LBL :QEVAL: for a quiet move, LBL :CEVAL: for a capture); R65 the least R60 x SC over them (the king taken: about
+REM -20000), the generation stopped at the cut R70 (R65 <= the best R61): most replies are never generated. Their
+REM order does not change the answer (the cut comes as soon as one reply is low enough). No reply: R60 x SC ----
 LBL :REPLY:
 RCL 60
 CHS
 STO 32
 2
 STO 38
-0
+3
 STO 39
-XEQ :GEN:
-RCL 37
-STO 69
-RCL+ 72
-STO 67
-RCL 60
-RCL× 23
-STO 65
-RCL 67
-X=0?
-RTN
 30000
 STO 65
 0
 STO 70
-0
-STO 66
-DO
+XEQ :GEN:
+RCL 37
+RCL+ 72
+X≠0?
+RTN
+RCL 60
+RCL× 23
+STO 65
+RTN
+REM ---- LBL :QEVAL: the quiet reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :DELTA:, R65 the least, the
+REM cut R70 when R65 <= R61 (then the others are skipped) ----
+LBL :QEVAL:
+RCL 70
+X≠0?
+RTN
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
+XEQ :DELTA:
+RCL 65
+RCL 71
+X<Y?
+STO 65
+RCL 61
+RCL 65
+X≤Y?
+IF
   1
-  STO+ 66
-  2
-  RCL 69
-  RCL 66
-  XEQ :MLK:
-  STO 40
-  RCL 69
-  RCL 66
-  X≤Y?
-  IF
-    XEQ :RECAP:
-  ELSE
-    XEQ :DELTA:
-  ENDIF
-  RCL 65
-  RCL 71
-  X<Y?
-  STO 65
-  RCL 61
-  RCL 65
-  X≤Y?
-  IF
-    1
-    STO 70
-  ENDIF
-  RCL 67
-  RCL- 66
+  STO 70
+ENDIF
+RTN
+REM ---- LBL :CEVAL: the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, the
+REM cut R70 as LBL :QEVAL: (counted in R37) ----
+LBL :CEVAL:
+1
+STO+ 37
+RCL 70
+X≠0?
+RTN
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
+XEQ :RECAP:
+RCL 65
+RCL 71
+X<Y?
+STO 65
+RCL 61
+RCL 65
+X≤Y?
+IF
   1
-  RCL- 70
-  ×
-  X>0?
-WHILE
-ENDDO
+  STO 70
+ENDIF
 RTN
 REM ---- LBL :RECAP: the capture reply R40 played at the ply 2: R71 = R60 x SC, + the value of the piece that took
 REM when R60 attacks its square (it is taken back), then the reply taken back ----
