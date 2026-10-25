@@ -11,7 +11,8 @@ REM board, 2-4 the move lists of the root, the replies, the moves played; 5-17 P
 REM cuts, the captures first; python/chess47ref.py is the same algorithm in Python (the tests compare the two).
 REM The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white short, 2 white long, 4 black short,
 REM 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
-REM glyph words (dither AND NOT mask OR glyph), WSIZE 24: a square is 24 rows, one AGRAPH word a column.
+REM glyph words (dither AND NOT mask OR glyph), WSIZE 24 while drawing: a square is 24 rows, one AGRAPH word a column;
+REM the knights are two 64-bit words (WSIZE 64 the rest of the time) for the attack test.
 REM Keys: 8 2 4 6 the cursor up, down, left, right; 5 picks a piece of yours, then 5 on the square to play it (5 on
 REM the same square drops it); + the C47 plays the side to move (you take the other side); 1 the level 2 -> 1 -> 0
 REM (CRAZY: random legal moves, a crazy face by the title);
@@ -67,6 +68,8 @@ DELITM "OB"
 DELITM "TK"
 DELITM "TW"
 DELITM "TB"
+DELITM "NW"
+DELITM "NB"
 WSIZE 64
 0
 GRMOD
@@ -600,8 +603,9 @@ STO 51
 XEQ :ATT:
 RCL 55
 RTN
-REM ---- LBL :ATT: is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a knight
-REM (2 c) at a knight's step; along each direction to the first piece: a queen (5 c), a bishop (3 c) on a diagonal
+REM ---- LBL :ATT: is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a knight:
+REM the knight's squares of R50 (a 64-bit mask, row 21 of BD) AND the knights of R51 (NW or NB, a 64-bit word: one
+REM bit a square, kept by LBL :NUPD:) not 0; along each direction to the first piece: a queen (5 c), a bishop (3 c) on a diagonal
 REM (R88-R91) or a rook (4 c) on a line (R92-R95), or the king (6 c) when it is the first square ----
 LBL :ATT:
 1
@@ -628,26 +632,26 @@ RCLEL
 RCL 51
 X=Y?
 RTN
-80
+21
+RCL 50
+STOIJ
+RCLEL
+SINT
+RCL 51
+X>0?
+IF
+  DROP
+  RCL "NW"
+ELSE
+  DROP
+  RCL "NB"
+ENDIF
+SINT
+AND
+X≠0?
+RTN
+88
 STO 54
-DO
-  1
-  RCL IND 54
-  RCL+ 50
-  STOIJ
-  RCLEL
-  RCL 51
-  2
-  ×
-  X=Y?
-  RTN
-  1
-  STO+ 54
-  88
-  RCL 54
-  X<Y?
-WHILE
-ENDDO
 DO
   RCL IND 54
   STO 53
@@ -733,6 +737,7 @@ RCL 42
 STOIJ
 RCLEL
 STO 44
+XEQ :NUPD:
 RCL 46
 17
 +
@@ -909,6 +914,112 @@ STOIJ
 RCL 47
 STOEL
 RTN
+REM ---- LBL :NUPD: the knight words of the move R41 -> R42 (piece R43 of the colour R45, R44 taken): a knight that
+REM moves XORs the bits of both squares into its colour's word, a knight taken the bit of R42 into the other's (the
+REM same XOR undoes it: LBL :UNMK: calls it too) ----
+LBL :NUPD:
+RCL 43
+ABS
+2
+X=Y?
+IF
+  RCL 41
+  XEQ :BIT:
+  RCL 42
+  XEQ :BIT:
+  XOR
+  RCL 45
+  XEQ :NXOR:
+ENDIF
+RCL 44
+ABS
+2
+X=Y?
+IF
+  RCL 42
+  XEQ :BIT:
+  RCL 45
+  CHS
+  XEQ :NXOR:
+ENDIF
+RTN
+REM ---- LBL :NXOR: X = a colour, Y = bits: XORed into its knight word (NW white, NB black; kept as reals: →REAL) ----
+LBL :NXOR:
+X>0?
+IF
+  DROP
+  RCL "NW"
+  SINT
+  XOR
+  →REAL
+  STO "NW"
+ELSE
+  DROP
+  RCL "NB"
+  SINT
+  XOR
+  →REAL
+  STO "NB"
+ENDIF
+RTN
+REM ---- LBL :BIT: X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZE 64) ----
+LBL :BIT:
+1
+-
+STO 56
+10
+MOD
+RCL 56
+10
+÷
+IP
+2
+-
+8
+×
++
+1
+-
+2
+X<>Y
+Y^X
+SINT
+RTN
+REM ---- LBL :NINIT: the knight words from the board (the start) ----
+LBL :NINIT:
+0
+STO "NW"
+STO "NB"
+22
+STO 41
+DO
+  1
+  RCL 41
+  STOIJ
+  RCLEL
+  ABS
+  2
+  X=Y?
+  IF
+    1
+    RCL 41
+    STOIJ
+    RCLEL
+    SIGN
+    STO 42
+    RCL 41
+    XEQ :BIT:
+    RCL 42
+    XEQ :NXOR:
+  ENDIF
+  1
+  STO+ 41
+  99
+  RCL 41
+  X≤Y?
+WHILE
+ENDDO
+RTN
 REM ---- LBL :ROOKS: the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d) ----
 LBL :ROOKS:
 RCL 41
@@ -1035,6 +1146,7 @@ RCL 42
 STOIJ
 RCL 44
 STOEL
+XEQ :NUPD:
 RCL 47
 1
 X=Y?
@@ -2212,7 +2324,7 @@ IF
 ENDIF
 RCL 49
 →REAL
-WSIZE 24
+WSIZE 64
 RTN
 REM ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
 REM black; not when the game is over), the clock drawn at the top left: X = 1 ----
@@ -2382,6 +2494,7 @@ RTN
 REM ---- LBL :FACE: the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 columns
 REM of 0, GRMOD 1) at the levels 1 and 2 ----
 LBL :FACE:
+WSIZE 24
 1
 GRMOD
 DROP
@@ -2411,6 +2524,7 @@ ELSE
 ENDIF
 0
 GRMOD
+WSIZE 64
 RTN
 REM ---- LBL :HIST: the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
 REM GRFNT 10 at x 212, rows 136 down (17 rows a line): "12. e2e4" for white, "12... e7e5" for black ----
@@ -2501,6 +2615,7 @@ IP
 RTN
 REM ---- LBL :CURS: the cursor R28 drawn or taken off: a frame of 2 pixels, XOR (GRMOD 3) ----
 LBL :CURS:
+WSIZE 24
 RCL 28
 XEQ :SQXY:
 3
@@ -2539,9 +2654,11 @@ AGRAPH 99
 AGRAPH 99
 0
 GRMOD
+WSIZE 64
 RTN
 REM ---- LBL :SELX: the square picked (R29) inverted (XOR of the 24 columns), or back ----
 LBL :SELX:
+WSIZE 24
 RCL 29
 XEQ :SQXY:
 3
@@ -2563,6 +2680,7 @@ WHILE
 ENDDO
 0
 GRMOD
+WSIZE 64
 RTN
 REM ---- LBL :SQXY: X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
 REM ((file + rank) even); X = the square ----
@@ -2607,6 +2725,7 @@ RTN
 REM ---- LBL :DRAWSQ: X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its
 REM piece (light: piece + 7, dark: piece + 20) ----
 LBL :DRAWSQ:
+WSIZE 24
 XEQ :SQXY:
 1
 X<>Y
@@ -2643,6 +2762,7 @@ ENDDO
 0
 GRMOD
 INDEX "BD"
+WSIZE 64
 RTN
 REM ======== the start ========
 REM ---- LBL :INIT: the matrices, the offsets, the pieces, the state; the screen (the board, the letters, the
@@ -2661,10 +2781,12 @@ DROP
 156
 212
 ATEXT Z
-20
+21
 120
 NEWMAT
 STO "BD"
+INDEX "BD"
+REM ==== KNIGHTS
 32
 24
 NEWMAT
@@ -2926,6 +3048,8 @@ XEQ :CURS:
 XEQ :CLOCK:
 DROP
 INDEX "BD"
+XEQ :NINIT:
+WSIZE 64
 RTN
 REM ---- LBL :PSTALL: the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the rank 0-7, cen
 REM 6 - (|2f - 7| + |2r - 7|) / 2; for each kind t the value V(t) + pst (as python/chess47ref.py): P 6 (r - 1) + 8

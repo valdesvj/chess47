@@ -42,11 +42,13 @@ def labels():
 
 
 def test_copy():
-    """build/CHESS47.txt with LBL "TGEN" / XEQ :GEN: / RTN and LBL "TTHK" / XEQ :THINK: / RTN before its END."""
+    """build/CHESS47.txt with LBL "TGEN" / XEQ :NINIT: / XEQ :GEN: / RTN and LBL "TTHK" / XEQ :NINIT: / XEQ :THINK: / RTN
+    before its END (:NINIT: the knight words of the position written into BD)."""
     lab = labels()
     P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l]
     assert P[-1] == 'END'
-    P = P[:-1] + ['LBL "TGEN"', 'XEQ %s' % lab['GEN'], 'RTN', 'LBL "TTHK"', 'XEQ %s' % lab['THINK'], 'RTN', 'END']
+    P = P[:-1] + ['LBL "TGEN"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['GEN'], 'RTN',
+                  'LBL "TTHK"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['THINK'], 'RTN', 'END']
     fn = os.path.join(tempfile.mkdtemp(), 'CHESS47T.txt')
     open(fn, 'w', encoding='utf-8').write('\n'.join(P) + '\n')
     return fn
@@ -165,7 +167,7 @@ def main():
     shots, c = S.run([S.HAND, S.HAND, S.END], stack=(11, 12, 13, 14))
     check(c.ended and c.s == [D(11), D(12), D(13), D(14)] and all(c.reg.get(str(r), D(0)) == 0 for r in range(20, 100))
           and not any(k in c.mats for k in ('BD', 'GL', 'GH', 'OB'))
-          and not any(k in c.reg for k in ('TK', 'TW', 'TB')),
+          and not any(k in c.reg for k in ('TK', 'TW', 'TB', 'NW', 'NB')),
           '0 after two moves: your stack back, R20-R99 cleared, the matrices and the clock deleted')
 
     print('== CRAZY (level 0): random legal moves')

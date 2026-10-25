@@ -253,3 +253,18 @@ if __name__ == '__main__':
         O, S, M = shapes(t)
         print(t, len(O), len(S), len(M))
     print(len(glyph_steps()), 'steps')
+
+
+def knight_steps():
+    """The steps of the marker REM ==== KNIGHTS: row 21 of BD, column s (a square of the board): the 64-bit mask of
+    the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "BD" set)."""
+    out = []
+    for r in range(8):
+        for f in range(8):
+            s = 10 * (r + 2) + f + 2
+            m = 0
+            for dr, df in ((1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)):
+                if 0 <= r + dr < 8 and 0 <= f + df < 8:
+                    m |= 1 << (8 * (r + dr) + f + df)
+            out += ['21', str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
+    return out

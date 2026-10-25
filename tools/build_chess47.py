@@ -157,6 +157,10 @@ def fill(lines):
             ind = ln[:len(ln) - len(ln.lstrip())]
             out.append(ind + 'REM the rows of OB (written by the build)')
             out.append(ind + str(len(book.LINES)))
+        elif ln.strip() == 'REM ==== KNIGHTS':
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            out.append(ind + 'REM the knights\' masks of python/layout.py into row 21 of BD (written by the build)')
+            out += [ind + st for st in layout.knight_steps()]
         elif ln.strip() == 'REM ==== FACE':
             ind = ln[:len(ln) - len(ln.lstrip())]
             out.append(ind + 'REM the face of python/layout.py, one column a word (written by the build)')
