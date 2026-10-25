@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Build the CHESS47 files from the commented source programs_rem/CHESS47.txt (as Logic 47, Zones 47, Elements 47):
-the marker REM ==== GLYPHS filled from python/layout.py, named labels LBL :NAME: get free local numbers, the STRUCT
+the markers REM ==== GLYPHS and FACE (python/layout.py), BOOK and BOOKN (python/book.py) filled, named labels LBL :NAME: get free local numbers, the STRUCT
 commands are checked as the firmware's VALID does and numbered (255 a program: C47, R47, DM42n), the REM lines and the indentation go.
 Files: programs/CHESS47.txt, build/CHESS47.txt (the calculator file, to convert with rejig),
 listings/CHESS47_doc.txt (numbered steps with comments), listings/CHESS47_labels.txt.
@@ -147,6 +147,20 @@ def fill(lines):
             ind = ln[:len(ln) - len(ln.lstrip())]
             out.append(ind + 'REM the glyph words O S M of python/layout.py (written by the build)')
             out += [ind + st for st in layout.glyph_steps()]
+        elif ln.strip() == 'REM ==== BOOK':
+            import book
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            out.append(ind + 'REM the opening book of python/book.py: the matrix OB (written by the build)')
+            out += [ind + st for st in book.steps()]
+        elif ln.strip() == 'REM ==== BOOKN':
+            import book
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            out.append(ind + 'REM the rows of OB (written by the build)')
+            out.append(ind + str(len(book.LINES)))
+        elif ln.strip() == 'REM ==== FACE':
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            out.append(ind + 'REM the face of python/layout.py, one column a word (written by the build)')
+            out += [ind + st for st in layout.face_steps()]
         else:
             out.append(ln)
     return out

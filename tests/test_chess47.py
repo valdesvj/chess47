@@ -6,17 +6,19 @@ algorithm in Python) and python/layout.py (the reference picture).
   2. the reference: chess47ref's move generator gives the published perft counts (promotion to a queen only:
      the positions without under-promotion; with it, python-chess's counts without the under-promotions)
   3. the start screen: the board pixel for pixel layout.mock (the cursor frame on e2 taken off), the panel's texts
-  4. the move generator: for positions (FEN) the moves of :GEN: in the matrix ML, in order, as chess47ref.gen
-     (castling, en passant, promotion, checks, pins: the legal filter is the caller's)
+  4. the move generator: for positions (FEN) the moves of :GEN: in the matrix ML (the captures from column 1 by the
+     value taken, the others from column 120 down), in that order, as chess47ref.order(gen) (castling, en passant,
+     promotion, checks, pins: the legal filter is the caller's)
   5. the search: for positions, levels 1 and 2, the move and the value of :THINK: as chess47ref.search
-  6. a game: the C47 plays both sides (+ each time) for some moves: every move as chess47ref, the board after it,
-     SC, the text of the move list; your stack and LASTx back after 0, R20-R99 cleared, the matrices deleted
+  6. a game: the C47 plays both sides (+ each time) for some moves: from the book (python/book.py) while it fits,
+     then every move as chess47ref.search; the board, SC, the move list, the clock; your stack and LASTx back
+     after 0, R20-R99 cleared, the matrices and the clock's variables deleted; CRAZY: 20 random moves, all legal
   7. your moves: the cursor keys, a legal move played, an illegal one refused (ILLEGAL MOVE), a move into check
      refused (ILLEGAL: CHECK), castling short with the keys
 
 For 4 and 5 a test copy of the program gets global labels before END: "TGEN" (XEQ :GEN:) and "TTHK" (XEQ :THINK:),
 run after the start with the position written into BD and the registers.
-      python3 tests/test_chess47.py [n]      (n: moves of the game, default 8)"""
+      python3 tests/test_chess47.py [n]      (n: moves of the game, default 14)"""
 import os, re, sys, tempfile
 from decimal import Decimal as D
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,7 +75,7 @@ FENS = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
 
 
 def main():
-    n = int(sys.argv[1]) if sys.argv[1:] else 8
+    n = int(sys.argv[1]) if sys.argv[1:] else 14
     print('== the build')
     import build_chess47 as B
     st = B.build()
@@ -111,9 +113,12 @@ def main():
         setpos(c, p)
         c.reg['32'], c.reg['38'], c.reg['39'] = D(p.sd), D(1), D(1)
         c.run('TGEN', maxsteps=10 ** 8)
-        k = int(c.reg['37'])
-        got = [int(c.mats['ML'][0][i]) for i in range(k)]
-        want = p.gen(p.sd)
+        nc, nq = int(c.reg['37']), int(c.reg['72'])
+        row = c.mats['ML'][0]
+        got = [int(row[i]) % 100000 for i in range(nc)] + [int(row[119 - i]) for i in range(nq)]
+        k = nc + nq
+        p.opts = set(R.ENGINE)
+        want = p.order(p.gen(p.sd))
         check(got == want, '%s: %d moves%s' % (fen[:40], k, '' if got == want else ' WANT %d %s' % (
             len(want), [R.mname(m) for m in got if m not in want] + ['-' + R.mname(m) for m in want if m not in got])))
 
@@ -132,33 +137,60 @@ def main():
                 fen[:36], level, R.mname(got[0]) if got[0] else '-', got[1], S.secs(c.steps),
                 '' if got == (m, v) else ' WANT %s %d' % (R.mname(m) if m else '-', v)))
 
-    print('== a game: the C47 plays both sides (%d moves)' % n)
+    print('== a game: the C47 plays both sides (%d moves; the book first, then the search)' % n)
+    import book
     shots, c = S.run([S.HAND] * n)
+    got = [int(v) for v in c.mats['GH'][0] if int(v)]
     p = R.Pos()
-    texts, num = [], 1
-    for k in range(n):
-        m, v, nodes = p.search(2)
-        if not m or v < -10000:
-            break
+    good, hist_ok, texts, num, inbook = True, [], [], 1, 0
+    for k, m in enumerate(got):
+        cands = book.candidates(got[:k]) if k < 10 else []
+        if cands:
+            good &= m in cands; inbook += 1
+        else:
+            want, v, nodes = p.search(2)
+            good &= m == want
         p.make(m, 3)
         texts.append(('%d. ' % num if k % 2 == 0 else '%d... ' % num) + R.mname(m))
         num += k % 2
-    hist = [x for x in (c.reg.get(str(r)) for r in range(72, 80)) if isinstance(x, str)]
-    check(hist == texts[-8:], 'the moves as chess47ref: %s' % ' '.join(texts))
+    check(len(got) == n and good, '%d moves, %d from the book (one of its lines that fit), the others as chess47ref.search: %s'
+          % (len(got), inbook, ' '.join(texts)))
+    hist = [x for x in (c.reg.get(str(r)) for r in range(73, 80)) if isinstance(x, str)]
+    check(hist == texts[-7:], 'the move list (R73-R79) as the moves')
     check(S.board(c)[22:100] == p.bd[22:100] and c.reg.get('23') == p.sc, 'the board and SC after them as chess47ref')
     times = [S.secs(b - a) for a, b in zip(c.at_steps, c.at_steps[1:])]
     check(True, 'the C47 a move (with its drawing): %s s' % ' '.join('%.0f' % t for t in times))
+    check(isinstance(c.reg.get('TW'), D) and c.reg['TW'] > 0 and c.reg['TB'] > 0, 'the clock: white %s, black %s tenths'
+          % (c.reg.get('TW'), c.reg.get('TB')))
     shots, c = S.run([S.HAND, S.HAND, S.END], stack=(11, 12, 13, 14))
     check(c.ended and c.s == [D(11), D(12), D(13), D(14)] and all(c.reg.get(str(r), D(0)) == 0 for r in range(20, 100))
-          and not any(k in c.mats for k in ('BD', 'PT', 'ML', 'UN', 'GL')),
-          '0 after two moves: your stack back, R20-R99 cleared, the matrices deleted')
+          and not any(k in c.mats for k in ('BD', 'PT', 'ML', 'UN', 'GL', 'GH', 'OB'))
+          and not any(k in c.reg for k in ('TK', 'TW', 'TB')),
+          '0 after two moves: your stack back, R20-R99 cleared, the matrices and the clock deleted')
+
+    print('== CRAZY (level 0): random legal moves')
+    import chess
+    shots, c = S.run([S.LEVEL, S.LEVEL] + [S.HAND] * 20)
+    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    b, ok = chess.Board(), True
+    for m in got:
+        f, t = m // 1000, m % 1000
+        mv = chess.Move(chess.square((f - 1) % 10 - 1, (f - 1) // 10 - 2), chess.square((t - 1) % 10 - 1, (t - 1) // 10 - 2))
+        if b.piece_at(mv.from_square).piece_type == chess.PAWN and chess.square_rank(mv.to_square) in (0, 7):
+            mv.promotion = chess.QUEEN
+        ok &= mv in b.legal_moves
+        if not ok:
+            break
+        b.push(mv)
+    check(ok and len(got) == 20 and c.reg.get('26') == 0, '20 moves at level 0, all legal: %s' % chess.Board().variation_san(b.move_stack))
 
     print('== your moves with the keys')
     # e2-e4 (the cursor starts on e2): 5, 8 8, 5; then the C47's reply
     shots, c = S.run([S.PICK, S.UP, S.UP, S.PICK])
-    p = R.Pos(); p.make(36056, 3)
-    m, v, nodes = p.search(2); p.make(m, 3)
-    check(S.board(c)[22:100] == p.bd[22:100], 'e2-e4 with 5 8 8 5, then the C47: %s, the board as chess47ref' % R.mname(m))
+    reply = int(c.mats['GH'][0][1])
+    p = R.Pos(); p.make(36056, 3); p.make(reply, 3)
+    check(int(c.mats['GH'][0][0]) == 36056 and reply in book.candidates([36056]) and S.board(c)[22:100] == p.bd[22:100],
+          'e2-e4 with 5 8 8 5, then the C47 from its book: %s, the board' % R.mname(reply))
     # an illegal move: e2-e5 (5 8 8 8 5)
     shots, c = S.run([S.PICK, S.UP, S.UP, S.UP, S.PICK])
     check(c.reg.get('20') == 1 and S.board(c)[36] == 1, 'e2-e5 refused: the pawn stays, white to move')

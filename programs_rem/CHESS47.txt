@@ -1,4 +1,4 @@
-REM CHESS47 v0.1.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.2.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate. No draw by repetition or by the 50 moves.
@@ -12,7 +12,8 @@ REM The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white s
 REM 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
 REM glyph words (dither AND NOT mask OR glyph), WSIZE 24: a square is 24 rows, one AGRAPH word a column.
 REM Keys: 8 2 4 6 the cursor up, down, left, right; 5 picks a piece of yours, then 5 on the square to play it (5 on
-REM the same square drops it); + the C47 plays the side to move (you take the other side); 1 the level 2 / 1;
+REM the same square drops it); + the C47 plays the side to move (you take the other side); 1 the level 2 -> 1 -> 0
+REM (CRAZY: random legal moves, a crazy face by the title);
 REM 0 ends. The C47 thinks about 15-30 s at level 2 (the simulator's step count), 1-3 s at level 1.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
 REM R20-R99 are cleared, the matrices BD PT ML UN GL deleted, WSIZE 64, GRMOD 0 and GRFNT 20 set.
@@ -26,7 +27,7 @@ REM R50-R56 attacked? (R50 the square, R51 the colour of the attackers, R52 the 
 REM register, R55 the answer, R56 work); R57-R59 the castling word before the move of ply 1-3; R60-R71 the
 REM search (R60 its side, R61 the best value, R62 the best move, R63 R64 the root move and count, R65 the value,
 REM R66 R67 the reply and count, R68 R69 the pass (1 the captures, 0 the others), R70 the cut, R71 a reply's
-REM value); R72-R79 the last 8 moves (texts, R79 the newest); R80-R87 the knight's offsets, R88-R95 the
+REM value); R72 the quiet moves of a generation; R73-R79 the last 7 moves (texts, R79 the newest); R80-R87 the knight's offsets, R88-R95 the
 REM directions (R88-R91 the diagonals, R92-R95 the lines); R96 the move number, R97 1 when the game is over, R98 the
 REM key, R99 an AGRAPH word. Drawing reuses R30-R36 and R48 R49.
 REM Screen 400 x 240, row 0 = bottom: the board at x 12-203, rows 20-211 (python/layout.py); the panel at x 212.
@@ -63,6 +64,11 @@ DELITM "PT"
 DELITM "ML"
 DELITM "UN"
 DELITM "GL"
+DELITM "GH"
+DELITM "OB"
+DELITM "TK"
+DELITM "TW"
+DELITM "TB"
 WSIZE 64
 0
 GRMOD
@@ -74,12 +80,16 @@ STO L
 RCLS R.00
 RTN
 REM ======== the move generator ========
-REM ---- LBL :GEN: the moves of the colour R32 into the row R38 of ML (castling when R39 = 1); R37 their number.
+REM ---- LBL :GEN: the moves of the colour R32 into the row R38 of ML (castling when R39 = 1): the captures from
+REM column 1 (R37 of them, by the value taken: LBL :ADD:), the others from column 120 down (R72 of them); LBL :MLK:
+REM reads the k-th in that order.
 REM The squares 22-99 in order; a piece of the colour: x = its piece x the colour is 1-6 (|x - 3.5| <= 2.5: the
 REM border 8 x the colour is +-8, out) ----
 LBL :GEN:
 0
 STO 37
+0
+STO 72
 21
 STO 30
 DO
@@ -139,23 +149,116 @@ ELSE
   ENDIF
 ENDIF
 RTN
-REM ---- LBL :ADD: the move R30 -> R33 into ML (row R38, column R37 + 1; at most 120 a ply) ----
+REM ---- LBL :ADD: the move R30 -> R33 into the row R38 of ML. A quiet move (the target empty) at the column
+REM 121 - R72 (R72 + 1); a capture: the code (the value of the piece taken) x 100000 + the move, put in the captures
+REM (columns 1 - R37) after those that take as much or more (an insertion: the ones that take less move one
+REM column on): the captures by the piece taken, queen first, else in the order generated (MVV). At most 118 a ply.
+REM R47 R48 R49 work ----
 LBL :ADD:
 RCL 37
-119
+RCL+ 72
+118
 X<Y?
 RTN
 1
-STO+ 37
-INDEX "ML"
-RCL 38
-RCL 37
+RCL 33
 STOIJ
+RCLEL
+X=0?
+IF
+  1
+  STO+ 72
+  INDEX "ML"
+  RCL 38
+  121
+  RCL- 72
+  STOIJ
+  RCL 30
+  1000
+  ×
+  RCL+ 33
+  STOEL
+  INDEX "BD"
+  RTN
+ENDIF
+ABS
+100000
+×
 RCL 30
 1000
 ×
++
 RCL+ 33
+STO 48
+RCL 37
+1
++
+STO 49
+INDEX "ML"
+DO
+  RCL 49
+  1
+  X<Y?
+  IF
+    RCL 38
+    RCL 49
+    1
+    -
+    STOIJ
+    RCLEL
+    STO 47
+    100000
+    ÷
+    IP
+    RCL 48
+    100000
+    ÷
+    IP
+    X>Y?
+    IF
+      RCL 38
+      RCL 49
+      STOIJ
+      RCL 47
+      STOEL
+      -1
+      STO+ 49
+      1
+    ELSE
+      0
+    ENDIF
+  ELSE
+    0
+  ENDIF
+  X≠0?
+WHILE
+ENDDO
+RCL 38
+RCL 49
+STOIJ
+RCL 48
 STOEL
+1
+STO+ 37
+INDEX "BD"
+RTN
+REM ---- LBL :MLK: Z = a row of ML, Y = its captures, X = k: X = its k-th move (the captures, then the others
+REM from column 120 down; a capture's code without its value) ----
+LBL :MLK:
+X>Y?
+IF
+  -
+  121
+  +
+ELSE
+  X<>Y
+  DROP
+ENDIF
+INDEX "ML"
+STOIJ
+RCLEL
+100000
+MOD
 INDEX "BD"
 RTN
 REM ---- LBL :GPAWN: a pawn: one step if empty, two from its first row (row 5.5 - 2.5 c) if both are empty; the
@@ -955,7 +1058,8 @@ STO 20
 RTN
 REM ======== the search ========
 REM ---- LBL :THINK: the best move of the side to move at the level R26: R62 (0 none), its value R61 (below
-REM -10000: no legal move). The root moves (castling too) in the row 1 of ML, the captures first ----
+REM -10000: no legal move). The root moves (castling too) in the row 1 of ML, in its order (the captures by the
+REM value taken, then the others); level 1: LBL :LEGAL1:; level 2: a mate (LBL :MATEQ:) or the replies ----
 LBL :THINK:
 RCL 20
 STO 60
@@ -971,69 +1075,75 @@ STO 38
 STO 39
 XEQ :GEN:
 RCL 37
+STO 68
+RCL+ 72
 STO 64
 X=0?
 RTN
-1
-STO 68
+0
+STO 63
 DO
-  0
-  STO 63
-  DO
-    1
-    STO+ 63
-    INDEX "ML"
-    1
-    RCL 63
-    STOIJ
-    RCLEL
-    STO 40
-    INDEX "BD"
-    1000
-    MOD
-    1
-    X<>Y
-    STOIJ
-    RCLEL
-    ABS
-    SIGN
-    RCL 68
-    X=Y?
-    IF
-      1
-      STO 46
-      XEQ :MAKE:
-      RCL 26
-      1
-      X=Y?
-      IF
-        XEQ :LEGAL1:
-      ELSE
-        XEQ :REPLY:
-      ENDIF
-      1
-      STO 46
-      XEQ :UNMK:
-      RCL 61
-      RCL 65
-      X>Y?
-      IF
-        STO 61
-        RCL 40
-        STO 62
-      ENDIF
-    ENDIF
-    RCL 64
-    RCL 63
-    X<Y?
-  WHILE
-  ENDDO
-  -1
-  STO+ 68
+  1
+  STO+ 63
+  1
   RCL 68
-  X≥0?
+  RCL 63
+  XEQ :MLK:
+  STO 40
+  1
+  STO 46
+  XEQ :MAKE:
+  RCL 26
+  1
+  X=Y?
+  IF
+    XEQ :LEGAL1:
+  ELSE
+    XEQ :MATEQ:
+    X=0?
+    XEQ :REPLY:
+  ENDIF
+  1
+  STO 46
+  XEQ :UNMK:
+  RCL 61
+  RCL 65
+  X>Y?
+  IF
+    STO 61
+    RCL 40
+    STO 62
+  ENDIF
+  RCL 64
+  RCL 63
+  X<Y?
 WHILE
 ENDDO
+RTN
+REM ---- LBL :MATEQ: level 2, after the root move: it checks the other king, does not leave its own attacked and
+REM the other side has no legal move (LBL :ANYMV:): a mate, R65 = 29000, X = 1; else X = 0 ----
+LBL :MATEQ:
+RCL 60
+XEQ :KATT:
+X=0?
+RTN
+RCL 60
+CHS
+XEQ :KATT:
+X≠0?
+IF
+  0
+  RTN
+ENDIF
+XEQ :ANYMV:
+X≠0?
+IF
+  0
+  RTN
+ENDIF
+29000
+STO 65
+1
 RTN
 REM ---- LBL :LEGAL1: level 1: R65 = R60 x SC, or -30000 when the move leaves the king of R60 attacked ----
 LBL :LEGAL1:
@@ -1058,9 +1168,10 @@ RTN
 -30000
 STO 65
 RTN
-REM ---- LBL :REPLY: level 2: the replies of the other side (no castling) in the row 2 of ML; R65 the least
-REM R60 x SC over them (the king taken: about -20000), stopped when it is not above the best R61. A reply is not
-REM played: LBL :DELTA: works out what it would do to SC ----
+REM ---- LBL :REPLY: level 2: the replies of the other side (no castling) in the row 2 of ML, in its order; R65
+REM the least R60 x SC over them (the king taken: about -20000), stopped when it is not above the best R61. A
+REM capture is played (LBL :RECAP:: answered by its recapture when R60 attacks the square), the others are not
+REM (LBL :DELTA: works out what they would do to SC) ----
 LBL :REPLY:
 RCL 60
 CHS
@@ -1071,6 +1182,8 @@ STO 38
 STO 39
 XEQ :GEN:
 RCL 37
+STO 69
+RCL+ 72
 STO 67
 RCL 60
 RCL× 23
@@ -1082,64 +1195,73 @@ RTN
 STO 65
 0
 STO 70
-1
-STO 69
+0
+STO 66
 DO
-  0
-  STO 66
-  DO
-    1
-    STO+ 66
-    INDEX "ML"
-    2
-    RCL 66
-    STOIJ
-    RCLEL
-    STO 40
-    INDEX "BD"
-    1000
-    MOD
-    1
-    X<>Y
-    STOIJ
-    RCLEL
-    ABS
-    SIGN
-    RCL 69
-    X=Y?
-    IF
-      XEQ :DELTA:
-      RCL 65
-      RCL 71
-      X<Y?
-      STO 65
-      RCL 61
-      RCL 65
-      X≤Y?
-      IF
-        1
-        STO 70
-      ENDIF
-    ENDIF
-    RCL 67
-    RCL- 66
-    1
-    RCL- 70
-    ×
-    X>0?
-  WHILE
-  ENDDO
-  -1
-  STO+ 69
-  RCL 69
   1
-  +
+  STO+ 66
+  2
+  RCL 69
+  RCL 66
+  XEQ :MLK:
+  STO 40
+  RCL 69
+  RCL 66
+  X≤Y?
+  IF
+    XEQ :RECAP:
+  ELSE
+    XEQ :DELTA:
+  ENDIF
+  RCL 65
+  RCL 71
+  X<Y?
+  STO 65
+  RCL 61
+  RCL 65
+  X≤Y?
+  IF
+    1
+    STO 70
+  ENDIF
+  RCL 67
+  RCL- 66
   1
   RCL- 70
   ×
   X>0?
 WHILE
 ENDDO
+RTN
+REM ---- LBL :RECAP: the capture reply R40 played at the ply 2: R71 = R60 x SC, + the value of the piece that took
+REM when R60 attacks its square (it is taken back), then the reply taken back ----
+LBL :RECAP:
+2
+STO 46
+XEQ :MAKE:
+RCL 60
+RCL× 23
+STO 71
+RCL 42
+STO 50
+RCL 60
+STO 51
+XEQ :ATT:
+RCL 55
+X≠0?
+IF
+  1
+  RCL 42
+  STOIJ
+  RCL 42
+  RCLEL
+  XEQ :VAL:
+  ABS
+  STO+ 71
+ENDIF
+2
+STO 46
+XEQ :UNMK:
 RTN
 REM ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
 REM makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken
@@ -1221,7 +1343,7 @@ STO× 71
 RTN
 REM ======== the game ========
 REM ---- LBL :ANYMV: does the side to move have a legal move? X = 1 / 0 (the moves in the row 3 of ML, each
-REM played at the ply 3 and taken back) ----
+REM played at the ply 3 and taken back until one does not leave the king attacked; R66 R67 R69 R71) ----
 LBL :ANYMV:
 RCL 20
 STO 32
@@ -1231,27 +1353,27 @@ STO 38
 STO 39
 XEQ :GEN:
 RCL 37
-STO 64
+STO 69
+RCL+ 72
+STO 67
 0
-STO 63
+STO 66
 0
-STO 65
+STO 71
 DO
-  RCL 64
-  RCL 63
+  RCL 67
+  RCL 66
   X≥Y?
   IF
     0
   ELSE
     1
-    STO+ 63
-    INDEX "ML"
+    STO+ 66
     3
-    RCL 63
-    STOIJ
-    RCLEL
+    RCL 69
+    RCL 66
+    XEQ :MLK:
     STO 40
-    INDEX "BD"
     3
     STO 46
     XEQ :MAKE:
@@ -1259,18 +1381,18 @@ DO
     X=0?
     IF
       1
-      STO 65
+      STO 71
     ENDIF
     3
     STO 46
     XEQ :UNMK:
     1
-    RCL- 65
+    RCL- 71
   ENDIF
   X≠0?
 WHILE
 ENDDO
-RCL 65
+RCL 71
 RTN
 REM ---- LBL :INCHK: is the side to move in check? X = 1 / 0. LBL :INCHK2: after a move (the side that moved):
 REM is its king attacked? ----
@@ -1297,11 +1419,15 @@ STO 50
 XEQ :ATT:
 RCL 55
 RTN
-REM ---- LBL :HUMAN: your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98) ----
+REM ---- LBL :HUMAN: your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The wait:
+REM PAUSE 10, KEY? 98 (true: no key yet), then the clock (LBL :CLOCK: leaves 1: wait on; a key leaves the 0) ----
 LBL :HUMAN:
 DO
-  PAUSE 50
+  0
+  PAUSE 10
   KEY? 98
+  XEQ :CLOCK:
+  X≠0?
 WHILE
 ENDDO
 RCL 98
@@ -1325,8 +1451,11 @@ RCL 98
 72
 X=Y?
 IF
+  RCL 26
+  2
+  +
   3
-  RCL- 26
+  MOD
   STO 26
   XEQ :PANEL:
   RTN
@@ -1433,12 +1562,16 @@ STO 38
 1
 STO 39
 XEQ :GEN:
+RCL 37
+STO 64
+RCL+ 72
+STO 66
 0
 STO 63
 0
 STO 65
 DO
-  RCL 37
+  RCL 66
   RCL 63
   X≥Y?
   IF
@@ -1446,12 +1579,10 @@ DO
   ELSE
     1
     STO+ 63
-    INDEX "ML"
     3
+    RCL 64
     RCL 63
-    STOIJ
-    RCLEL
-    INDEX "BD"
+    XEQ :MLK:
     RCL 62
     X=Y?
     IF
@@ -1472,6 +1603,7 @@ IF
   XEQ :STATUS:
   RTN
 ENDIF
+XEQ :CLOCK:
 RCL 62
 STO 40
 3
@@ -1500,9 +1632,19 @@ IF
   XEQ :HUMAN:
   RTN
 ENDIF
-"THINKING ..."
-XEQ :STATUS:
-XEQ :THINK:
+RCL 26
+X=0?
+IF
+  XEQ :CRAZY:
+ELSE
+  "THINKING ..."
+  XEQ :STATUS:
+  XEQ :BOOK:
+  RCL 62
+  X=0?
+  XEQ :THINK:
+ENDIF
+XEQ :CLOCK:
 RCL 62
 X=0?
 IF
@@ -1523,6 +1665,72 @@ STO 46
 XEQ :MAKE:
 XEQ :PLAYED:
 RTN
+REM ---- LBL :CRAZY: level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
+REM place in its moves (RAN#) on, the first that does not leave the king attacked ----
+LBL :CRAZY:
+0
+STO 62
+0
+STO 61
+RCL 20
+STO 32
+3
+STO 38
+1
+STO 39
+XEQ :GEN:
+RCL 37
+STO 69
+RCL+ 72
+STO 67
+X=0?
+RTN
+RAN#
+RCL× 67
+IP
+STO 66
+0
+STO 63
+DO
+  RCL 66
+  RCL+ 63
+  RCL 67
+  MOD
+  1
+  +
+  STO 64
+  3
+  RCL 69
+  RCL 64
+  XEQ :MLK:
+  STO 40
+  3
+  STO 46
+  XEQ :MAKE:
+  XEQ :INCHK2:
+  STO 65
+  3
+  STO 46
+  XEQ :UNMK:
+  RCL 65
+  X=0?
+  IF
+    RCL 40
+    STO 62
+  ENDIF
+  1
+  STO+ 63
+  RCL 67
+  RCL- 63
+  1
+  RCL 62
+  SIGN
+  -
+  ×
+  X>0?
+WHILE
+ENDDO
+RTN
 REM ---- LBL :NOMOVE: the side to move has no legal move: CHECKMATE or STALEMATE; the game is over ----
 LBL :NOMOVE:
 1
@@ -1536,9 +1744,11 @@ ELSE
 ENDIF
 XEQ :STATUS:
 RTN
-REM ---- LBL :PLAYED: the move of UN row 3 was played: its squares drawn again, the move in the list, then the
-REM state of the side to move (CHECKMATE, STALEMATE, CHECK, or whose move it is) ----
+REM ---- LBL :PLAYED: the move of UN row 3 was played: into the game record (LBL :GHADD:: the move, the position's
+REM key, a draw by repetition or material), its squares drawn again, the move in the list, then the state: DRAW,
+REM CHECKMATE, STALEMATE, CHECK, or whose move it is ----
 LBL :PLAYED:
+XEQ :GHADD:
 XEQ :CURS:
 RCL 41
 XEQ :DRAWSQ:
@@ -1567,6 +1777,22 @@ IF
 ENDIF
 XEQ :CURS:
 XEQ :HIST:
+RCL 65
+X≠0?
+IF
+  1
+  STO 97
+  RCL 65
+  1
+  X=Y?
+  IF
+    "DRAW: REPETITION"
+  ELSE
+    "DRAW: MATERIAL"
+  ENDIF
+  XEQ :STATUS:
+  RTN
+ENDIF
 XEQ :ANYMV:
 X=0?
 IF
@@ -1581,6 +1807,368 @@ IF
   RTN
 ENDIF
 XEQ :TOMOVE:
+RTN
+REM ---- LBL :BOOK: R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; one of
+REM the lines that fit, at random: RAN#), or 0; R61 = 0. LBL :BKM: X = the next move of the book row R63 (0: it does
+REM not fit) ----
+LBL :BOOK:
+0
+STO 62
+0
+STO 61
+RCL 96
+2
+×
+1
+-
+1
+RCL+ 20
+2
+÷
+-
+STO 67
+10
+X≤Y?
+RTN
+0
+STO 65
+1
+STO 63
+DO
+  XEQ :BKM:
+  X≠0?
+  IF
+    1
+    STO+ 65
+  ENDIF
+  1
+  STO+ 63
+  REM ==== BOOKN
+  RCL 63
+  X≤Y?
+WHILE
+ENDDO
+RCL 65
+X=0?
+RTN
+RAN#
+RCL× 65
+IP
+1
++
+STO 66
+1
+STO 63
+DO
+  XEQ :BKM:
+  X≠0?
+  IF
+    -1
+    STO+ 66
+    RCL 66
+    X=0?
+    IF
+      XEQ :BKM:
+      STO 62
+    ENDIF
+  ENDIF
+  1
+  STO+ 63
+  RCL 62
+  X=0?
+WHILE
+ENDDO
+RTN
+LBL :BKM:
+1
+STO 64
+DO
+  RCL 67
+  RCL 64
+  X≤Y?
+  IF
+    INDEX "OB"
+    RCL 63
+    RCL 64
+    STOIJ
+    RCLEL
+    STO 49
+    INDEX "GH"
+    1
+    RCL 64
+    STOIJ
+    RCLEL
+    INDEX "BD"
+    RCL 49
+    X=Y?
+    IF
+      1
+      STO+ 64
+      1
+    ELSE
+      0
+      STO 64
+      0
+    ENDIF
+  ELSE
+    0
+  ENDIF
+  X≠0?
+WHILE
+ENDDO
+RCL 64
+X=0?
+RTN
+INDEX "OB"
+RCL 63
+RCL 67
+1
++
+STOIJ
+RCLEL
+INDEX "BD"
+RTN
+REM ---- LBL :GHADD: the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
+REM the move at (1, p), the key of the position (LBL :HASH:) at (2, p + 1); R65 = 1 when the same key is there twice
+REM before with the same side to move (the third time: a draw by repetition), 2 when no side can mate (kings only,
+REM or one bishop or knight), else 0 (300 plies at most: no record past them) ----
+LBL :GHADD:
+0
+STO 65
+RCL 96
+2
+×
+1
+RCL+ 45
+2
+÷
+-
+STO 63
+XEQ :HASH:
+STO 64
+RCL 47
+1
+X≥Y?
+IF
+  RCL 46
+  X=0?
+  IF
+    2
+    STO 65
+  ENDIF
+ENDIF
+299
+RCL 63
+X>Y?
+RTN
+INDEX "GH"
+1
+RCL 63
+STOIJ
+RCL 40
+STOEL
+2
+RCL 63
+1
++
+STOIJ
+RCL 64
+STOEL
+0
+STO 66
+RCL 63
+1
+-
+STO 67
+DO
+  RCL 67
+  X≤0?
+  IF
+    0
+  ELSE
+    2
+    RCL 67
+    STOIJ
+    RCLEL
+    RCL 64
+    X=Y?
+    IF
+      1
+      STO+ 66
+    ENDIF
+    -2
+    STO+ 67
+    1
+  ENDIF
+  X≠0?
+WHILE
+ENDDO
+INDEX "BD"
+RCL 66
+2
+X≤Y?
+IF
+  1
+  STO 65
+ENDIF
+RTN
+REM ---- LBL :HASH: X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): for each
+REM piece p on s the 32-bit word ((p + 7) 97 + s) 2654435761 MOD 2^32, XORed together, and 3141592653 when black is to
+REM move; given back as a real (→REAL) to be stored in the real matrix GH. R47 the pieces that are not kings, R46 the
+REM pawns, rooks and queens among them ----
+LBL :HASH:
+WSIZE 32
+0
+SINT
+STO 49
+0
+STO 47
+0
+STO 46
+22
+STO 30
+DO
+  1
+  RCL 30
+  STOIJ
+  RCLEL
+  STO 31
+  ABS
+  3.5
+  -
+  ABS
+  2.5
+  X≥Y?
+  IF
+    RCL 31
+    7
+    +
+    97
+    ×
+    RCL+ 30
+    2654435761
+    ×
+    4294967296
+    MOD
+    SINT
+    RCL 49
+    XOR
+    STO 49
+    RCL 31
+    ABS
+    6
+    X≠Y?
+    IF
+      1
+      STO+ 47
+      RCL 31
+      ABS
+      2.5
+      -
+      ABS
+      0.5
+      X<Y?
+      IF
+        1
+        STO+ 46
+      ENDIF
+    ENDIF
+  ENDIF
+  1
+  STO+ 30
+  99
+  RCL 30
+  X≤Y?
+WHILE
+ENDDO
+RCL 20
+X<0?
+IF
+  3141592653
+  SINT
+  RCL 49
+  XOR
+  STO 49
+ENDIF
+RCL 49
+→REAL
+WSIZE 24
+RTN
+REM ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
+REM black; not when the game is over), the clock drawn at the top left: X = 1 ----
+LBL :CLOCK:
+TICKS
+RCL "TK"
+X<>Y
+STO "TK"
+X<>Y
+-
+RCL 97
+X≠0?
+IF
+  DROP
+  DROP
+  0
+ELSE
+  DROP
+ENDIF
+RCL 20
+X>0?
+IF
+  DROP
+  STO+ "TW"
+ELSE
+  DROP
+  STO+ "TB"
+ENDIF
+""
+STO 48
+"W "
+x→α 48
+RCL "TW"
+XEQ :MMSS:
+"  B "
+x→α 48
+RCL "TB"
+XEQ :MMSS:
+1
+GRMOD
+DROP
+21
+GRFNT
+DROP
+RCL 48
+218
+12
+ATEXT Z
+0
+GRMOD
+1
+RTN
+REM ---- LBL :MMSS: X = tenths of a second: m:ss appended to R48 ----
+LBL :MMSS:
+STO 49
+600
+÷
+IP
+αIP 48
+":"
+x→α 48
+RCL 49
+10
+÷
+IP
+60
+MOD
+STO 49
+10
+X>Y?
+IF
+  "0"
+  x→α 48
+ENDIF
+RCL 49
+αIP 48
 RTN
 REM ======== the screen ========
 REM ---- LBL :TOMOVE: whose move it is in the status line ----
@@ -1647,7 +2235,14 @@ x→α 48
 "   LEVEL "
 x→α 48
 RCL 26
-αIP 48
+X=0?
+IF
+  "CRAZY"
+  x→α 48
+ELSE
+  RCL 26
+  αIP 48
+ENDIF
 RCL 48
 200
 212
@@ -1660,14 +2255,46 @@ ATEXT Z
 12
 212
 ATEXT Z
+XEQ :FACE:
 0
 GRMOD
 RTN
-REM ---- LBL :HIST: the move of UN row 3 (R41 -> R42) as text into the list R72-R79 (the oldest out), shown in
+REM ---- LBL :FACE: the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 columns
+REM of 0, GRMOD 1) at the levels 1 and 2 ----
+LBL :FACE:
+1
+GRMOD
+DROP
+330
+STO 30
+214
+STO 31
+RCL 26
+X=0?
+IF
+  REM ==== FACE
+ELSE
+  0
+  SINT
+  STO 99
+  DROP
+  20
+  STO 33
+  DO
+    RCL 31
+    RCL 30
+    AGRAPH 99
+    STO 30
+    DSE 33
+  WHILE
+  ENDDO
+ENDIF
+0
+GRMOD
+RTN
+REM ---- LBL :HIST: the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
 REM GRFNT 10 at x 212, rows 136 down (17 rows a line): "12. e2e4" for white, "12... e7e5" for black ----
 LBL :HIST:
-RCL 73
-STO 72
 RCL 74
 STO 73
 RCL 75
@@ -1705,7 +2332,7 @@ DROP
 10
 GRFNT
 DROP
-72
+73
 STO 48
 136
 STO 49
@@ -1934,6 +2561,11 @@ STO "UN"
 24
 NEWMAT
 STO "GL"
+2
+300
+NEWMAT
+STO "GH"
+REM ==== BOOK
 REM the offsets: the knight R80-R87, the diagonals R88-R91, the lines R92-R95
 -21
 STO 80
@@ -2096,6 +2728,21 @@ STO 97
 REM R72-R79: no moves yet (0, not a text)
 XEQ :PSTALL:
 XEQ :GLYPHS:
+REM the game record: the start's key at GH (2, 1); the clock (tenths of a second: TICKS)
+XEQ :HASH:
+INDEX "GH"
+2
+1
+STOIJ
+RCL Z
+STOEL
+INDEX "BD"
+TICKS
+STO "TK"
+0
+STO "TW"
+STO "TB"
+
 REM the screen: the 64 squares (R41: DRAWSQ uses R30-R36), the files a-h (row 10) and the ranks 1-8 (x 3), the panel
 CLLCD
 22

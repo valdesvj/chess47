@@ -57,6 +57,9 @@ def value(p, s):
     return c * (V[abs(p)] + pst(abs(p), s, c))
 
 
+ENGINE = ('mate', 'recap', 'mvv')                # v0.2's search (v0.1: none of them)
+
+
 class Pos:
     def __init__(self):
         self.bd = [OFF] * 121                     # bd[1 .. 120]
@@ -244,44 +247,62 @@ class Pos:
         return out
 
     # ---- the search ----
-    def search(self, depth):
-        S = self.sd
-        moves = self.gen(S)
-        best, bm, nodes = -30000, 0, 0
-        for cap in (True, False):
-            for m in moves:
-                if (self.bd[m % 1000] != 0) != cap:
-                    continue
-                self.make(m, 1)
-                if depth == 1:
-                    v = S * self.sc if not self.attacked(self.king(S), -S) else -30000
-                    nodes += 1
-                else:
-                    replies = self.gen(-S, castle=False)
-                    if not replies:
-                        v = S * self.sc
-                    else:
-                        v, cut = 30000, False
-                        for cap2 in (True, False):
-                            for r in replies:
-                                if (self.bd[r % 1000] != 0) != cap2:
-                                    continue
-                                self.make(r, 2)
-                                w = S * self.sc
-                                nodes += 1
-                                self.unmake(2)
-                                if w < v:
-                                    v = w
-                                if v <= best:
-                                    cut = True
-                                    break
-                            if cut:
-                                break
-                self.unmake(1)
-                if v > best:
-                    best, bm = v, m
-        return bm, best, nodes
+    def has_legal(self, c):
+        """Has colour c (to move) a legal move? (the first one found ends the search; castling included)."""
+        for m in self.gen(c):
+            self.make(m, 4)
+            ok = not self.attacked(self.king(c), -c)
+            self.unmake(4)
+            if ok:
+                return True
+        return False
 
+    def order(self, moves):
+        """The captures by the value of the piece taken (queen first; the order generated among equals), then the
+        other moves as generated (opts 'mvv'); else the captures, then the others, each as generated."""
+        caps = [m for m in moves if self.bd[m % 1000] != 0]
+        if 'mvv' in self.opts:
+            caps = [m for k in (6, 5, 4, 3, 2, 1) for m in caps if abs(self.bd[m % 1000]) == k]
+        return caps + [m for m in moves if self.bd[m % 1000] == 0]
+
+    def search(self, depth, opts=None):
+        """opts: 'mate' (level 2: a checking move after which the other side has no legal move scores 29000),
+        'recap' (level 2: a capture reply on a square S attacks is answered by its recapture: + the value of the
+        piece that took), 'mvv' (the captures by the value taken)."""
+        self.opts = set(opts if opts is not None else ENGINE)
+        S = self.sd
+        moves = self.order(self.gen(S))
+        best, bm, nodes = -30000, 0, 0
+        for m in moves:
+            self.make(m, 1)
+            if depth == 1:
+                v = S * self.sc if not self.attacked(self.king(S), -S) else -30000
+                nodes += 1
+            elif 'mate' in self.opts and not self.attacked(self.king(S), -S) and self.attacked(self.king(-S), S) \
+                    and not self.has_legal(-S):
+                v = 29000
+            else:
+                replies = self.gen(-S, castle=False)
+                if not replies:
+                    v = S * self.sc
+                else:
+                    v = 30000
+                    for r in self.order(replies):
+                        cap = self.bd[r % 1000] != 0
+                        self.make(r, 2)
+                        w = S * self.sc
+                        nodes += 1
+                        if cap and 'recap' in self.opts and self.attacked(r % 1000, S):
+                            w += abs(value(self.bd[r % 1000], r % 1000))
+                        self.unmake(2)
+                        if w < v:
+                            v = w
+                        if v <= best:
+                            break
+            self.unmake(1)
+            if v > best:
+                best, bm = v, m
+        return bm, best, nodes
 
 def perft(p, depth):
     if depth == 0:

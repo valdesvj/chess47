@@ -23,13 +23,13 @@ SOURCE = 'https://github.com/valdesvj/chess47'
 COL = 32                              # the column of the ';' comments (wider steps: two spaces after them)
 
 HEAD = {
-    'CHESS47': """@ Index:   Chess against the C47: legal moves, check, mate, a 2-ply search
+    'CHESS47': """@ Index:   Chess against the C47: legal moves, check, mate, draws, a 2-ply search, a book, a clock
 @ Author:  %(author)s
 @ Version: %(version)s
 @ Source:  %(source)s
 @ Tested:  C47 simulator only (python/c47sim.py): tests/test_chess47.py, the moves, the scores and the choices of
 @ Tested:  the search against python/chess47ref.py (the same algorithm), whose move generator gives the published
-@ Tested:  perft counts; not yet run on a calculator
+@ Tested:  perft counts; 10 matches against a python-chess player (tools/match47.py); not yet run on a calculator
 @ Input:   none: XEQ 'CHESS47', then the keys
 @ Output:  the board; at 0 your stack and LASTx as before
 @

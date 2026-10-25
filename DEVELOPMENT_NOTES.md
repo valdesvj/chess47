@@ -33,7 +33,41 @@
   48 / 2 039 / 97 862, position 3 14 / 191 / 2 812 / 43 238, positions 4 and 5 with the under-promotions left out
   (as python-chess's counts without them).
 
-## Plans (v0.2): strength
+## Oct 25, 2026 - v0.2.0: stronger, the book, the clock, draws, CRAZY (branch claude/chess47-v02)
+
+- The search (chess47ref.ENGINE = mate, recap, mvv; in both twins):
+  - MVV: :ADD: puts a capture (code = value taken x 100000 + move) among the captures at the front of its ML row by
+    insertion (queen first, the generated order among equals), a quiet move at the back (column 121 - R72): the
+    loops read the k-th with :MLK: and no longer need a pass for the captures and one for the others.
+  - mate: level 2, a root move that checks (:KATT:), is legal and leaves no legal move (:ANYMV:): 29000.
+  - recap: a capture reply is played (:RECAP:) and, when the root side attacks the square, + the value of the piece
+    that took it; the quiet replies stay unplayed (:DELTA:).
+  Python twins, 20 games from random openings: v0.2 18.5, v0.1 1.5. The back-rank mate and the scholar's mate now
+  found. Level 2 is slower: 35-55 s in the middle game (the recaptures' make / unmake and attack tests).
+- The book: python/book.py, 14 lines of 10 plies, into the matrix OB (marker REM ==== BOOK); :BOOK: the lines that
+  fit the game record (GH row 1), one at random (RAN#).
+- The game record GH (2 x 300): the moves (row 1, ply p) and the keys (row 2, p + 1; the start at 1). :HASH:: WSIZE 32,
+  the key of a piece ((p + 7) 97 + s) 2654435761 MOD 2^32 (a real, then SINT), XOR, black to move XOR 3141592653,
+  →REAL (new command) to store it in the real matrix; the threefold repetition: the key twice before, two plies apart
+  (castling and en passant rights not in the key: python-chess counts them, so it can differ in a rare case).
+  DRAW: MATERIAL: no pawn, rook or queen and at most one bishop or knight on the board.
+- The clock: TICKS, the named variables TK TW TB (tenths of a second); :CLOCK: in the wait (PAUSE 10 now, so it moves
+  every second) and before each move; W m:ss B m:ss at the top left. The C47's thinking is counted after its move.
+- CRAZY: level 0 (key 1: 2 -> 1 -> 0 -> 2), :CRAZY: a random legal move (from a random place in the list, the first
+  that does not leave the king attacked); the face of python/layout.py (marker REM ==== FACE) by the title.
+- tools/match47.py: matches in the simulator against a python-chess player (2 plies, material, random among equals),
+  keyed with the cursor as a person would; every C47 move checked legal, the board compared after every move, the end
+  of every game checked against the rules. docs/MATCHES.md.
+- New commands to try on the C47: XOR, →REAL (and AND OR NOT BS?, as Logic 47).
+
+## Plans (v0.3)
+
+- Speed: a list of the pieces' squares instead of the scan of 78 squares; the attack tests with bitboards (AND).
+- A capture search at the leaves, then 3 plies at level 3 when the speed allows.
+- Chess960 (Fischer Random): a start position from its number 0-959, castling from any squares (a branch of its own).
+
+## Plans (v0.2): strength (written for v0.1)
+
 
 The limit on a calculator is speed: work the firmware does in one command beats hundreds of RPN steps.
 

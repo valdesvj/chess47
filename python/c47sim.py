@@ -701,6 +701,9 @@ class Calc:
                 bit = int(self.regkey(arg)) if arg.startswith('IND ') else int(arg)   # IND r: the bit number in r (not n: run's counter)
                 on = bool(int(self.s[0]) >> bit & 1)
                 pc = self.test(on == (op == 'BS?'), pc); continue
+            # ---- chess47: →REAL (fnToReal): a short integer as a real (its value); a real stays ----
+            if op == '→REAL':
+                self.s[0] = D(int(self.s[0])) if not isinstance(self.s[0], (str, tuple)) else self.s[0]; continue
             raise ValueError(unknown(ln))
 
 

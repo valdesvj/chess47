@@ -144,6 +144,46 @@ PIECES = {
 .................."""}
 
 
+# the CRAZY level's face (20 x 20): spiral eyes, the tongue out; drawn at FACE_X, FACE_Y (its bottom row) by the
+# marker REM ==== FACE (one AGRAPH word a column, bit 0 the bottom row)
+FACE_X, FACE_Y = 330, 214
+FACE = """
+......########......
+....##........##....
+...#............#...
+..#..............#..
+.#...###....###...#.
+.#..#...#..#...#..#.
+#...#.#.#..#.#.#...#
+#...#.###..#.###...#
+#...#......#.......#
+#....####...####...#
+#..................#
+#..................#
+#...############...#
+#....#........#....#
+.#....#..##..#....#.
+.#.....###..##....#.
+..#.......##.....#..
+...#............#...
+....##........##....
+......########......"""
+
+
+def face_words():
+    rows = FACE.strip('\n').split('\n')
+    assert len(rows) == 20 and all(len(r) == 20 for r in rows)
+    return [sum(1 << (19 - y) for y in range(20) if rows[y][x] == '#') for x in range(20)]
+
+
+def face_steps():
+    """The steps of the marker REM ==== FACE: each column word into R99 (SINT), AGRAPH at x R30, row R31."""
+    out = []
+    for w in face_words():
+        out += [str(w), 'SINT', 'STO 99', 'DROP', 'RCL 31', 'RCL 30', 'AGRAPH 99', 'STO 30']
+    return out
+
+
 def bitmap(t):
     rows = [r for r in PIECES[t].strip('\n').split('\n')]
     assert len(rows) == GH and all(len(r) == GW for r in rows), t
