@@ -590,8 +590,8 @@ XEQ 12                          ; -> :ATT:
 RCL 55
 RTN
 LBL 12                          ; :ATT:  ---- LBL :ATT: is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a knight
-1                               ; (2 c) at a knight's step; along each direction: the king (6 c) next to it, the first piece: a queen (5 c), a
-STO 55                          ; bishop (3 c) on a diagonal (R88-R91) or a rook (4 c) on a line (R92-R95) ----
+1                               ; (2 c) at a knight's step; along each direction to the first piece: a queen (5 c), a bishop (3 c) on a diagonal
+STO 55                          ; (R88-R91) or a rook (4 c) on a line (R92-R95), or the king (6 c) when it is the first square ----
 1
 RCL 50
 RCL 51
@@ -637,37 +637,18 @@ ENDDO 07
 DO 08
   RCL IND 54
   STO 53
-  RCL+ 50
+  RCL 50
   STO 52
-  1
-  X<>Y
-  STOIJ
-  RCLEL
-  RCL 51
-  6
-  ×
-  X=Y?
-  RTN
   DO 09
+    RCL 53
+    STO+ 52
     1
     RCL 52
     STOIJ
     RCLEL
     X=0?
-    IF 18
-      RCL 53
-      STO+ 52
-      1
-    ELSE 18
-      0
-    ENDIF 18
-    X≠0?
   WHILE 09
   ENDDO 09
-  1
-  RCL 52
-  STOIJ
-  RCLEL
   RCL× 51
   STO 56
   5
@@ -684,6 +665,15 @@ DO 08
   RCL 56
   X=Y?
   RTN
+  6
+  X=Y?
+  IF 18
+    RCL 52
+    RCL- 50
+    RCL 53
+    X=Y?
+    RTN
+  ENDIF 18
   1
   STO+ 54
   96
@@ -1319,33 +1309,34 @@ IF 43
   STO 70
 ENDIF 43
 RTN
-LBL 26                          ; :RECAP:  ---- LBL :RECAP: the capture reply R40 played at the ply 2: R71 = R60 x SC, + the value of the piece that took
-2                               ; when R60 attacks its square (it is taken back), then the reply taken back ----
+LBL 26                          ; :RECAP:  ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the
+XEQ 27                          ; -> :DELTA:  piece that took (R43, a queen if it promoted) when R60 attacks the target; the attack test with the square it left
+1                               ; emptied for the time of the test (R46 its piece), as after the reply ----
+RCL 41
+STOIJ
+RCLEL
 STO 46
-XEQ 14                          ; -> :MAKE:
-RCL 60
-RCL× 23
-STO 71
+0
+STOEL
 RCL 42
 STO 50
 RCL 60
 STO 51
 XEQ 12                          ; -> :ATT:
+1
+RCL 41
+STOIJ
+RCL 46
+STOEL
 RCL 55
 X≠0?
 IF 44
-  1
   RCL 42
-  STOIJ
-  RCL 42
-  RCLEL
+  RCL 43
   XEQ 13                        ; -> :VAL:
   ABS
   STO+ 71
 ENDIF 44
-2
-STO 46
-XEQ 17                          ; -> :UNMK:
 RTN
 LBL 27                          ; :DELTA:  ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
 RCL 40                          ; makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken

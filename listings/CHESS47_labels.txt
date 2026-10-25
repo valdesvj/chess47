@@ -26,7 +26,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :REPLY:    23  level 2: the replies of the other side (no castling), each valued as it is generated (mode
 :QEVAL:    24  the quiet reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :DELTA:, R65 the least, th
 :CEVAL:    25  the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, 
-:RECAP:    26  the capture reply R40 played at the ply 2: R71 = R60 x SC, + the value of the piece that t
+:RECAP:    26  the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the val
 :DELTA:    27  the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL 
 :ANYMV:    28  ======== the game ========
 :INCHK:    29  is the side to move in check? X = 1 / 0. LBL :INCHK2: after a move (the side that moved):

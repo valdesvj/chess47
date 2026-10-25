@@ -609,8 +609,8 @@ XEQ :ATT:
 RCL 55
 RTN
 REM ---- LBL :ATT: is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a knight
-REM (2 c) at a knight's step; along each direction: the king (6 c) next to it, the first piece: a queen (5 c), a
-REM bishop (3 c) on a diagonal (R88-R91) or a rook (4 c) on a line (R92-R95) ----
+REM (2 c) at a knight's step; along each direction to the first piece: a queen (5 c), a bishop (3 c) on a diagonal
+REM (R88-R91) or a rook (4 c) on a line (R92-R95), or the king (6 c) when it is the first square ----
 LBL :ATT:
 1
 STO 55
@@ -659,37 +659,18 @@ ENDDO
 DO
   RCL IND 54
   STO 53
-  RCL+ 50
+  RCL 50
   STO 52
-  1
-  X<>Y
-  STOIJ
-  RCLEL
-  RCL 51
-  6
-  ×
-  X=Y?
-  RTN
   DO
+    RCL 53
+    STO+ 52
     1
     RCL 52
     STOIJ
     RCLEL
     X=0?
-    IF
-      RCL 53
-      STO+ 52
-      1
-    ELSE
-      0
-    ENDIF
-    X≠0?
   WHILE
   ENDDO
-  1
-  RCL 52
-  STOIJ
-  RCLEL
   RCL× 51
   STO 56
   5
@@ -706,6 +687,15 @@ DO
   RCL 56
   X=Y?
   RTN
+  6
+  X=Y?
+  IF
+    RCL 52
+    RCL- 50
+    RCL 53
+    X=Y?
+    RTN
+  ENDIF
   1
   STO+ 54
   96
@@ -1371,35 +1361,37 @@ IF
   STO 70
 ENDIF
 RTN
-REM ---- LBL :RECAP: the capture reply R40 played at the ply 2: R71 = R60 x SC, + the value of the piece that took
-REM when R60 attacks its square (it is taken back), then the reply taken back ----
+REM ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the
+REM piece that took (R43, a queen if it promoted) when R60 attacks the target; the attack test with the square it left
+REM emptied for the time of the test (R46 its piece), as after the reply ----
 LBL :RECAP:
-2
+XEQ :DELTA:
+1
+RCL 41
+STOIJ
+RCLEL
 STO 46
-XEQ :MAKE:
-RCL 60
-RCL× 23
-STO 71
+0
+STOEL
 RCL 42
 STO 50
 RCL 60
 STO 51
 XEQ :ATT:
+1
+RCL 41
+STOIJ
+RCL 46
+STOEL
 RCL 55
 X≠0?
 IF
-  1
   RCL 42
-  STOIJ
-  RCL 42
-  RCLEL
+  RCL 43
   XEQ :VAL:
   ABS
   STO+ 71
 ENDIF
-2
-STO 46
-XEQ :UNMK:
 RTN
 REM ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
 REM makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken
