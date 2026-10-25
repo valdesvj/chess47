@@ -18,7 +18,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :NUPD:     15  the knight words of the move R41 -> R42 (piece R43 of the colour R45, R44 taken): a knight
 :NXOR:     16  X = a colour, Y = bits: XORed into its knight word (NW white, NB black; kept as reals: →RE
 :BIT:      17  X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZ
-:NINIT:    18  the knight words from the board (the start)
+:NINIT:    18  row 22 of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the 
 :ROOKS:    19  the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d)
 :CRSQ:     20  X = a square: a move from or to e1 a1 h1 e8 a8 h8 takes those castling rights away (AND)
 :UNMK:     21  takes back the move of the ply R46 (its row of UN, the castling word R56 + R46)

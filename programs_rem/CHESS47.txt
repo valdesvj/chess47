@@ -6,8 +6,8 @@ REM The engine (a port of the matrix "mini engine" idea of Micro-Max, H.G. Mulle
 REM of the row 1 of the matrix BD (column s = 10 row + col + 1: a1 22 ... h1 29 ... a8 92 ... h8 99, the border 8); a move
 REM is from x 1000 + to; the score SC (material + piece-square, white positive) is kept up to date by each move from
 REM the table PT (row piece + 11, column the square: the signed value of that piece there); the moves of a ply go
-REM in a row ML, the undo data in a row UN. Board, ML, PT and UN are the rows of ONE matrix BD (20 x 120: row 1 the
-REM board, 2-4 the move lists of the root, the replies, the moves played; 5-17 PT; 18-20 UN): one INDEX, no switching. The search: 2 plies (level 2) or 1, alpha-beta
+REM in a row ML, the undo data in a row UN. Board, ML, PT and UN are the rows of ONE matrix BD (22 x 120: row 1 the
+REM board, 2-4 the move lists of the root, the replies, the moves played; 5-17 PT; 18-20 UN; 21 the knight masks, 22 the square bits): one INDEX, no switching. The search: 2 plies (level 2) or 1, alpha-beta
 REM cuts, the captures first; python/chess47ref.py is the same algorithm in Python (the tests compare the two).
 REM The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white short, 2 white long, 4 black short,
 REM 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
@@ -923,10 +923,20 @@ ABS
 2
 X=Y?
 IF
+  22
   RCL 41
-  XEQ :BIT:
+  STOIJ
+  DROP
+  DROP
+  RCLEL
+  SINT
+  22
   RCL 42
-  XEQ :BIT:
+  STOIJ
+  DROP
+  DROP
+  RCLEL
+  SINT
   XOR
   RCL 45
   XEQ :NXOR:
@@ -936,8 +946,13 @@ ABS
 2
 X=Y?
 IF
+  22
   RCL 42
-  XEQ :BIT:
+  STOIJ
+  DROP
+  DROP
+  RCLEL
+  SINT
   RCL 45
   CHS
   XEQ :NXOR:
@@ -985,7 +1000,7 @@ X<>Y
 Y^X
 SINT
 RTN
-REM ---- LBL :NINIT: the knight words from the board (the start) ----
+REM ---- LBL :NINIT: row 22 of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the board ----
 LBL :NINIT:
 0
 STO "NW"
@@ -997,20 +1012,37 @@ DO
   RCL 41
   STOIJ
   RCLEL
-  ABS
-  2
-  X=Y?
+  8
+  X≠Y?
   IF
+    22
+    RCL 41
+    STOIJ
+    DROP
+    DROP
+    RCL 41
+    XEQ :BIT:
+    →REAL
+    STOEL
     1
     RCL 41
     STOIJ
     RCLEL
-    SIGN
-    STO 42
-    RCL 41
-    XEQ :BIT:
-    RCL 42
-    XEQ :NXOR:
+    ABS
+    2
+    X=Y?
+    IF
+      1
+      RCL 41
+      STOIJ
+      RCLEL
+      SIGN
+      STO 42
+      RCL 41
+      XEQ :BIT:
+      RCL 42
+      XEQ :NXOR:
+    ENDIF
   ENDIF
   1
   STO+ 41
@@ -2781,7 +2813,7 @@ DROP
 156
 212
 ATEXT Z
-21
+22
 120
 NEWMAT
 STO "BD"
