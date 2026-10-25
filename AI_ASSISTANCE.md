@@ -2,7 +2,7 @@
 
 ## How this project uses AI
 
-This project was **developed with the help of AI** — Grok — as a cooperation. AI assisted with brainstorming, program structure, RPN listing format and documentation, but I reviewed all output, will validate results against a reference implementation and the C47 simulator, and take full responsibility for the work and any mistakes.
+This project was **developed with the help of AI** as a cooperation: Grok for the first skeleton, Claude (by Anthropic) for the engine of v0.1.0. AI assisted with brainstorming, program structure, RPN listing format and documentation, but I reviewed all output, will validate results against a reference implementation and the C47 simulator, and take full responsibility for the work and any mistakes.
 
 ## Responsible use
 
@@ -13,8 +13,8 @@ This project was **developed with the help of AI** — Grok — as a cooperation
 
 ## Testing & Validation
 
-- Simulator tests (planned): the C47 program in the Python C47 simulator (from Almanac 47), every move and every evaluation checked
-- Cross-validated against an independent Python chess logic
+- Simulator tests: the C47 program in the Python C47 simulator (from Almanac 47) against `python/chess47ref.py`, the same engine in Python: every move generated, every search, a whole game (tests/test_chess47.py)
+- The reference's move generator checked against the published perft counts
 - To be tested on real C47 / R47 hardware before each release
 
 ## License
