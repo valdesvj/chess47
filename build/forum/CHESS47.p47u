@@ -3367,6 +3367,8 @@ ENDDO 32
 XEQ 43                          ; -> :PANEL:
 XEQ 41                          ; -> :TOMOVE:
 XEQ 47                          ; -> :CURS:
+XEQ 39                          ; -> :CLOCK:
+DROP
 INDEX "BD"
 RTN
 LBL 52                          ; :PSTALL:  ---- LBL :PSTALL: the matrix PT. For each square s (white's view): f the file 0-7, r the rank 0-7, cen
