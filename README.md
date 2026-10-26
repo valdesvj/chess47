@@ -17,19 +17,22 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
 | Size | 5 411 steps, about 16 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 200 numbers) and the variables NW NB |
-| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the matrices, the clock's variables TK TW TB and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
+| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 ## Playing
 
-`XEQ "CHESS47"`. Setting up takes about 10 s (the tables and the board). You have the white pieces.
+`XEQ "CHESS47"`. Setting up takes about 10 s (the tables and the board). You have the white pieces; a game left with
+**0** goes on where it was (the moves played again: a few seconds more).
 
 | Key | |
 |---|---|
 | **8 2 4 6** | the cursor up, down, left, right |
-| **5** | pick a piece of yours (its square is inverted), then **5** on the square to play it; 5 on the same square drops it |
-| **+** | the C47 plays the side to move (you take the other side): press it at the start to play black, or to watch |
+| **5** | pick a piece of yours (shown white on black, on light and dark squares), then **5** on the square to play it; 5 on the same square drops it |
+| **+** | swap sides: the C47 plays the side to move and you take the other; at the start: you play black (the board turns, black at the bottom) |
+| **9** | C47 vs C47: it plays both sides until checkmate or a draw; any key stops it and you take the side to move (0 ends) |
+| **7** | a new game (the level and your side kept) |
 | **1** | the level: 2 (2 plies, about 10-20 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
-| **0** | the end |
+| **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
 CHECK, CHECKMATE, STALEMATE, DRAW: REPETITION (the same position the third time, the same side to move) and DRAW: MATERIAL
@@ -109,7 +112,8 @@ against `python/chess47ref.py`, the same engine in Python:
   board and score; 20 CRAZY moves all legal; the clock runs;
 - 10 matches against an independent python-chess player (`tools/match47.py`): every move legal, the board right
   after every move, every game ended as the rules say;
-- moves keyed with 5 and the arrows work, and illegal moves are refused;
+- moves keyed with 5 and the arrows work, and illegal moves are refused; the cursor and the piece picked show on a
+  dark square; + turns the board; 9 plays on until a key; a game left with 0 comes back the same; 7 starts again;
 - the start screen matches `python/layout.py`'s picture pixel for pixel.
 
 **The integer mode.** CHESS47's words are bit patterns: the repetition keys up to 2^32 (WSIZE 32), the glyph columns
@@ -120,7 +124,8 @@ reads it (at WSIZE 8, `1 SINT NOT →REAL` is 254 in UNSIGN, -2 in 2COMPL, -1 in
 the local register R.09. The simulator now refuses SINT out of range as the C47 does.
 
 `AND`, `OR`, `NOT`, `XOR`, `BS?` ran on the calculator in Logic 47, `UNSIGN` / `2COMPL` on Victor's C47; `→REAL`,
-`1COMPL` and `SIGNMT` are still to be confirmed there.
+`1COMPL` and `SIGNMT` are still to be confirmed there. `0 STO+ "CHN"` (it creates the variable the first time) ran in
+Almanac 47's MOON47.
 
 ## Files
 

@@ -431,6 +431,10 @@ class Calc:
                     self.frames.append(list(self.pix))
                     if len(self.frames) >= (getattr(self,'maxpauses',None) or 10**9): raise StopIteration
                 pc = self.test(True, pc); continue
+            if op == 'KEY?' and getattr(self,'keys',None) and self.keys[0] is None:
+                # chess47: None in the keys: no key at this KEY? (the program goes on: the C47 playing both sides)
+                self.keys.pop(0); self.frames=getattr(self,'frames',[]); self.frames.append(list(self.pix))
+                pc = self.test(True, pc); continue
             if op == 'KEY?':                                  # waiting for a key: this is a shown frame
                 self.frames=getattr(self,'frames',[]); self.frames.append(list(self.pix))
                 if not getattr(self,'keys',None) or len(self.frames) >= (getattr(self,'maxpauses',None) or 10**9): raise StopIteration

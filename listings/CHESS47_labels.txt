@@ -37,30 +37,35 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :INCHK2:   34  
 :KATT:     35  X = the colour of the attackers: is the other king attacked? X = 1 / 0
 :HUMAN:    36  your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The 
-:PICK:     37  5: picks a piece of the side to move, drops it (the same square), or plays it to the curso
-:TRYMV:    38  the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
-:C47MV:    39  the C47's move: THINKING, the search, the move played (or the end of the game)
-:CRAZY:    40  level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
-:NOMOVE:   41  the side to move has no legal move: CHECKMATE or STALEMATE; the game is over
-:PLAYED:   42  the move of UN row 3 was played: into the game record (LBL :GHADD:: the move, the position
-:BOOK:     43  R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; on
-:BKM:      44  
-:GHADD:    45  the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
-:HASH:     46  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
-:CLOCK:    47  the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
-:MMSS:     48  X = tenths of a second: m:ss appended to R48
-:TOMOVE:   49  ======== the screen ========
-:STATUS:   50  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared)
-:PANEL:    51  the title, your side, the level, the keys (x 212)
-:FACE:     52  the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 c
-:HIST:     53  the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
-:SQNAME:   54  X = a square: its name appended to R79 (the file a-h as the character 96 + file, the rank)
-:CURS:     55  the cursor R28 drawn or taken off: a frame of 2 pixels, XOR (GRMOD 3)
-:SELX:     56  the square picked (R29) inverted (XOR of the 24 columns), or back
-:SQXY:     57  X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
-:DRAWSQ:   58  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its
-:INIT:     59  ======== the start ========
-:PSTALL:   60  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
-:PSQ:      61  the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a valu
-:PSTO:     62  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
-:GLYPHS:   63  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the
+:NEWG:     37  7: a new game (the level and your side kept: CHN without plies; the start again)
+:PICK:     38  5: picks a piece of the side to move, drops it (the same square), or plays it to the curso
+:TRYMV:    39  the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
+:C47MV:    40  the C47's move: THINKING, the search, the move played (or the end of the game)
+:CRAZY:    41  level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
+:NOMOVE:   42  the side to move has no legal move: CHECKMATE or STALEMATE; the game is over
+:PLAYED:   43  the move of UN row 3 was played: into the game record (LBL :GHADD:: the move, the position
+:BOOK:     44  R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; on
+:BKM:      45  
+:GHADD:    46  the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
+:HASH:     47  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
+:CLOCK:    48  the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
+:MMSS:     49  X = tenths of a second: m:ss appended to R48
+:TOMOVE:   50  ======== the screen ========
+:STATUS:   51  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared)
+:PANEL:    52  the title, your side, the level, the keys (x 212)
+:FACE:     53  the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 c
+:HIST:     54  the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
+:HSHOW:    55  
+:HTEXT:    56  the text of the move into the list (the oldest out); the move number R96 + 1 after black's
+:SQNAME:   57  X = a square: its name appended to R79 (the file a-h as the character 96 + file, the rank)
+:BOARD:    58  the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen 
+:SETME:    59  X = your new side (1 white, -1 black, 0 the C47 plays both): when the board's side changes
+:STATE:    60  the status line of the position: CHECK or whose move it is
+:CURS:     61  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
+:SQXY:     62  X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
+:DRAWSQ:   63  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piec
+:INIT:     64  ======== the start ========
+:PSTALL:   65  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
+:PSQ:      66  the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a valu
+:PSTO:     67  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
+:GLYPHS:   68  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the

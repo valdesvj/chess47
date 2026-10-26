@@ -5,14 +5,16 @@ algorithm in Python) and python/layout.py (the reference picture).
   1. the build: programs/ and build/ are the output of tools/build_chess47.py for programs_rem/CHESS47.txt
   2. the reference: chess47ref's move generator gives the published perft counts (promotion to a queen only:
      the positions without under-promotion; with it, python-chess's counts without the under-promotions)
-  3. the start screen: the board pixel for pixel layout.mock (the cursor frame on e2 taken off), the panel's texts
+  3. the start screen: the board pixel for pixel layout.mock with the cursor's frame on e2, the panel's texts
   4. the move generator: for positions (FEN) the moves of :GEN: in the row 2 of BD (the captures from column 1 by the
      value taken, the others from column 120 down), in that order, as chess47ref.order(gen) (castling, en passant,
      promotion, checks, pins: the legal filter is the caller's)
   5. the search: for positions, levels 1 and 2, the move and the value of :THINK: as chess47ref.search
   6. a game: the C47 plays both sides (+ each time) for some moves: from the book (python/book.py) while it fits,
      then every move as chess47ref.search; the board, SC, the move list, the clock; your stack and LASTx back
-     after 0, R20-R99 cleared, the matrices and the clock's variables deleted; CRAZY: 20 random moves, all legal
+     after 0, R20-R99 cleared, BD GL OB deleted, the game kept (CHN GH TW TB); CRAZY: 20 random moves, all legal
+  6b. the cursor and the piece picked on a dark square, + (black: the board turned), 9 (the C47 against itself, a
+     key stops it), the game kept by 0 and played again at the next start, 7 a new game
   7. your moves: the cursor keys, a legal move played, an illegal one refused (ILLEGAL MOVE), a move into check
      refused (ILLEGAL: CHECK), castling short with the keys
 
@@ -76,6 +78,80 @@ FENS = ['rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
         'k7/8/1Q6/8/8/8/8/7K b - - 0 1']
 
 
+def frame(f, r):
+    """the cursor's frame on the screen square of file f, rank r (0-7 from the bottom left): pixels (x, row from the top)"""
+    fx, fy = L.BX + f * L.SQ, 239 - (L.BY + r * L.SQ)
+    out = set()
+    for j, w in enumerate([L.FULL, L.FULL] + [L.EDGE] * 20 + [L.FULL, L.FULL]):
+        for i in range(L.SQ):
+            if w >> i & 1:
+                out.add((fx + j, fy - i))
+    return out
+
+
+def square(f, r):
+    fx, fy = L.BX + f * L.SQ, 239 - (L.BY + r * L.SQ)
+    return {(fx + j, fy - i) for j in range(L.SQ) for i in range(L.SQ)}
+
+
+def onboard(pix):
+    return {(x, y) for x, y in pix if L.BX <= x < L.BX + 8 * L.SQ and L.BY <= 239 - y < L.BY + 8 * L.SQ}
+
+
+def flipped(bd):
+    """the board seen from black: the square (r, c) at (11 - r, 9 - c)"""
+    out = list(bd)
+    for s in range(21, 100):
+        r, c = (s - 1) // 10, (s - 1) % 10
+        if 2 <= r <= 9 and 1 <= c <= 8:
+            out[10 * (11 - r) + (9 - c) + 1] = bd[s]
+    return out
+
+
+def play_tests():
+    print('== the cursor and the piece picked on a dark square, black, the C47 against itself, the game kept')
+    mock0 = {(x, 239 - y) for x, y in L.mock(R.Pos().bd)}
+    shots, c = S.run([S.LEFT])
+    check(onboard(shots[-1]) == mock0 | frame(3, 1), '4: the cursor on d2 (a dark square): a solid frame; e2 as before')
+    shots, c = S.run([S.LEFT, S.PICK])
+    light = {(x - L.SQ, y) for x, y in mock0 & square(4, 1)}         # the white pawn on a light square (e2), moved to d2
+    check(onboard(shots[-1]) == (mock0 - square(3, 1)) | (square(3, 1) - light - frame(3, 1)),
+          '5 on d2: the pawn picked shown inverted on a light square (white on black) with the frame in white')
+    shots, c = S.run([S.HAND])
+    p = R.Pos()
+    p.make(int(c.mats['GH'][0][0]), 3)
+    mockb = {(x, 239 - y) for x, y in L.mock(flipped(p.bd))}
+    check(c.reg.get('27') == -1 and int(c.reg.get('28')) == 86 and onboard(shots[-1]) == mockb | frame(3, 1),
+          '+ at the start: you play black, the board turned (black at the bottom), the cursor on e7, after %s'
+          % R.mname(int(c.mats['GH'][0][0])))
+    shots, c = S.run([S.AUTO] + [None] * 5)
+    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    check(len(got) == 6 and c.reg.get('27') == 0, '9: the C47 plays both sides (6 plies, no key): %s'
+          % ' '.join(R.mname(m) for m in got))
+    shots, c = S.run([S.AUTO, None, None, S.PICK])
+    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    check(len(got) == 3 and c.reg.get('27') == -1 == c.reg.get('20'),
+          '9, then a key after 3 plies: you take the side to move (black)')
+    shots, c = S.run([S.PICK, S.UP, S.UP, S.PICK, S.END])
+    keep = {k: c.reg[k] for k in ('CHN', 'TW', 'TB')}
+    gh = c.mats['GH']
+    got = [int(v) for v in gh[0] if int(v)]
+    p = R.Pos()
+    for m in got:
+        p.make(m, 3)
+    check(c.ended and keep['CHN'] == 223 and len(got) == 2, '0 after e2-e4 and the reply: CHN 223 (2 plies, level 2, white)')
+    shots, c2 = S.run([], regs=keep, mats={'GH': gh})
+    hist = [x for x in (c2.reg.get(str(r)) for r in range(73, 80)) if isinstance(x, str)]
+    check(S.board(c2)[22:100] == p.bd[22:100] and c2.reg.get('23') == p.sc and c2.reg.get('20') == 1
+          and int(c2.reg['96']) == 2 and hist == ['1. e2e4', '1... ' + R.mname(got[1])]
+          and onboard(shots[-1]) == {(x, 239 - y) for x, y in L.mock(p.bd)} | frame(4, 1),
+          'the next start: the game played again (the board, SC, white to move, move 2, the list, the screen): '
+          '%d steps (%.1f s)' % (c2.at_steps[0], S.secs(c2.at_steps[0])))
+    shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
+    check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in c3.mats['GH'][0])
+          and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
+
+
 def main():
     n = int(sys.argv[1]) if sys.argv[1:] else 14
     print('== the build')
@@ -97,13 +173,7 @@ def main():
     pix = shots[-1]
     board = {(x, y) for x, y in pix if L.BX <= x < L.BX + 8 * L.SQ and L.BY <= 239 - y < L.BY + 8 * L.SQ}
     mock = {(x, 239 - y) for x, y in L.mock(R.Pos().bd)}
-    fx, fy = L.BX + 4 * L.SQ, 239 - (L.BY + L.SQ)                 # e2, its top-left pixel (rows from the top)
-    frame = set()
-    for j, w in enumerate([L.FULL, L.FULL] + [L.EDGE] * 20 + [L.FULL, L.FULL]):
-        for i in range(L.SQ):
-            if w >> i & 1:
-                frame.add((fx + j, fy - i))
-    check(board ^ frame == mock, 'the board pixel for pixel layout.mock (the cursor frame on e2 taken off)')
+    check(board == mock | frame(4, 1), 'the board pixel for pixel layout.mock with the cursor\'s frame on e2')
     check(len(c.at_steps) == 1, 'the start: %d steps (%.1f s on the C47 at %.2f ms a step)'
           % (c.at_steps[0], S.secs(c.at_steps[0]), S.STEP_MS))
 
@@ -166,9 +236,10 @@ def main():
           % (c.reg.get('TW'), c.reg.get('TB')))
     shots, c = S.run([S.HAND, S.HAND, S.END], stack=(11, 12, 13, 14))
     check(c.ended and c.s == [D(11), D(12), D(13), D(14)] and all(c.reg.get(str(r), D(0)) == 0 for r in range(20, 100))
-          and not any(k in c.mats for k in ('BD', 'GL', 'GH', 'OB'))
-          and not any(k in c.reg for k in ('TK', 'TW', 'TB', 'NW', 'NB')),
-          '0 after two moves: your stack back, R20-R99 cleared, the matrices and the clock deleted')
+          and not any(k in c.mats for k in ('BD', 'GL', 'OB')) and 'GH' in c.mats
+          and not any(k in c.reg for k in ('TK', 'NW', 'NB')) and c.reg.get('CHN') == 223,
+          '0 after two moves: your stack back, R20-R99 cleared, BD GL OB TK NW NB deleted; the game kept: CHN %s, GH TW TB'
+          % c.reg.get('CHN'))
     import c47sim
     for mode in ('2COMPL', 'UNSIGN'):                        # your integer mode back (CHESS47 runs in UNSIGN)
         cc = c47sim.load([S.PROG]); cc.s = [D(1)] * 4; cc.pix = []; cc.keys = [S.HAND, S.END]; cc.steps = 0
@@ -176,6 +247,8 @@ def main():
         cc.run('CHESS47', maxsteps=10 ** 9)
         check(cc.signmode == mode, 'started in %s, ended in %s (the sim refuses SINT out of range, as the C47)'
               % (mode, cc.signmode))
+
+    play_tests()
 
     print('== CRAZY (level 0): random legal moves')
     import chess

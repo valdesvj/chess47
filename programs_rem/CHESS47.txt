@@ -1,4 +1,4 @@
-REM CHESS47 v0.3.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.3.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -14,10 +14,11 @@ REM The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white s
 REM 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
 REM glyph words (dither AND NOT mask OR glyph), WSIZE 24 while drawing: a square is 24 rows, one AGRAPH word a column;
 REM the knights are two 64-bit words NW NB (WSIZE 64 the rest of the time): the attack test is one AND with a mask.
-REM Keys: 8 2 4 6 the cursor up, down, left, right; 5 picks a piece of yours, then 5 on the square to play it (5 on
-REM the same square drops it); + the C47 plays the side to move (you take the other side); 1 the level 2 -> 1 -> 0
+REM Keys: 8 2 4 6 the cursor up, down, left, right (as seen on the screen); 5 picks a piece of yours, then 5 on the
+REM square to play it (5 on the same square drops it); + swaps sides (the C47 plays the side to move; black: the board
+REM turns); 9 C47 vs C47 until the end (a key: you take the side to move); 7 a new game; 1 the level 2 -> 1 -> 0
 REM (CRAZY: random legal moves, a crazy face by the title);
-REM 0 ends. The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
+REM 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
 REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, your integer mode back (R.09), GRMOD 0 and GRFNT 20 set.
 REM The integer mode is UNSIGN while CHESS47 runs: its words are bit patterns (keys to 2^32, glyph columns to 2^24, the
@@ -61,6 +62,24 @@ DO
     XEQ :HUMAN:
   ELSE
     XEQ :C47MV:
+    RCL 27
+    X=0?
+    IF
+      RCL 97
+      X=0?
+      IF
+        0
+        PAUSE 1
+        KEY? 98
+        1
+        X=0?
+        IF
+          RCL 20
+          XEQ :SETME:
+          XEQ :STATE:
+        ENDIF
+      ENDIF
+    ENDIF
   ENDIF
   82
   RCL 98
@@ -68,17 +87,59 @@ DO
 WHILE
 ENDDO
 REM ---- the end: R20-R99 cleared (R-CLR 20.79: 20 + 79 stays below 100, a count 0 is refused; then R99), the matrices deleted, WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20, the screen; your stack back ----
+REM the game kept for the next start when it is not over: CHN = plies x 100 + level x 10 + your side + 2 with the
+REM record GH and the clocks TW TB (the plies 2 (R96 - 1) + (1 - R20) / 2, at most 299); else only the level and side
+RCL 26
+10
+×
+RCL+ 27
+2
++
+STO 69
+RCL 96
+1
+-
+2
+×
+1
+RCL- 20
+2
+÷
++
+STO 68
+RCL 97
+X≠0?
+IF
+  0
+  STO 68
+ENDIF
+299
+RCL 68
+X>Y?
+IF
+  0
+  STO 68
+ENDIF
+RCL 68
+100
+×
+RCL+ 69
+STO "CHN"
+RCL 68
+X=0?
+IF
+  DELITM "GH"
+  DELITM "TW"
+  DELITM "TB"
+ENDIF
 20.79
 R-CLR
 0
 STO 99
 DELITM "BD"
 DELITM "GL"
-DELITM "GH"
 DELITM "OB"
 DELITM "TK"
-DELITM "TW"
-DELITM "TB"
 DELITM "NW"
 DELITM "NB"
 WSIZE 64
@@ -1749,6 +1810,13 @@ RCL 98
 82
 X=Y?
 RTN
+RCL 98
+52
+X=Y?
+IF
+  XEQ :NEWG:
+  RTN
+ENDIF
 RCL 97
 X≠0?
 RTN
@@ -1758,8 +1826,16 @@ X=Y?
 IF
   RCL 27
   CHS
-  STO 27
-  XEQ :PANEL:
+  XEQ :SETME:
+  XEQ :STATE:
+  RTN
+ENDIF
+RCL 98
+54
+X=Y?
+IF
+  0
+  XEQ :SETME:
   RTN
 ENDIF
 RCL 98
@@ -1816,6 +1892,8 @@ ENDIF
 RCL 49
 X=0?
 RTN
+RCL× 27
+STO 49
 1
 RCL 28
 RCL+ 49
@@ -1824,10 +1902,23 @@ RCLEL
 8
 X=Y?
 RTN
-XEQ :CURS:
+RCL 28
 RCL 49
 STO+ 28
+DROP
+XEQ :DRAWSQ:
 XEQ :CURS:
+RTN
+REM ---- LBL :NEWG: 7: a new game (the level and your side kept: CHN without plies; the start again) ----
+LBL :NEWG:
+RCL 26
+10
+×
+RCL+ 27
+2
++
+STO "CHN"
+XEQ :INIT:
 RTN
 REM ---- LBL :PICK: 5: picks a piece of the side to move, drops it (the same square), or plays it to the cursor
 REM (a move of the list of ANYMV's generator that does not leave the king attacked) ----
@@ -1839,9 +1930,9 @@ IF
   RCL 29
   X=Y?
   IF
-    XEQ :SELX:
     0
     STO 29
+    XEQ :CURS:
     RTN
   ENDIF
   XEQ :TRYMV:
@@ -1860,7 +1951,7 @@ X<Y?
 RTN
 RCL 28
 STO 29
-XEQ :SELX:
+XEQ :CURS:
 RTN
 REM ---- LBL :TRYMV: the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
 REM ILLEGAL MOVE ----
@@ -1934,7 +2025,6 @@ IF
   XEQ :STATUS:
   RTN
 ENDIF
-XEQ :SELX:
 0
 STO 29
 XEQ :PLAYED:
@@ -2064,7 +2154,6 @@ REM key, a draw by repetition or material), its squares drawn again, the move in
 REM CHECKMATE, STALEMATE, CHECK, or whose move it is ----
 LBL :PLAYED:
 XEQ :GHADD:
-XEQ :CURS:
 RCL 41
 XEQ :DRAWSQ:
 RCL 42
@@ -2090,7 +2179,6 @@ IF
   RCL 49
   XEQ :DRAWSQ:
 ENDIF
-XEQ :CURS:
 XEQ :HIST:
 RCL 65
 X≠0?
@@ -2114,14 +2202,7 @@ IF
   XEQ :NOMOVE:
   RTN
 ENDIF
-XEQ :INCHK:
-X≠0?
-IF
-  "CHECK"
-  XEQ :STATUS:
-  RTN
-ENDIF
-XEQ :TOMOVE:
+XEQ :STATE:
 RTN
 REM ---- LBL :BOOK: R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; one of
 REM the lines that fit, at random: RAN#), or 0; R61 = 0. LBL :BKM: X = the next move of the book row R63 (0: it does
@@ -2547,6 +2628,12 @@ ELSE
   "BLACK"
 ENDIF
 x→α 48
+RCL 27
+X=0?
+IF
+  "C47 VS C47"
+  STO 48
+ENDIF
 "   LEVEL "
 x→α 48
 RCL 26
@@ -2563,10 +2650,14 @@ RCL 48
 212
 ATEXT Z
 "8 2 4 6 CURSOR  5 PICK / PLAY"
-22
+34
 212
 ATEXT Z
-"+ C47 PLAYS  1 LEVEL  0 END"
+"+ SWAP SIDES  9 C47 VS C47"
+23
+212
+ATEXT Z
+"7 NEW GAME  1 LEVEL  0 END"
 12
 212
 ATEXT Z
@@ -2612,37 +2703,8 @@ RTN
 REM ---- LBL :HIST: the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
 REM GRFNT 10 at x 212, rows 136 down (17 rows a line): "12. e2e4" for white, "12... e7e5" for black ----
 LBL :HIST:
-RCL 74
-STO 73
-RCL 75
-STO 74
-RCL 76
-STO 75
-RCL 77
-STO 76
-RCL 78
-STO 77
-RCL 79
-STO 78
-""
-STO 79
-RCL 96
-αIP 79
-RCL 45
-X>0?
-IF
-  ". "
-  x→α 79
-ELSE
-  "... "
-  x→α 79
-  1
-  STO+ 96
-ENDIF
-RCL 41
-XEQ :SQNAME:
-RCL 42
-XEQ :SQNAME:
+XEQ :HTEXT:
+LBL :HSHOW:
 1
 GRMOD
 DROP
@@ -2678,6 +2740,40 @@ ENDDO
 0
 GRMOD
 RTN
+REM LBL :HTEXT: the text of the move into the list (the oldest out); the move number R96 + 1 after black's
+LBL :HTEXT:
+RCL 74
+STO 73
+RCL 75
+STO 74
+RCL 76
+STO 75
+RCL 77
+STO 76
+RCL 78
+STO 77
+RCL 79
+STO 78
+""
+STO 79
+RCL 96
+αIP 79
+RCL 45
+X>0?
+IF
+  ". "
+  x→α 79
+ELSE
+  "... "
+  x→α 79
+  1
+  STO+ 96
+ENDIF
+RCL 41
+XEQ :SQNAME:
+RCL 42
+XEQ :SQNAME:
+RTN
 REM ---- LBL :SQNAME: X = a square: its name appended to R79 (the file a-h as the character 96 + file, the rank) ----
 LBL :SQNAME:
 1
@@ -2696,74 +2792,140 @@ IP
 -
 αIP 79
 RTN
-REM ---- LBL :CURS: the cursor R28 drawn or taken off: a frame of 2 pixels, XOR (GRMOD 3) ----
-LBL :CURS:
-WSIZE 24
-RCL 28
-XEQ :SQXY:
-3
+REM ---- LBL :BOARD: the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen from
+REM your side (R27 -1: black at the bottom; R34 = 1 or -1 the step of the letters) ----
+LBL :BOARD:
+22
+STO 41
+DO
+  1
+  RCL 41
+  STOIJ
+  RCLEL
+  8
+  X≠Y?
+  IF
+    RCL 41
+    XEQ :DRAWSQ:
+  ENDIF
+  1
+  STO+ 41
+  99
+  RCL 41
+  X≤Y?
+WHILE
+ENDDO
+1
 GRMOD
 DROP
-16777215
-SINT
-STO 99
+10
+GRFNT
 DROP
-RCL 31
-RCL 30
-AGRAPH 99
-AGRAPH 99
+RCL 27
+ABS
+RCL- 27
+1
+X<>Y
+-
+STO 34
+3.5
+×
+100.5
+X<>Y
+-
 STO 30
-12582915
-SINT
-STO 99
-DROP
-20
+21
 STO 33
 DO
-  RCL 31
+  ""
+  STO 48
   RCL 30
-  AGRAPH 99
-  STO 30
-  DSE 33
+  x→α 48
+  RCL 48
+  10
+  RCL 33
+  ATEXT Z
+  24
+  STO+ 33
+  RCL 34
+  STO+ 30
+  189
+  RCL 33
+  X≤Y?
 WHILE
 ENDDO
-16777215
-SINT
-STO 99
-DROP
-RCL 31
-RCL 30
-AGRAPH 99
-AGRAPH 99
+RCL 34
+3.5
+×
+4.5
+X<>Y
+-
+STO 30
+28
+STO 33
+DO
+  ""
+  STO 48
+  RCL 30
+  αIP 48
+  RCL 48
+  RCL 33
+  3
+  ATEXT Z
+  24
+  STO+ 33
+  RCL 34
+  STO+ 30
+  196
+  RCL 33
+  X≤Y?
+WHILE
+ENDDO
 0
 GRMOD
-WSIZE 64
+DROP
+INDEX "BD"
 RTN
-REM ---- LBL :SELX: the square picked (R29) inverted (XOR of the 24 columns), or back ----
-LBL :SELX:
-WSIZE 24
-RCL 29
-XEQ :SQXY:
-3
-GRMOD
+REM ---- LBL :SETME: X = your new side (1 white, -1 black, 0 the C47 plays both): when the board's side changes
+REM (black at the bottom or not) it is drawn again and the cursor goes to e2 / e7; the panel ----
+LBL :SETME:
+STO 68
+RCL 27
+ABS
+RCL- 27
+RCL 68
+ABS
+RCL- 68
+RCL 68
+STO 27
 DROP
-16777215
-SINT
-STO 99
-DROP
-24
-STO 33
-DO
-  RCL 31
-  RCL 30
-  AGRAPH 99
-  STO 30
-  DSE 33
-WHILE
-ENDDO
-0
-GRMOD
-WSIZE 64
+X≠Y?
+IF
+  61
+  RCL 27
+  25
+  ×
+  -
+  STO 28
+  XEQ :BOARD:
+ENDIF
+XEQ :PANEL:
+RTN
+REM ---- LBL :STATE: the status line of the position: CHECK or whose move it is ----
+LBL :STATE:
+XEQ :INCHK:
+X≠0?
+IF
+  "CHECK"
+  XEQ :STATUS:
+  RTN
+ENDIF
+XEQ :TOMOVE:
+RTN
+REM ---- LBL :CURS: the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame) ----
+LBL :CURS:
+RCL 28
+XEQ :DRAWSQ:
 RTN
 REM ---- LBL :SQXY: X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
 REM ((file + rank) even); X = the square ----
@@ -2776,6 +2938,14 @@ MOD
 1
 -
 STO 35
+RCL 27
+X<0?
+IF
+  7
+  RCL- 35
+  STO 35
+ENDIF
+RCL 35
 24
 ×
 12
@@ -2790,6 +2960,14 @@ IP
 2
 -
 STO 36
+RCL 27
+X<0?
+IF
+  7
+  RCL- 36
+  STO 36
+ENDIF
+RCL 36
 24
 ×
 20
@@ -2805,8 +2983,10 @@ X<>Y
 STO 32
 RCL 34
 RTN
-REM ---- LBL :DRAWSQ: X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its
-REM piece (light: piece + 7, dark: piece + 20) ----
+REM ---- LBL :DRAWSQ: X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piece
+REM (light: piece + 7, dark: piece + 20). The square picked (R29): the light square's row, inverted (NOT): seen on
+REM a dark square too. The cursor (R28): a frame of 2 pixels (OR: the 2 columns at each side whole, 12582915 the
+REM 2 rows at the top and bottom), inside the inversion. R35 1 picked, R32 1 the cursor ----
 LBL :DRAWSQ:
 WSIZE 24
 XEQ :SQXY:
@@ -2816,11 +2996,30 @@ STOIJ
 RCLEL
 7
 +
-RCL 32
-13
-×
-+
 STO 36
+0
+STO 35
+RCL 29
+RCL 34
+X=Y?
+IF
+  1
+  STO 35
+ELSE
+  RCL 32
+  13
+  ×
+  STO+ 36
+ENDIF
+0
+STO 32
+RCL 28
+RCL 34
+X=Y?
+IF
+  1
+  STO 32
+ENDIF
 INDEX "GL"
 RCL 36
 1
@@ -2828,20 +3027,71 @@ STOIJ
 1
 GRMOD
 DROP
+REM no cursor and not picked (most squares): each column as it is
 24
 STO 33
-DO
-  RCLSEQ
-  SINT
-  STO 99
-  DROP
-  RCL 31
-  RCL 30
-  AGRAPH 99
-  STO 30
-  DSE 33
-WHILE
-ENDDO
+RCL 32
+RCL+ 35
+X=0?
+IF
+  DO
+    RCLSEQ
+    SINT
+    STO 99
+    DROP
+    RCL 31
+    RCL 30
+    AGRAPH 99
+    STO 30
+    DSE 33
+  WHILE
+  ENDDO
+ELSE
+  DO
+    RCLSEQ
+    SINT
+    RCL 32
+    X≠0?
+    IF
+      DROP
+      RCL 33
+      12.5
+      -
+      ABS
+      10
+      X<Y?
+      IF
+        DROP
+        DROP
+        16777215
+      ELSE
+        DROP
+        DROP
+        12582915
+      ENDIF
+      SINT
+      OR
+    ELSE
+      DROP
+    ENDIF
+    RCL 35
+    X≠0?
+    IF
+      DROP
+      NOT
+    ELSE
+      DROP
+    ENDIF
+    STO 99
+    DROP
+    RCL 31
+    RCL 30
+    AGRAPH 99
+    STO 30
+    DSE 33
+  WHILE
+  ENDDO
+ENDIF
 0
 GRMOD
 INDEX "BD"
@@ -2855,6 +3105,15 @@ LBL :INIT:
 R-CLR
 0
 STO 99
+REM the saved game CHN = plies x 100 + level x 10 + your side + 2 (0 STO+ creates it when missing, as MOON47's TZ):
+REM R68 the plies to play again (0: a new game)
+0
+STO+ "CHN"
+RCL "CHN"
+100
+÷
+IP
+STO 68
 UNSIGN
 WSIZE 24
 CLLCD
@@ -2875,10 +3134,14 @@ REM ==== KNIGHTS
 24
 NEWMAT
 STO "GL"
-2
-300
-NEWMAT
-STO "GH"
+RCL 68
+X=0?
+IF
+  2
+  300
+  NEWMAT
+  STO "GH"
+ENDIF
 REM ==== BOOK
 REM the offsets: the knight R80-R87, the diagonals R88-R91, the lines R92-R95
 -21
@@ -3039,6 +3302,23 @@ STO 29
 STO 96
 0
 STO 97
+REM the level and your side of the saved game (CHN 0: level 2, white)
+RCL "CHN"
+X≠0?
+IF
+  10
+  MOD
+  2
+  -
+  STO 27
+  RCL "CHN"
+  10
+  ÷
+  IP
+  10
+  MOD
+  STO 26
+ENDIF
 REM R72-R79: no moves yet (0, not a text)
 XEQ :PSTALL:
 XEQ :GLYPHS:
@@ -3053,88 +3333,55 @@ STOEL
 INDEX "BD"
 TICKS
 STO "TK"
-0
-STO "TW"
-STO "TB"
+RCL 68
+X=0?
+IF
+  0
+  STO "TW"
+  STO "TB"
+ENDIF
+REM the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
+WSIZE 64
+XEQ :NINIT:
+RCL 68
+X≠0?
+IF
+  1
+  STO 69
+  DO
+    INDEX "GH"
+    1
+    RCL 69
+    STOIJ
+    RCLEL
+    INDEX "BD"
+    STO 40
+    3
+    STO 46
+    XEQ :MAKE:
+    XEQ :GHADD:
+    XEQ :HTEXT:
+    1
+    STO+ 69
+    RCL 68
+    RCL 69
+    X≤Y?
+  WHILE
+  ENDDO
+ENDIF
 
-REM the screen: the 64 squares (R41: DRAWSQ uses R30-R36), the files a-h (row 10) and the ranks 1-8 (x 3), the panel
+REM the screen: the board, the panel, the moves, the state
 CLLCD
-22
-STO 41
-DO
-  1
-  RCL 41
-  STOIJ
-  RCLEL
-  8
-  X≠Y?
-  IF
-    RCL 41
-    XEQ :DRAWSQ:
-  ENDIF
-  1
-  STO+ 41
-  99
-  RCL 41
-  X≤Y?
-WHILE
-ENDDO
-10
-GRFNT
-DROP
-97
-STO 30
-21
-STO 33
-DO
-  ""
-  STO 48
-  RCL 30
-  x→α 48
-  RCL 48
-  10
-  RCL 33
-  ATEXT Z
-  24
-  STO+ 33
-  1
-  STO+ 30
-  104
-  RCL 30
-  X≤Y?
-WHILE
-ENDDO
-1
-STO 30
-28
-STO 33
-DO
-  ""
-  STO 48
-  RCL 30
-  αIP 48
-  RCL 48
-  RCL 33
-  3
-  ATEXT Z
-  24
-  STO+ 33
-  1
-  STO+ 30
-  8
-  RCL 30
-  X≤Y?
-WHILE
-ENDDO
+XEQ :BOARD:
 XEQ :PANEL:
-XEQ :TOMOVE:
-XEQ :CURS:
+XEQ :HSHOW:
+XEQ :STATE:
 XEQ :CLOCK:
 DROP
 INDEX "BD"
-XEQ :NINIT:
 WSIZE 64
 RTN
+
 REM ---- LBL :PSTALL: the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the rank 0-7, cen
 REM 6 - (|2f - 7| + |2r - 7|) / 2; for each kind t the value V(t) + pst (as python/chess47ref.py): P 6 (r - 1) + 8
 REM on d e of the ranks 2-4, N 5 cen - 15, B 3 cen - 6, R 10 on the 7th rank, Q 2 cen - 6, K -4 cen + 10 on the 1st;

@@ -91,6 +91,23 @@ Giuoco), 0.17 ms a step: v0.2 872 000 (46-55 s a move), v0.3 about 263 000 (13-1
 - New commands to try on the C47: →REAL (with a negative word: bit 63). DSE ran in Zones 47; AND OR NOT XOR BS? in
   Logic 47.
 
+## Oct 26, 2026 - v0.3.1: the cursor on dark squares, black, C47 vs C47, the game kept (branch claude/chess47-play)
+
+Victor on the C47: the cursor and the piece picked did not show on a dark square (a XOR frame and an inversion of the
+dither look like the dither); + was not seen as playing black (the board stayed white's); 0 lost the game; a C47 vs
+C47 mode until mate.
+- :DRAWSQ: draws the cursor (R28: a frame OR'd, 2 pixels) and the piece picked (R29: the light square's row, NOT)
+  itself; :CURS: is one DRAWSQ; :SELX: gone. A plain square keeps the old loop (the tests cost only the 2 squares).
+- The board seen from your side: :SQXY: mirrors file and rank when R27 = -1; :BOARD: (the squares, a-h and 1-8 the
+  other way round); :SETME: X = your new side: the board drawn again only when black's / white's view changes, the
+  cursor to e2 / e7.
+- 9: R27 = 0, the C47 plays both sides; after each of its moves 0 PAUSE 1 KEY? 98: a key: you take the side to move
+  (0 ends). At the game's end the usual wait (0, 7).
+- The game kept: at 0, CHN = plies x 100 + level x 10 + side + 2 with GH TW TB (the plies 2 (R96 - 1) + (1 - R20) / 2,
+  at most 299; a finished game keeps only level and side). The start: 0 STO+ "CHN" (MOON47's way), the plies played
+  again with MAKE, GHADD, HTEXT (HIST without drawing), then the board drawn once. 7: CHN without plies, INIT again.
+- c47sim: a key None = no key at that KEY? (the C47 vs C47 tests); chess47sim.run(mats=) for the kept game.
+
 ## Plans (v0.4)
 
 - A capture search at the leaves, then 3 plies at level 3 when the speed allows.

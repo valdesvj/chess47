@@ -15,16 +15,19 @@ import c47sim
 PROG = os.environ.get('CHESS47_PROG') or os.path.join(ROOT, 'build', 'CHESS47.txt')
 W, H = 400, 240
 LCD_BG, LCD_ON = (199, 205, 186), (34, 38, 30)
-UP, DOWN, LEFT, RIGHT, PICK, HAND, LEVEL, END = 53, 73, 62, 64, 63, 85, 72, 82
+UP, DOWN, LEFT, RIGHT, PICK, HAND, LEVEL, END, NEW, AUTO = 53, 73, 62, 64, 63, 85, 72, 82, 52, 54
 STEP_MS = 0.17                                   # ms a step on the C47 (Almanac 47's measure)
 
 
-def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9):
+def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None):
+    """ks: the keys (None: no key at that KEY?); regs, mats: variables kept from an earlier run (the saved game)"""
     c = c47sim.load([prog])
     c.s = [D(v) for v in (stack or (0, 0, 0, 0))]; c.pix = []; c.keys = list(ks); c.steps = 0
     c.at_steps = []
     if regs:
         c.reg.update(regs)
+    if mats:
+        c.mats.update(mats)
 
     class F(list):
         def append(self, f): c.at_steps.append(c.steps); super().append(f)
