@@ -108,6 +108,16 @@ C47 mode until mate.
   again with MAKE, GHADD, HTEXT (HIST without drawing), then the board drawn once. 7: CHN without plies, INIT again.
 - c47sim: a key None = no key at that KEY? (the C47 vs C47 tests); chess47sim.run(mats=) for the kept game.
 
+## Oct 26, 2026 - the forum file for new users (branch claude/chess47-forum)
+
+- The forum (the C47's PROGRAMS folder): each contributed program should say in plain words what it does and how to
+  use it, in '@' lines (not "#": rejig makes a '#' line a REM step), and use local labels. build_forum.py: after the
+  '@' metadata, tools/forum/CHESS47.txt (What it is, How to use it, What it changes on your calculator, Programs and
+  labels), then the source's header as technical notes; the source's comment blocks as whole '@' lines before their
+  steps (before: cut into pieces after ';' on the following steps), the label names after ';'.
+- tools/build_p47.py (Victor runs it with rejig): build/p47/CHESS47.p47 from the forum file, --validate=r47, the same
+  bytes as from the plain listing. tests/test_forum.py.
+
 ## Plans (v0.4)
 
 - A capture search at the leaves, then 3 plies at level 3 when the speed allows.
