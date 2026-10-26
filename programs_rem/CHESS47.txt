@@ -1,4 +1,4 @@
-REM CHESS47 v0.3.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.3.2 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -16,9 +16,12 @@ REM glyph words (dither AND NOT mask OR glyph), WSIZE 24 while drawing: a square
 REM the knights are two 64-bit words NW NB (WSIZE 64 the rest of the time): the attack test is one AND with a mask.
 REM Keys: 8 2 4 6 the cursor up, down, left, right (as seen on the screen); 5 picks a piece of yours, then 5 on the
 REM square to play it (5 on the same square drops it); + swaps sides (the C47 plays the side to move; black: the board
-REM turns); 9 C47 vs C47 until the end (a key: you take the side to move); 7 a new game; 1 the level 2 -> 1 -> 0
+REM turns); 9 C47 vs C47 until the end (a key: you take the side to move); 3 two players (the C47 only checks the
+REM moves and the end); 7 a new game; 1 the level 2 -> 1 -> 0
 REM (CRAZY: random legal moves, a crazy face by the title);
-REM 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
+REM 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
+REM for each move played, for the sides a person plays (the C47's clock stops while it thinks); a person whose time
+REM runs out loses (LOST ON TIME), or draws when the opponent cannot mate (FIDE 6.9). The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
 REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, your integer mode back (R.09), GRMOD 0 and GRFNT 20 set.
 REM The integer mode is UNSIGN while CHESS47 runs: its words are bit patterns (keys to 2^32, glyph columns to 2^24, the
@@ -56,8 +59,8 @@ XEQ :INIT:
 REM ---- the game: your move (the keys) or the C47's, until 0 (R98 = 82) ----
 DO
   RCL 20
-  RCL 27
-  X=Y?
+  XEQ :HUMQ:
+  X≠0?
   IF
     XEQ :HUMAN:
   ELSE
@@ -1825,7 +1828,23 @@ RCL 98
 X=Y?
 IF
   RCL 27
+  2
+  X=Y?
+  IF
+    RCL 20
+  ELSE
+    RCL 27
+  ENDIF
   CHS
+  XEQ :SETME:
+  XEQ :STATE:
+  RTN
+ENDIF
+RCL 98
+74
+X=Y?
+IF
+  2
   XEQ :SETME:
   XEQ :STATE:
   RTN
@@ -1892,7 +1911,13 @@ ENDIF
 RCL 49
 X=0?
 RTN
-RCL× 27
+RCL 27
+ABS
+RCL- 27
+1
+X<>Y
+-
+×
 STO 49
 1
 RCL 28
@@ -2010,6 +2035,9 @@ IF
   RTN
 ENDIF
 XEQ :CLOCK:
+RCL 97
+X≠0?
+RTN
 RCL 62
 STO 40
 3
@@ -2050,6 +2078,9 @@ ELSE
   XEQ :THINK:
 ENDIF
 XEQ :CLOCK:
+RCL 97
+X≠0?
+RTN
 RCL 62
 X=0?
 IF
@@ -2153,7 +2184,7 @@ REM ---- LBL :PLAYED: the move of UN row 3 was played: into the game record (LBL
 REM key, a draw by repetition or material), its squares drawn again, the move in the list, then the state: DRAW,
 REM CHECKMATE, STALEMATE, CHECK, or whose move it is ----
 LBL :PLAYED:
-XEQ :GHADD:
+REM the squares first: R47 is still MAKE's flag (1 en passant, 2 castling); LBL :HASH: (in GHADD) uses R47
 RCL 41
 XEQ :DRAWSQ:
 RCL 42
@@ -2178,6 +2209,23 @@ IF
   XEQ :DRAWSQ:
   RCL 49
   XEQ :DRAWSQ:
+ENDIF
+XEQ :GHADD:
+REM the clock: 10 s (100 tenths) more for the side that moved (R45), when a person plays it
+RCL 45
+XEQ :HUMQ:
+X≠0?
+IF
+  100
+  RCL 45
+  X>0?
+  IF
+    DROP
+    STO+ "TW"
+  ELSE
+    DROP
+    STO+ "TB"
+  ENDIF
 ENDIF
 XEQ :HIST:
 RCL 65
@@ -2490,8 +2538,9 @@ RCL 49
 →REAL
 WSIZE 64
 RTN
-REM ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
-REM black; not when the game is over), the clock drawn at the top left: X = 1 ----
+REM ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) off the time left of the side to move
+REM (TW white, TB black: 5 minutes at the start, 10 s more for each move: LBL :PLAYED:; not when the game is over);
+REM none left: WHITE / BLACK LOST ON TIME, the game over (R97). The clock drawn at the top left: X = 1 ----
 LBL :CLOCK:
 TICKS
 RCL "TK"
@@ -2508,14 +2557,67 @@ IF
 ELSE
   DROP
 ENDIF
+REM only a person's clock runs (the C47 never loses on time: at level 2 it thinks longer than the 10 s a move)
+STO 49
+RCL 20
+XEQ :HUMQ:
+X=0?
+IF
+  0
+  STO 49
+ENDIF
+RCL 49
 RCL 20
 X>0?
 IF
   DROP
-  STO+ "TW"
+  STO- "TW"
 ELSE
   DROP
-  STO+ "TB"
+  STO- "TB"
+ENDIF
+REM the time left of the side to move run out (0 or less) while the game is on: it loses on time
+RCL 97
+X=0?
+IF
+  RCL 20
+  X>0?
+  IF
+    RCL "TW"
+  ELSE
+    RCL "TB"
+  ENDIF
+  X≤0?
+  IF
+    1
+    STO 97
+    RCL 20
+    X>0?
+    IF
+      0
+      STO "TW"
+    ELSE
+      0
+      STO "TB"
+    ENDIF
+    REM FIDE 6.9: a draw when the opponent cannot mate by any series of legal moves (LBL :TMAT:), else a loss
+    RCL 20
+    CHS
+    XEQ :TMAT:
+    X≠0?
+    IF
+      "DRAW: TIME, NO MATE"
+    ELSE
+      RCL 20
+      X>0?
+      IF
+        "WHITE LOST ON TIME"
+      ELSE
+        "BLACK LOST ON TIME"
+      ENDIF
+    ENDIF
+    XEQ :STATUS:
+  ENDIF
 ENDIF
 ""
 STO 48
@@ -2539,6 +2641,156 @@ RCL 48
 ATEXT Z
 0
 GRMOD
+1
+RTN
+REM ---- LBL :TMAT: X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by any
+REM series of legal moves (the time-out is a draw), else 0. As python-chess's has_insufficient_material(w): a pawn,
+REM rook or queen of w: it can; a knight: not when it is w's only piece and the other side has nothing but its king
+REM and queens (pawns, knights, bishops, rooks could block its king: a mate with help); bishops only: not when all
+REM the bishops on the board stand on one colour and there is no pawn or knight; a bare king: never. The board is
+REM scanned once: R32 w's pawns rooks queens, R33 its knights, R34 its bishops, R35 the other side's pawns knights
+REM bishops rooks, R36 R37 the bishops on each square colour, R38 the pawns and knights; R30 the square, R39 the piece ----
+LBL :TMAT:
+STO 31
+0
+STO 32
+STO 33
+STO 34
+STO 35
+STO 36
+STO 37
+STO 38
+INDEX "BD"
+22
+STO 30
+DO
+  1
+  RCL 30
+  STOIJ
+  RCLEL
+  STO 39
+  ABS
+  3
+  -
+  ABS
+  2
+  X≥Y?
+  IF
+    RCL 39
+    RCL× 31
+    X>0?
+    IF
+      RCL 39
+      ABS
+      2
+      X=Y?
+      IF
+        1
+        STO+ 33
+      ELSE
+        DROP
+        3
+        X=Y?
+        IF
+          1
+          STO+ 34
+        ELSE
+          1
+          STO+ 32
+        ENDIF
+      ENDIF
+    ELSE
+      RCL 39
+      ABS
+      5
+      X≠Y?
+      IF
+        1
+        STO+ 35
+      ENDIF
+    ENDIF
+    RCL 39
+    ABS
+    2.5
+    X>Y?
+    IF
+      1
+      STO+ 38
+    ENDIF
+    RCL 39
+    ABS
+    3
+    X=Y?
+    IF
+      RCL 30
+      1
+      -
+      10
+      ÷
+      IP
+      RCL 30
+      1
+      -
+      10
+      MOD
+      +
+      2
+      MOD
+      STO+ 36
+      1
+      X<>Y
+      -
+      STO+ 37
+    ENDIF
+  ENDIF
+  1
+  STO+ 30
+  99
+  RCL 30
+  X≤Y?
+WHILE
+ENDDO
+RCL 32
+X≠0?
+IF
+  0
+  RTN
+ENDIF
+RCL 33
+X≠0?
+IF
+  RCL 33
+  RCL+ 34
+  1
+  X=Y?
+  IF
+    RCL 35
+    X=0?
+    IF
+      1
+      RTN
+    ENDIF
+  ENDIF
+  0
+  RTN
+ENDIF
+RCL 34
+X≠0?
+IF
+  RCL 38
+  X≠0?
+  IF
+    0
+    RTN
+  ENDIF
+  RCL 36
+  RCL× 37
+  X≠0?
+  IF
+    0
+    RTN
+  ENDIF
+ENDIF
 1
 RTN
 REM ---- LBL :MMSS: X = tenths of a second: m:ss appended to R48 ----
@@ -2569,17 +2821,46 @@ RTN
 REM ======== the screen ========
 REM ---- LBL :TOMOVE: whose move it is in the status line ----
 LBL :TOMOVE:
-RCL 20
 RCL 27
+2
 X=Y?
 IF
-  "YOUR MOVE"
+  RCL 20
+  X>0?
+  IF
+    "WHITE TO MOVE"
+  ELSE
+    "BLACK TO MOVE"
+  ENDIF
 ELSE
-  "C47 TO MOVE"
+  RCL 20
+  RCL 27
+  X=Y?
+  IF
+    "YOUR MOVE"
+  ELSE
+    "C47 TO MOVE"
+  ENDIF
 ENDIF
 XEQ :STATUS:
 RTN
-REM ---- LBL :STATUS: X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared) ----
+REM ---- LBL :HUMQ: X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0 ----
+LBL :HUMQ:
+RCL 27
+X=Y?
+IF
+  1
+  RTN
+ENDIF
+2
+X=Y?
+IF
+  1
+  RTN
+ENDIF
+0
+RTN
+REM ---- LBL :STATUS: X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pixels) ----
 LBL :STATUS:
 STO 48
 21
@@ -2588,7 +2869,7 @@ DROP
 1
 GRMOD
 DROP
-"                "
+"                       "
 156
 212
 ATEXT Z
@@ -2634,6 +2915,13 @@ IF
   "C47 VS C47"
   STO 48
 ENDIF
+RCL 27
+2
+X=Y?
+IF
+  "2 PLAYERS"
+  STO 48
+ENDIF
 "   LEVEL "
 x→α 48
 RCL 26
@@ -2650,14 +2938,18 @@ RCL 48
 212
 ATEXT Z
 "8 2 4 6 CURSOR  5 PICK / PLAY"
-34
+45
 212
 ATEXT Z
 "+ SWAP SIDES  9 C47 VS C47"
+34
+212
+ATEXT Z
+"3 TWO PLAYERS  7 NEW GAME"
 23
 212
 ATEXT Z
-"7 NEW GAME  1 LEVEL  0 END"
+"1 LEVEL  0 END"
 12
 212
 ATEXT Z
@@ -2886,7 +3178,7 @@ GRMOD
 DROP
 INDEX "BD"
 RTN
-REM ---- LBL :SETME: X = your new side (1 white, -1 black, 0 the C47 plays both): when the board's side changes
+REM ---- LBL :SETME: X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board's side changes
 REM (black at the bottom or not) it is drawn again and the cursor goes to e2 / e7; the panel ----
 LBL :SETME:
 STO 68
@@ -2901,11 +3193,13 @@ STO 27
 DROP
 X≠Y?
 IF
-  61
   RCL 27
+  ABS
+  RCL- 27
   25
   ×
-  -
+  36
+  +
   STO 28
   XEQ :BOARD:
 ENDIF
@@ -3336,7 +3630,7 @@ STO "TK"
 RCL 68
 X=0?
 IF
-  0
+  3000
   STO "TW"
   STO "TB"
 ENDIF
@@ -3376,6 +3670,9 @@ XEQ :BOARD:
 XEQ :PANEL:
 XEQ :HSHOW:
 XEQ :STATE:
+REM the clock from now (the setting up is nobody's time)
+TICKS
+STO "TK"
 XEQ :CLOCK:
 DROP
 INDEX "BD"

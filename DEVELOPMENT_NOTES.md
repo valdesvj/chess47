@@ -118,6 +118,29 @@ C47 mode until mate.
 - tools/build_p47.py (Victor runs it with rejig): build/p47/CHESS47.p47 from the forum file, --validate=r47, the same
   bytes as from the plain listing. tests/test_forum.py.
 
+## Oct 26, 2026 - v0.3.2: pieces drawn off the board, the 5-minute clock (branch claude/chess47-clock)
+
+- Victor's C47 after a 239-move CRAZY game: black rooks drawn right of the board, over the move list. :PLAYED: called
+  :GHADD: first, and its :HASH: counts the pieces other than the kings in R47; :PLAYED: then read R47 as MAKE's flag
+  (1 en passant, 2 castling): with one or two pieces left an ordinary move redrew a captured pawn's or a rook's
+  squares, h-file moves the border (8, drawn as row 15 of GL: a black rook on a dark square). Since v0.2. Now the
+  squares are drawn first, GHADD after. Test: h2-h3 with a rook and a pawn (the old build: 91 pixels off the board).
+- The clock (Victor): 5 minutes each, 10 s more a move (Fischer); TW TB are the time left (3000 tenths at the start),
+  :CLOCK: takes the time off the side to move and at 0 or less: WHITE / BLACK LOST ON TIME (R97); :PLAYED: adds 100
+  to the side that moved; :C47MV: plays no move when its time ran out while it thought. TK is set at the end of INIT
+  (the setting up was white's time). A game saved by v0.3.1 has its used time in TW TB: read as the time left.
+- The time-out as FIDE 6.9 (Victor): a draw when the opponent cannot mate by any series of legal moves. :TMAT: is
+  python-chess's has_insufficient_material(w) (a knight: w's only piece and the other side only king and queens;
+  bishops: all on one colour, no pawn or knight; a bare king), checked on 300 random positions of few pieces.
+  DRAW: TIME, NO MATE. TRYMV too plays no move when the time ran out.
+- Victor: the clock only for people (the C47 at level 2 thinks 10-25 s, more than the 10 s a move: it lost on time in
+  long games). :HUMQ: X = a colour: a person plays it (R27, or R27 = 2 both); :CLOCK: charges nothing to the C47's
+  side, :PLAYED: gives the 10 s only to a person. Two players (key 3, R27 = 2): :HUMAN: for both sides, WHITE /
+  BLACK TO MOVE, the board white's; + from there gives the side to move to the C47. The status line is cleared over
+  184 pixels (23 spaces; was 128: DRAW: TIME, NO MATE is 179). The keys on four lines.
+- tools/selfplay47.py (run by Victor with python-chess): the C47 against itself, 5 games a level; python-chess
+  checks every move, the board, every end and the clock. docs/SELFPLAY.md.
+
 ## Plans (v0.4)
 
 - A capture search at the leaves, then 3 plies at level 3 when the speed allows.
