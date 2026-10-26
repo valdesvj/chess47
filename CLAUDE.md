@@ -18,7 +18,8 @@
 - Only commands already run on a C47 in Almanac 47, Elements 47, Zones 47 or Logic 47 (the bitwise ones AND OR NOT
   XOR BS?), except →REAL: say so in the README until Victor has run it; a new command: ask Victor to try it.
 - CHESS47 runs in UNSIGN (its words use the top bit: keys 2^32, glyphs 2^24, knights 2^64) and gives the user's mode
-  back (R.09, read with 1 SINT NOT →REAL at WSIZE 8). c47sim refuses SINT out of range as the C47 (marked chess47).
+  back (R.09, read with 1 SINT NOT →REAL at WSIZE 8). c47sim refuses SINT out of range and STOEL of a short integer
+  (→REAL first) as the C47 (marked chess47).
 - Check every change in the simulator (python3 python/chess47sim.py writes docs/*.png) and with
   python3 tests/test_chess47.py; the engine's play with python3 tools/match47.py (docs/MATCHES.md).
 - python/c47sim.py, stdfont.py, tinyfont.py come from Almanac 47 (the bitwise block from Logic 47): a fix is
