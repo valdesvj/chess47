@@ -620,6 +620,16 @@ class Calc:
                 self.lastx = self.s[0]; self.s = [D(jdn) + tm[1] / 24 - D('0.5'), self.s[2], self.s[3], self.s[3]]; continue
             if op == 'SQRT': self.unary(lambda x: x.sqrt()); continue
             if op == '2ˣ': self.unary(lambda x: D(2) ** int(x) if x == int(x) else D(2 ** f(x))); continue
+            # ---- chess47: the integer sign mode (UNSIGN / 2COMPL, the C47's default) and SINT's range as the firmware:
+            # UNSIGN 0 .. 2^WSIZE - 1, 2COMPL -2^(WSIZE-1) .. 2^(WSIZE-1) - 1, else "Out of range" (Victor's C47, Oct 26:
+            # UNSIGN WSIZE 32 4294967295 SINT runs); to be taken into Almanac 47's c47sim.py ----
+            if op in ('UNSIGN', '2COMPL', '1COMPL', 'SIGNMT'):
+                self.signmode = op; continue
+            if op == 'SINT' and not isinstance(self.s[0], (str, tuple)):
+                w = getattr(self, 'ws', 64); v = int(self.s[0])
+                lo, hi = (0, 1 << w) if getattr(self, 'signmode', '2COMPL') == 'UNSIGN' else (-(1 << (w - 1)), 1 << (w - 1))
+                if not lo <= v < hi:
+                    raise ValueError('SINT: Out of range: %d at WSIZE %d %s' % (v, w, getattr(self, 'signmode', '2COMPL')))
             if op == 'SINT': self.unary(lambda x: D(int(x))); continue   # real -> short integer (the bits stay)
             if op in ('SF', 'CF', 'FS?', 'FC?', 'FS?C', 'FC?C') and re.fullmatch(r'F?\.\d\d', arg):
                 pc = self.localflag(op, int(arg[-2:]), pc); continue
@@ -705,7 +715,8 @@ class Calc:
             if op == '→REAL':                                 # 2COMPL: the top bit of WSIZE gives a negative value
                 if not isinstance(self.s[0], (str, tuple)):
                     w = getattr(self, 'ws', 64); v = int(self.s[0]) & ((1 << w) - 1)
-                    self.s[0] = D(v - (1 << w) if v >> (w - 1) else v)
+                    signed = getattr(self, 'signmode', '2COMPL') != 'UNSIGN'
+                    self.s[0] = D(v - (1 << w) if signed and v >> (w - 1) else v)
                 continue
             raise ValueError(unknown(ln))
 

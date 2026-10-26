@@ -111,3 +111,15 @@ The limit on a calculator is speed: work the firmware does in one command beats 
 5. An opening book in a matrix.
 6. The generator: a list of the pieces' squares instead of the scan of 78 squares.
 EIGEN and the 34-digit precision do not help a chess engine: not planned.
+
+## Oct 26, 2026 - Out of range on the C47: UNSIGN (branch claude/chess47-unsign)
+
+- The first run on Victor's C47 stopped with Out of range: SINT of 11184810 (the dither, 1010... over 24 bits) at
+  WSIZE 24; the C47's default 2COMPL refuses the top bit (also the keys at WSIZE 32, 3141592653). c47sim did not check
+  the range: now SINT checks it (UNSIGN 0 .. 2^w - 1, 2COMPL -2^(w-1) .. 2^(w-1) - 1) and →REAL reads the word in the
+  mode (marked chess47; to be taken to Almanac 47). Zones 47 and MH-10M 47 stay at WSIZE 64 with small words, so never
+  met it.
+- Victor's C47: UNSIGN, WSIZE 32, 4294967295 SINT runs (2COMPL after it shows -1: the same 32 bits).
+- CHESS47 runs in UNSIGN (INIT) and restores the user's mode: at WSIZE 8, 1 SINT NOT →REAL = 254 / -2 / -1 / -126 for
+  UNSIGN / 2COMPL / 1COMPL / SIGNMT, kept in R.09 (LocR 10). The knight masks and :BIT: plain positive again (h8 = 2^63).
+- Tests: all OK with the range check; the mode back from 2COMPL and from UNSIGN; 2 matches whole.

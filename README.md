@@ -17,7 +17,7 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
 | Size | 5 411 steps, about 16 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 200 numbers) and the variables NW NB |
-| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the matrices, the clock's variables TK TW TB and the knight words NW NB deleted; WSIZE 64, GRMOD 0, GRFNT 20 |
+| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the matrices, the clock's variables TK TW TB and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 ## Playing
 
@@ -112,11 +112,15 @@ against `python/chess47ref.py`, the same engine in Python:
 - moves keyed with 5 and the arrows work, and illegal moves are refused;
 - the start screen matches `python/layout.py`'s picture pixel for pixel.
 
-**Not yet run on a real C47.** `AND`, `OR`, `NOT`, `XOR` and `BS?` have run on the calculator in Logic 47; `→REAL` is
-new here: please try it first. The knight words use all 64 bits: h8 is bit 63, so a word with a knight on h8 (or a
-mask of g6 or f7) is negative as a real, its value in `2COMPL` (the C47's default integer mode). A quick check:
-`-9223372036854775808 SINT →REAL` should give back -9223372036854775808, and `9223372036854775807 SINT →REAL` should
-give 9223372036854775807. The program never gives SINT a value of 2^63 or more.
+**The integer mode.** CHESS47's words are bit patterns: the repetition keys up to 2^32 (WSIZE 32), the glyph columns
+up to 2^24 (WSIZE 24), the knight words up to 2^64. In `2COMPL`, the C47's default, `SINT` refuses a value with the
+top bit set (**Out of range**: the error of the first run on the calculator, Oct 26). So CHESS47 runs in `UNSIGN`
+(Victor's C47: `UNSIGN` `WSIZE 32` `4294967295 SINT` runs) and gives you back your own mode at the end: at the start it
+reads it (at WSIZE 8, `1 SINT NOT →REAL` is 254 in UNSIGN, -2 in 2COMPL, -1 in 1COMPL, -126 in SIGNMT) and keeps it in
+the local register R.09. The simulator now refuses SINT out of range as the C47 does.
+
+`AND`, `OR`, `NOT`, `XOR`, `BS?` ran on the calculator in Logic 47, `UNSIGN` / `2COMPL` on Victor's C47; `→REAL`,
+`1COMPL` and `SIGNMT` are still to be confirmed there.
 
 ## Files
 
