@@ -150,8 +150,8 @@ def play_tests():
     shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
     check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in c3.mats['GH'][0])
           and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
-    check(keep['TW'] > 3000 and keep['TB'] > 3000, 'the clock: 5 minutes each (3000 tenths) + 10 s a move: W %s, B %s'
-          % (keep['TW'], keep['TB']))
+    check(keep['TW'] > 3000 and keep['TB'] == 3000, 'the clock: 5 minutes each (3000 tenths), 10 s a move for you; the '
+          'C47\'s (black) does not run: W %s, B %s' % (keep['TW'], keep['TB']))
     low = dict(keep, TW=D(5))
     shots, c4 = S.run([None] * 300 + [S.PICK], regs=low, mats={'GH': gh})
     check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(c4.mats['GH'][0][2]) == 0,
@@ -169,6 +169,41 @@ def play_tests():
     stray = [(x, y) for y, x in c5.pix if L.BX + 8 * L.SQ <= x < 212]
     check(not stray, 'h2-h3 with a rook and a pawn left: nothing drawn off the board (was a rook glyph by h3: %d pixels)'
           % len(stray))
+    shots, c7 = S.run([74, S.PICK, S.UP, S.UP, S.PICK, S.UP, S.UP, S.UP, S.PICK, S.DOWN, S.DOWN, S.PICK])
+    check(c7.reg.get('27') == 2 and [int(v) for v in c7.mats['GH'][0][:3]] == [36056, 86066, 0]
+          and c7.reg['TW'] > 3000 and c7.reg['TB'] > 3000,
+          '3: two players: e2-e4 and e7-e5 keyed, no move of the C47, both clocks run (10 s a move)')
+    low = dict(keep, TB=D(1))                                    # the C47 (black) with 0.1 s left: it plays on
+    shots, c8 = S.run([S.LEFT, S.PICK, S.UP, S.UP, S.PICK], regs=low, mats={'GH': [list(r) for r in gh]})
+    check(c8.reg.get('97', 0) == 0 and int(c8.mats['GH'][0][3]) != 0 and c8.reg.get('TB') == 1,
+          'the C47 with 0.1 s left thinks and moves: its clock does not run, it never loses on time')
+    # the time-out rule (FIDE 6.9): :TMAT: as python-chess's has_insufficient_material, random positions of few pieces
+    import chess, random
+    P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l][:-1]
+    P += ['LBL "TTMAT"', 'XEQ %s' % lab['TMAT'], 'RTN', 'END']
+    fn = os.path.join(tempfile.mkdtemp(), 'CHESS47M.txt')
+    open(fn, 'w', encoding='utf-8').write('\n'.join(P) + '\n')
+    shots, c6 = S.run([], prog=fn)
+    rnd, diff, n = random.Random(7), [], 0
+    for k in range(150):
+        b = chess.Board(None)
+        sqs = rnd.sample(range(64), 8)
+        b.set_piece_at(sqs[0], chess.Piece(chess.KING, True))
+        b.set_piece_at(sqs[1], chess.Piece(chess.KING, False))
+        for q in sqs[2:2 + rnd.choice([0, 1, 1, 2, 2, 3, 4, 6])]:
+            t = rnd.choice('PNNBBBRQ')
+            if t == 'P' and chess.square_rank(q) in (0, 7):
+                t = 'N'
+            b.set_piece_at(q, chess.Piece(chess.Piece.from_symbol(t).piece_type, rnd.random() < 0.5))
+        setpos(c6, R.Pos.fen(b.fen()))
+        for w in (True, False):
+            c6.s = [D(1 if w else -1)] + [D(0)] * 3
+            c6.run('TTMAT', maxsteps=10 ** 7)
+            n += 1
+            if int(c6.s[0]) != int(b.has_insufficient_material(w)):
+                diff.append(b.fen())
+    check(not diff, 'a time-out: a draw exactly when the opponent cannot mate (python-chess has_insufficient_material, '
+          '%d cases)%s' % (n, ' ' + diff[0] if diff else ''))
 
 
 def main():

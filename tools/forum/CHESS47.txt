@@ -13,13 +13,17 @@ Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have 
             black; the board turns so that black is at the bottom.
   9         C47 vs C47: the calculator plays both sides until checkmate or a draw. Press any key to stop it and
             take over the side to move.
+  3         two players: two people play on the calculator; the C47 only checks that every move is legal and
+            calls check, checkmate and the draws (+ or 9 give it a side again)
   7         a new game
   1         the level: 2 (two moves ahead, about 10-20 s a move), 1 (one move ahead, a few seconds), 0 CRAZY
             (random legal moves, with a crazy face by the title)
   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
 seven moves. The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
-move played; the side whose time runs out loses (WHITE / BLACK LOST ON TIME). The C47's thinking counts too.
+move played. Only a person's clock runs (the C47's stops while it thinks, so it never loses on time). A person
+whose time runs out loses (WHITE / BLACK LOST ON TIME), unless the opponent could not mate by any series of legal
+moves (a bare king, for example): then it is a draw (DRAW: TIME, NO MATE).
 Promotion is always to a queen. There is no 50-move rule.
 
 ---- What it changes on your calculator ----

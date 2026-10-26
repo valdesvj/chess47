@@ -30,6 +30,7 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 | **5** | pick a piece of yours (shown white on black, on light and dark squares), then **5** on the square to play it; 5 on the same square drops it |
 | **+** | swap sides: the C47 plays the side to move and you take the other; at the start: you play black (the board turns, black at the bottom) |
 | **9** | C47 vs C47: it plays both sides until checkmate or a draw; any key stops it and you take the side to move (0 ends) |
+| **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **7** | a new game (the level and your side kept) |
 | **1** | the level: 2 (2 plies, about 10-20 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
@@ -39,7 +40,10 @@ CHECK, CHECKMATE, STALEMATE, DRAW: REPETITION (the same position the third time,
 (kings only, or one bishop or knight) are shown; there is no 50-move rule. An illegal move is refused (ILLEGAL MOVE, or
 ILLEGAL: CHECK when it leaves your king attacked). The last seven moves are listed on the right. The clock at the top
 left shows each side's time left: **5 minutes each, 10 seconds more for every move played** (a Fischer clock, so a
-lively game can go on as long as it flows). The side whose time runs out loses: WHITE / BLACK LOST ON TIME. Setting
+lively game can go on as long as it flows). **Only a person's clock runs**: the C47's stops while it thinks (at
+level 2 it needs more than the 10 s a move), so it never loses on time, and C47 vs C47 always plays to the end. The side whose time runs out loses (WHITE / BLACK LOST ON TIME), unless the opponent cannot mate by any
+series of legal moves (FIDE 6.9: a bare king, a lone knight against only king and queens, bishops all on one colour
+with no pawn or knight): then DRAW: TIME, NO MATE. Setting
 up is nobody's time; the clock stops when the game is over and is kept with a saved game.
 
 The C47 opens from its book (python/book.py: 14 main lines, Ruy Lopez to Réti, 10 plies each) as long as the game
@@ -140,6 +144,7 @@ Almanac 47's MOON47.
 | `python/layout.py` | the board's place, the piece glyphs, the crazy face (the build writes their words into the program) |
 | `python/book.py` | the opening book (the build writes it into the matrix OB) |
 | `tools/match47.py` | matches in the simulator against a python-chess player, written to `docs/MATCHES.md` |
+| `tools/selfplay47.py` | the rules check (python-chess): the C47 against itself, 5 games at each level by default; every move legal, the board after it, every end of game (mate, stalemate, repetition, material, time-out) as the rules say; `docs/SELFPLAY.md` |
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |
 | `python/chess47sim.py` | runs the program in the simulator and writes the screens in `docs/` |
 | `python/c47sim.py`, `stdfont.py`, `tinyfont.py` | the C47 simulator and fonts, from Almanac 47; the bitwise commands from Logic 47 |
