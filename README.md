@@ -38,7 +38,9 @@ The rules are all there: castling (not out of, through or into check), en passan
 CHECK, CHECKMATE, STALEMATE, DRAW: REPETITION (the same position the third time, the same side to move) and DRAW: MATERIAL
 (kings only, or one bishop or knight) are shown; there is no 50-move rule. An illegal move is refused (ILLEGAL MOVE, or
 ILLEGAL: CHECK when it leaves your king attacked). The last seven moves are listed on the right. The clock at the top
-left counts each side's time (TICKS, the time of the side to move; it stops when the game is over).
+left shows each side's time left: **5 minutes each, 10 seconds more for every move played** (a Fischer clock, so a
+lively game can go on as long as it flows). The side whose time runs out loses: WHITE / BLACK LOST ON TIME. Setting
+up is nobody's time; the clock stops when the game is over and is kept with a saved game.
 
 The C47 opens from its book (python/book.py: 14 main lines, Ruy Lopez to Réti, 10 plies each) as long as the game
 follows one of them, choosing at random among those that fit; then it thinks.

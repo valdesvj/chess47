@@ -150,6 +150,25 @@ def play_tests():
     shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
     check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in c3.mats['GH'][0])
           and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
+    check(keep['TW'] > 3000 and keep['TB'] > 3000, 'the clock: 5 minutes each (3000 tenths) + 10 s a move: W %s, B %s'
+          % (keep['TW'], keep['TB']))
+    low = dict(keep, TW=D(5))
+    shots, c4 = S.run([None] * 300 + [S.PICK], regs=low, mats={'GH': gh})
+    check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(c4.mats['GH'][0][2]) == 0,
+          'white\'s time runs out while it thinks: WHITE LOST ON TIME, the game over, no move played')
+    # the squares drawn after a move: R47 (en passant / castling) must be MAKE's, not the piece count of :HASH:
+    lab = labels()
+    P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l][:-1]
+    P += ['LBL "TPLY"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['MAKE'], 'XEQ %s' % lab['PLAYED'], 'RTN', 'END']
+    fn = os.path.join(tempfile.mkdtemp(), 'CHESS47P.txt')
+    open(fn, 'w', encoding='utf-8').write('\n'.join(P) + '\n')
+    shots, c5 = S.run([], prog=fn)
+    setpos(c5, R.Pos.fen('4k3/8/8/8/8/8/3R3P/4K3 w - - 0 1'))
+    c5.reg['40'], c5.reg['46'] = D(39049), D(3)
+    c5.run('TPLY', maxsteps=10 ** 8)
+    stray = [(x, y) for y, x in c5.pix if L.BX + 8 * L.SQ <= x < 212]
+    check(not stray, 'h2-h3 with a rook and a pawn left: nothing drawn off the board (was a rook glyph by h3: %d pixels)'
+          % len(stray))
 
 
 def main():

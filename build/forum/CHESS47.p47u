@@ -1,6 +1,6 @@
 @ Index:   Chess against the C47: legal moves, check, mate, draws, a 2-ply search, a book, a clock
 @ Author:  Victor Valdes
-@ Version: 0.3.1
+@ Version: 0.3.2
 @ Source:  https://github.com/valdesvj/chess47
 @ Tested:  C47 simulator only (python/c47sim.py): tests/test_chess47.py, the moves, the scores and the choices of
 @ Tested:  the search against python/chess47ref.py (the same algorithm), whose move generator gives the published
@@ -28,12 +28,13 @@
 @             (random legal moves, with a crazy face by the title)
 @   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 @ The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
-@ seven moves. The clock at the top left counts each side's thinking time.
+@ seven moves. The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
+@ move played; the side whose time runs out loses (WHITE / BLACK LOST ON TIME). The C47's thinking counts too.
 @ Promotion is always to a queen. There is no 50-move rule.
 @
 @ ---- What it changes on your calculator ----
 @ Your stack and LASTx are given back at the end. Registers R00-R19 are not touched; R20-R99 are used and cleared
-@ at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB, NW, NB; at the end
+@ at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB (the time left), NW, NB; at the end
 @ it deletes them, except the saved game: the variable CHN with GH, TW and TB (they stay until the game is over or
 @ you start a new one). It works with short integers in UNSIGN mode and gives you back your own integer mode, then
 @ sets WSIZE 64, GRMOD 0 and GRFNT 20.
@@ -44,7 +45,7 @@
 @ ENDDO) of the C47 / R47 firmware, ATEXT and GRFNT, AGRAPH and the bitwise commands AND OR XOR NOT BS?.
 @
 @ ---- Technical notes (from the commented source) ----
-@ CHESS47 v0.3.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+@ CHESS47 v0.3.2 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 @ You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 @ The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 @ queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -64,7 +65,8 @@
 @ square to play it (5 on the same square drops it); + swaps sides (the C47 plays the side to move; black: the board
 @ turns); 9 C47 vs C47 until the end (a key: you take the side to move); 7 a new game; 1 the level 2 -> 1 -> 0
 @ (CRAZY: random legal moves, a crazy face by the title);
-@ 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
+@ 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
+@ for each move played; the side whose time runs out loses (LOST ON TIME). The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
 @ The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
 @ R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, your integer mode back (R.09), GRMOD 0 and GRFNT 20 set.
 @ The integer mode is UNSIGN while CHESS47 runs: its words are bit patterns (keys to 2^32, glyph columns to 2^24, the
@@ -2135,6 +2137,9 @@ ELSE 82
   XEQ 22                        ; -> :THINK:
 ENDIF 82
 XEQ 48                          ; -> :CLOCK:
+RCL 97
+X≠0?
+RTN
 RCL 62
 X=0?
 IF 83
@@ -2241,7 +2246,7 @@ RTN
 @ key, a draw by repetition or material), its squares drawn again, the move in the list, then the state: DRAW,
 @ CHECKMATE, STALEMATE, CHECK, or whose move it is ----
 LBL 43                          ; :PLAYED:
-XEQ 46                          ; -> :GHADD:
+@ the squares first: R47 is still MAKE's flag (1 en passant, 2 castling); LBL :HASH: (in GHADD) uses R47
 RCL 41
 XEQ 63                          ; -> :DRAWSQ:
 RCL 42
@@ -2267,29 +2272,41 @@ IF 88
   RCL 49
   XEQ 63                        ; -> :DRAWSQ:
 ENDIF 88
+XEQ 46                          ; -> :GHADD:
+@ the clock: 10 s (100 tenths) more for the side that moved (R45)
+100
+RCL 45
+X>0?
+IF 89
+  DROP
+  STO+ "TW"
+ELSE 89
+  DROP
+  STO+ "TB"
+ENDIF 89
 XEQ 54                          ; -> :HIST:
 RCL 65
 X≠0?
-IF 89
+IF 90
   1
   STO 97
   RCL 65
   1
   X=Y?
-  IF 90
+  IF 91
     "DRAW: REPETITION"
-  ELSE 90
+  ELSE 91
     "DRAW: MATERIAL"
-  ENDIF 90
+  ENDIF 91
   XEQ 51                        ; -> :STATUS:
   RTN
-ENDIF 89
+ENDIF 90
 XEQ 32                          ; -> :ANYMV:
 X=0?
-IF 91
+IF 92
   XEQ 42                        ; -> :NOMOVE:
   RTN
-ENDIF 91
+ENDIF 92
 XEQ 60                          ; -> :STATE:
 RTN
 @
@@ -2322,10 +2339,10 @@ STO 63
 DO 16
   XEQ 45                        ; -> :BKM:
   X≠0?
-  IF 92
+  IF 93
     1
     STO+ 65
-  ENDIF 92
+  ENDIF 93
   1
   STO+ 63
 @   the rows of OB (written by the build)
@@ -2348,16 +2365,16 @@ STO 63
 DO 17
   XEQ 45                        ; -> :BKM:
   X≠0?
-  IF 93
+  IF 94
     -1
     STO+ 66
     RCL 66
     X=0?
-    IF 94
+    IF 95
       XEQ 45                    ; -> :BKM:
       STO 62
-    ENDIF 94
-  ENDIF 93
+    ENDIF 95
+  ENDIF 94
   1
   STO+ 63
   RCL 62
@@ -2372,7 +2389,7 @@ DO 18
   RCL 67
   RCL 64
   X≤Y?
-  IF 95
+  IF 96
     INDEX "OB"
     RCL 63
     RCL 64
@@ -2387,18 +2404,18 @@ DO 18
     INDEX "BD"
     RCL 49
     X=Y?
-    IF 96
+    IF 97
       1
       STO+ 64
       1
-    ELSE 96
+    ELSE 97
       0
       STO 64
       0
-    ENDIF 96
-  ELSE 95
+    ENDIF 97
+  ELSE 96
     0
-  ENDIF 95
+  ENDIF 96
   X≠0?
 WHILE 18
 ENDDO 18
@@ -2436,14 +2453,14 @@ STO 64
 RCL 47
 1
 X≥Y?
-IF 97
+IF 98
   RCL 46
   X=0?
-  IF 98
+  IF 99
     2
     STO 65
-  ENDIF 98
-ENDIF 97
+  ENDIF 99
+ENDIF 98
 299
 RCL 63
 X>Y?
@@ -2470,23 +2487,23 @@ STO 67
 DO 19
   RCL 67
   X≤0?
-  IF 99
+  IF 100
     0
-  ELSE 99
+  ELSE 100
     2
     RCL 67
     STOIJ
     RCLEL
     RCL 64
     X=Y?
-    IF 100
+    IF 101
       1
       STO+ 66
-    ENDIF 100
+    ENDIF 101
     -2
     STO+ 67
     1
-  ENDIF 99
+  ENDIF 100
   X≠0?
 WHILE 19
 ENDDO 19
@@ -2494,10 +2511,10 @@ INDEX "BD"
 RCL 66
 2
 X≤Y?
-IF 101
+IF 102
   1
   STO 65
-ENDIF 101
+ENDIF 102
 RTN
 @
 @ ---- LBL :HASH: X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): for each
@@ -2527,7 +2544,7 @@ DO 20
   ABS
   2.5
   X≥Y?
-  IF 102
+  IF 103
     RCL 31
     7
     +
@@ -2546,7 +2563,7 @@ DO 20
     ABS
     6
     X≠Y?
-    IF 103
+    IF 104
       1
       STO+ 47
       RCL 31
@@ -2556,12 +2573,12 @@ DO 20
       ABS
       0.5
       X<Y?
-      IF 104
+      IF 105
         1
         STO+ 46
-      ENDIF 104
-    ENDIF 103
-  ENDIF 102
+      ENDIF 105
+    ENDIF 104
+  ENDIF 103
   1
   STO+ 30
   99
@@ -2571,20 +2588,21 @@ WHILE 20
 ENDDO 20
 RCL 20
 X<0?
-IF 105
+IF 106
   3141592653
   SINT
   RCL 49
   XOR
   STO 49
-ENDIF 105
+ENDIF 106
 RCL 49
 →REAL
 WSIZE 64
 RTN
 @
-@ ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
-@ black; not when the game is over), the clock drawn at the top left: X = 1 ----
+@ ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) off the time left of the side to move
+@ (TW white, TB black: 5 minutes at the start, 10 s more for each move: LBL :PLAYED:; not when the game is over);
+@ none left: WHITE / BLACK LOST ON TIME, the game over (R97). The clock drawn at the top left: X = 1 ----
 LBL 48                          ; :CLOCK:
 TICKS
 RCL "TK"
@@ -2594,22 +2612,51 @@ X<>Y
 -
 RCL 97
 X≠0?
-IF 106
+IF 107
   DROP
   DROP
   0
-ELSE 106
-  DROP
-ENDIF 106
-RCL 20
-X>0?
-IF 107
-  DROP
-  STO+ "TW"
 ELSE 107
   DROP
-  STO+ "TB"
 ENDIF 107
+RCL 20
+X>0?
+IF 108
+  DROP
+  STO- "TW"
+ELSE 108
+  DROP
+  STO- "TB"
+ENDIF 108
+@ the time left of the side to move run out (0 or less) while the game is on: it loses on time
+RCL 97
+X=0?
+IF 109
+  RCL 20
+  X>0?
+  IF 110
+    RCL "TW"
+  ELSE 110
+    RCL "TB"
+  ENDIF 110
+  X≤0?
+  IF 111
+    1
+    STO 97
+    RCL 20
+    X>0?
+    IF 112
+      0
+      STO "TW"
+      "WHITE LOST ON TIME"
+    ELSE 112
+      0
+      STO "TB"
+      "BLACK LOST ON TIME"
+    ENDIF 112
+    XEQ 51                      ; -> :STATUS:
+  ENDIF 111
+ENDIF 109
 ""
 STO 48
 "W "
@@ -2653,10 +2700,10 @@ MOD
 STO 49
 10
 X>Y?
-IF 108
+IF 113
   "0"
   x→α 48
-ENDIF 108
+ENDIF 113
 RCL 49
 αIP 48
 RTN
@@ -2666,11 +2713,11 @@ LBL 50                          ; :TOMOVE:
 RCL 20
 RCL 27
 X=Y?
-IF 109
+IF 114
   "YOUR MOVE"
-ELSE 109
+ELSE 114
   "C47 TO MOVE"
-ENDIF 109
+ENDIF 114
 XEQ 51                          ; -> :STATUS:
 RTN
 @
@@ -2718,29 +2765,29 @@ ATEXT Z
 STO 48
 RCL 27
 X>0?
-IF 110
+IF 115
   "WHITE"
-ELSE 110
+ELSE 115
   "BLACK"
-ENDIF 110
+ENDIF 115
 x→α 48
 RCL 27
 X=0?
-IF 111
+IF 116
   "C47 VS C47"
   STO 48
-ENDIF 111
+ENDIF 116
 "   LEVEL "
 x→α 48
 RCL 26
 X=0?
-IF 112
+IF 117
   "CRAZY"
   x→α 48
-ELSE 112
+ELSE 117
   RCL 26
   αIP 48
-ENDIF 112
+ENDIF 117
 RCL 48
 200
 212
@@ -2775,7 +2822,7 @@ STO 30
 STO 31
 RCL 26
 X=0?
-IF 113
+IF 118
 @   the face of python/layout.py, one column a word (written by the build)
   16320
   SINT
@@ -2937,7 +2984,7 @@ IF 113
   RCL 30
   AGRAPH 99
   STO 30
-ELSE 113
+ELSE 118
   0
   SINT
   STO 99
@@ -2952,7 +2999,7 @@ ELSE 113
     DSE 33
   WHILE 21
   ENDDO 21
-ENDIF 113
+ENDIF 118
 0
 GRMOD
 WSIZE 64
@@ -2980,12 +3027,12 @@ DO 22
   ATEXT Z
   RCL IND 48
   STRI?
-  IF 114
+  IF 119
     RCL IND 48
     RCL 49
     212
     ATEXT Z
-  ENDIF 114
+  ENDIF 119
   -12
   STO+ 49
   1
@@ -3018,15 +3065,15 @@ RCL 96
 αIP 79
 RCL 45
 X>0?
-IF 115
+IF 120
   ". "
   x→α 79
-ELSE 115
+ELSE 120
   "... "
   x→α 79
   1
   STO+ 96
-ENDIF 115
+ENDIF 120
 RCL 41
 XEQ 57                          ; -> :SQNAME:
 RCL 42
@@ -3064,10 +3111,10 @@ DO 23
   RCLEL
   8
   X≠Y?
-  IF 116
+  IF 121
     RCL 41
     XEQ 63                      ; -> :DRAWSQ:
-  ENDIF 116
+  ENDIF 121
   1
   STO+ 41
   99
@@ -3161,7 +3208,7 @@ RCL 68
 STO 27
 DROP
 X≠Y?
-IF 117
+IF 122
   61
   RCL 27
   25
@@ -3169,7 +3216,7 @@ IF 117
   -
   STO 28
   XEQ 58                        ; -> :BOARD:
-ENDIF 117
+ENDIF 122
 XEQ 52                          ; -> :PANEL:
 RTN
 @
@@ -3177,11 +3224,11 @@ RTN
 LBL 60                          ; :STATE:
 XEQ 33                          ; -> :INCHK:
 X≠0?
-IF 118
+IF 123
   "CHECK"
   XEQ 51                        ; -> :STATUS:
   RTN
-ENDIF 118
+ENDIF 123
 XEQ 50                          ; -> :TOMOVE:
 RTN
 @
@@ -3204,11 +3251,11 @@ MOD
 STO 35
 RCL 27
 X<0?
-IF 119
+IF 124
   7
   RCL- 35
   STO 35
-ENDIF 119
+ENDIF 124
 RCL 35
 24
 ×
@@ -3226,11 +3273,11 @@ IP
 STO 36
 RCL 27
 X<0?
-IF 120
+IF 125
   7
   RCL- 36
   STO 36
-ENDIF 120
+ENDIF 125
 RCL 36
 24
 ×
@@ -3267,24 +3314,24 @@ STO 35
 RCL 29
 RCL 34
 X=Y?
-IF 121
+IF 126
   1
   STO 35
-ELSE 121
+ELSE 126
   RCL 32
   13
   ×
   STO+ 36
-ENDIF 121
+ENDIF 126
 0
 STO 32
 RCL 28
 RCL 34
 X=Y?
-IF 122
+IF 127
   1
   STO 32
-ENDIF 122
+ENDIF 127
 INDEX "GL"
 RCL 36
 1
@@ -3298,7 +3345,7 @@ STO 33
 RCL 32
 RCL+ 35
 X=0?
-IF 123
+IF 128
   DO 26
     RCLSEQ
     SINT
@@ -3311,13 +3358,13 @@ IF 123
     DSE 33
   WHILE 26
   ENDDO 26
-ELSE 123
+ELSE 128
   DO 27
     RCLSEQ
     SINT
     RCL 32
     X≠0?
-    IF 124
+    IF 129
       DROP
       RCL 33
       12.5
@@ -3325,28 +3372,28 @@ ELSE 123
       ABS
       10
       X<Y?
-      IF 125
+      IF 130
         DROP
         DROP
         16777215
-      ELSE 125
+      ELSE 130
         DROP
         DROP
         12582915
-      ENDIF 125
+      ENDIF 130
       SINT
       OR
-    ELSE 124
+    ELSE 129
       DROP
-    ENDIF 124
+    ENDIF 129
     RCL 35
     X≠0?
-    IF 126
+    IF 131
       DROP
       NOT
-    ELSE 126
+    ELSE 131
       DROP
-    ENDIF 126
+    ENDIF 131
     STO 99
     DROP
     RCL 31
@@ -3356,7 +3403,7 @@ ELSE 123
     DSE 33
   WHILE 27
   ENDDO 27
-ENDIF 123
+ENDIF 128
 0
 GRMOD
 INDEX "BD"
@@ -3913,12 +3960,12 @@ NEWMAT
 STO "GL"
 RCL 68
 X=0?
-IF 127
+IF 132
   2
   300
   NEWMAT
   STO "GH"
-ENDIF 127
+ENDIF 132
 @ the opening book of python/book.py: the matrix OB (written by the build)
 14
 11
@@ -4476,13 +4523,13 @@ DO 29
   MOD
   8
   X≤Y?
-  IF 128
+  IF 133
     3
     STO+ 30
-  ELSE 128
+  ELSE 133
     1
     STO+ 30
-  ENDIF 128
+  ENDIF 133
   99
   RCL 30
   X≤Y?
@@ -4578,7 +4625,7 @@ STO 97
 @ the level and your side of the saved game (CHN 0: level 2, white)
 RCL "CHN"
 X≠0?
-IF 129
+IF 134
   10
   MOD
   2
@@ -4591,7 +4638,7 @@ IF 129
   10
   MOD
   STO 26
-ENDIF 129
+ENDIF 134
 @ R72-R79: no moves yet (0, not a text)
 XEQ 65                          ; -> :PSTALL:
 XEQ 68                          ; -> :GLYPHS:
@@ -4608,17 +4655,17 @@ TICKS
 STO "TK"
 RCL 68
 X=0?
-IF 130
-  0
+IF 135
+  3000
   STO "TW"
   STO "TB"
-ENDIF 130
+ENDIF 135
 @ the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
 WSIZE 64
 XEQ 18                          ; -> :NINIT:
 RCL 68
 X≠0?
-IF 131
+IF 136
   1
   STO 69
   DO 32
@@ -4641,13 +4688,16 @@ IF 131
     X≤Y?
   WHILE 32
   ENDDO 32
-ENDIF 131
+ENDIF 136
 @ the screen: the board, the panel, the moves, the state
 CLLCD
 XEQ 58                          ; -> :BOARD:
 XEQ 52                          ; -> :PANEL:
 XEQ 55                          ; -> :HSHOW:
 XEQ 60                          ; -> :STATE:
+@ the clock from now (the setting up is nobody's time)
+TICKS
+STO "TK"
 XEQ 48                          ; -> :CLOCK:
 DROP
 INDEX "BD"
@@ -4673,9 +4723,9 @@ DO 33
   ABS
   3.5
   X≥Y?
-  IF 132
+  IF 137
     XEQ 66                      ; -> :PSQ:
-  ENDIF 132
+  ENDIF 137
   1
   STO+ 42
   99
@@ -4748,18 +4798,18 @@ RCL 47
 ABS
 0.5
 X=Y?
-IF 133
+IF 138
   RCL 48
   3
   -
   ABS
   1
   X≥Y?
-  IF 134
+  IF 139
     8
     STO+ 43
-  ENDIF 134
-ENDIF 133
+  ENDIF 139
+ENDIF 138
 1
 XEQ 67                          ; -> :PSTO:
 RCL 49
@@ -4783,10 +4833,10 @@ STO 43
 RCL 48
 6
 X=Y?
-IF 135
+IF 140
   10
   STO+ 43
-ENDIF 135
+ENDIF 140
 4
 XEQ 67                          ; -> :PSTO:
 RCL 49
@@ -4805,10 +4855,10 @@ RCL 49
 STO 43
 RCL 48
 X=0?
-IF 136
+IF 141
   10
   STO+ 43
-ENDIF 136
+ENDIF 141
 6
 XEQ 67                          ; -> :PSTO:
 RTN
@@ -5920,7 +5970,7 @@ DO 34
     DROP
     RCL 41
     X≠0?
-    IF 137
+    IF 142
       RCL 41
       ABS
       26
@@ -5931,20 +5981,20 @@ DO 34
       SINT
       STO 49
       DROP
-    ENDIF 137
+    ENDIF 142
     5592405
     SINT
     RCL 33
     2
     MOD
     X=0?
-    IF 138
+    IF 143
       DROP
       11184810
       SINT
-    ELSE 138
+    ELSE 143
       DROP
-    ENDIF 138
+    ENDIF 143
     RCL 49
     NOT
     AND

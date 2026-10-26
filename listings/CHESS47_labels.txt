@@ -48,7 +48,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :BKM:      45  
 :GHADD:    46  the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
 :HASH:     47  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
-:CLOCK:    48  the time since the last call (TICKS, tenths of a second) to the side to move (TW white, TB
+:CLOCK:    48  the time since the last call (TICKS, tenths of a second) off the time left of the side to 
 :MMSS:     49  X = tenths of a second: m:ss appended to R48
 :TOMOVE:   50  ======== the screen ========
 :STATUS:   51  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared)

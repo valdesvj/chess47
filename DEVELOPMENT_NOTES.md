@@ -118,6 +118,18 @@ C47 mode until mate.
 - tools/build_p47.py (Victor runs it with rejig): build/p47/CHESS47.p47 from the forum file, --validate=r47, the same
   bytes as from the plain listing. tests/test_forum.py.
 
+## Oct 26, 2026 - v0.3.2: pieces drawn off the board, the 5-minute clock (branch claude/chess47-clock)
+
+- Victor's C47 after a 239-move CRAZY game: black rooks drawn right of the board, over the move list. :PLAYED: called
+  :GHADD: first, and its :HASH: counts the pieces other than the kings in R47; :PLAYED: then read R47 as MAKE's flag
+  (1 en passant, 2 castling): with one or two pieces left an ordinary move redrew a captured pawn's or a rook's
+  squares, h-file moves the border (8, drawn as row 15 of GL: a black rook on a dark square). Since v0.2. Now the
+  squares are drawn first, GHADD after. Test: h2-h3 with a rook and a pawn (the old build: 91 pixels off the board).
+- The clock (Victor): 5 minutes each, 10 s more a move (Fischer); TW TB are the time left (3000 tenths at the start),
+  :CLOCK: takes the time off the side to move and at 0 or less: WHITE / BLACK LOST ON TIME (R97); :PLAYED: adds 100
+  to the side that moved; :C47MV: plays no move when its time ran out while it thought. TK is set at the end of INIT
+  (the setting up was white's time). A game saved by v0.3.1 has its used time in TW TB: read as the time left.
+
 ## Plans (v0.4)
 
 - A capture search at the leaves, then 3 plies at level 3 when the speed allows.

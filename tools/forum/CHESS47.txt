@@ -18,12 +18,13 @@ Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have 
             (random legal moves, with a crazy face by the title)
   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
-seven moves. The clock at the top left counts each side's thinking time.
+seven moves. The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
+move played; the side whose time runs out loses (WHITE / BLACK LOST ON TIME). The C47's thinking counts too.
 Promotion is always to a queen. There is no 50-move rule.
 
 ---- What it changes on your calculator ----
 Your stack and LASTx are given back at the end. Registers R00-R19 are not touched; R20-R99 are used and cleared
-at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB, NW, NB; at the end
+at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB (the time left), NW, NB; at the end
 it deletes them, except the saved game: the variable CHN with GH, TW and TB (they stay until the game is over or
 you start a new one). It works with short integers in UNSIGN mode and gives you back your own integer mode, then
 sets WSIZE 64, GRMOD 0 and GRFNT 20.
