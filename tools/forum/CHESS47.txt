@@ -1,0 +1,34 @@
+---- What it is ----
+Chess 47 lets you play chess against your calculator. The board is drawn on the screen and you move the pieces
+with the number keys. The C47 knows all the rules (castling, en passant, promotion, check, checkmate, stalemate,
+draw by repetition or by too little material), opens from a small book of known openings and then thinks two
+moves ahead. It can also play against itself.
+
+---- How to use it ----
+Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have the white pieces and it is your move.
+  8 2 4 6   move the cursor up, down, left and right (as you see the board)
+  5         pick up the piece under the cursor (it shows white on black); move the cursor to the square where it
+            goes and press 5 again. 5 on the same square puts it back. An illegal move is refused.
+  +         swap sides: the C47 takes the side to move and you take the other. Press it at the start to play
+            black; the board turns so that black is at the bottom.
+  9         C47 vs C47: the calculator plays both sides until checkmate or a draw. Press any key to stop it and
+            take over the side to move.
+  7         a new game
+  1         the level: 2 (two moves ahead, about 10-20 s a move), 1 (one move ahead, a few seconds), 0 CRAZY
+            (random legal moves, with a crazy face by the title)
+  0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
+The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
+seven moves. The clock at the top left counts each side's thinking time.
+Promotion is always to a queen. There is no 50-move rule.
+
+---- What it changes on your calculator ----
+Your stack and LASTx are given back at the end. Registers R00-R19 are not touched; R20-R99 are used and cleared
+at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB, NW, NB; at the end
+it deletes them, except the saved game: the variable CHN with GH, TW and TB (they stay until the game is over or
+you start a new one). It works with short integers in UNSIGN mode and gives you back your own integer mode, then
+sets WSIZE 64, GRMOD 0 and GRFNT 20.
+
+---- Programs and labels ----
+One program, CHESS47, with one global label (CHESS47). Every routine inside is a local label (LBL 01-99), so
+nothing else is added to your program catalogue. It uses the STRUCT commands (IF / ELSE / ENDIF, DO / WHILE /
+ENDDO) of the C47 / R47 firmware, ATEXT and GRFNT, AGRAPH and the bitwise commands AND OR XOR NOT BS?.
