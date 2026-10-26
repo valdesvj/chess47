@@ -11,6 +11,11 @@ getcontext().prec = 34
 
 def f(x): return float(x)
 
+class SI(D):
+    """chess47: a short integer (SINT, the bitwise commands); →REAL makes it a real again. The C47 refuses it in
+    STOEL (a real matrix): Invalid input data type. To be taken into Almanac 47's c47sim.py."""
+
+
 class Mat:
     """A real matrix on the stack (RCL of a named matrix, results of matrix operations)."""
     def __init__(self, rows): self.rows = [[v if isinstance(v, complex) else float(v) for v in r] for r in rows]
@@ -630,7 +635,7 @@ class Calc:
                 lo, hi = (0, 1 << w) if getattr(self, 'signmode', '2COMPL') == 'UNSIGN' else (-(1 << (w - 1)), 1 << (w - 1))
                 if not lo <= v < hi:
                     raise ValueError('SINT: Out of range: %d at WSIZE %d %s' % (v, w, getattr(self, 'signmode', '2COMPL')))
-            if op == 'SINT': self.unary(lambda x: D(int(x))); continue   # real -> short integer (the bits stay)
+            if op == 'SINT': self.unary(lambda x: SI(int(x))); continue  # real -> short integer (the bits stay; SI: chess47)
             if op in ('SF', 'CF', 'FS?', 'FC?', 'FS?C', 'FC?C') and re.fullmatch(r'F?\.\d\d', arg):
                 pc = self.localflag(op, int(arg[-2:]), pc); continue
             if op == 'CF': self.flags.discard(int(arg)); continue
@@ -658,6 +663,9 @@ class Calc:
             if op == 'DELITM':                                        # delete a variable (fnDeleteVariable)
                 self.reg.pop(arg, None); self.mats.pop(arg, None); continue
             if op == 'STOEL':                            # real34 kept (C47 real matrix); a complex number kept too
+                x = self.s[0]
+                if isinstance(x, SI):                    # chess47: a short integer into a real matrix (Victor's C47, Oct 26)
+                    raise ValueError('STOEL of a short integer: Invalid input data type for this operation')
                 x = self.s[0]; self.mats[self.cur][self.I-1][self.J-1] = x if isinstance(x, (D, complex)) else float(x); continue
             if op in ('M.DIM', 'DIM'):                  # item 1526: Y x X zeros in the register (a new size)
                 r, c = int(self.s[1]), int(self.s[0]); k = arg.strip('"')
@@ -703,10 +711,10 @@ class Calc:
                 m = (1 << getattr(self, 'ws', 64)) - 1
                 a, b = int(self.s[1]) & m, int(self.s[0]) & m
                 v = {'AND': a & b, 'OR': a | b, 'XOR': a ^ b, 'NAND': ~(a & b) & m, 'NOR': ~(a | b) & m}[op]
-                self.lastx = self.s[0]; self.s = [D(v)] + self.s[2:] + self.s[3:]; continue
+                self.lastx = self.s[0]; self.s = [SI(v)] + self.s[2:] + self.s[3:]; continue
             if op == 'NOT':
                 m = (1 << getattr(self, 'ws', 64)) - 1
-                self.lastx = self.s[0]; self.s[0] = D(~int(self.s[0]) & m); continue
+                self.lastx = self.s[0]; self.s[0] = SI(~int(self.s[0]) & m); continue
             if op in ('BS?', 'BC?'):                          # bit n (the argument) of X set / clear: a test
                 bit = int(self.regkey(arg)) if arg.startswith('IND ') else int(arg)   # IND r: the bit number in r (not n: run's counter)
                 on = bool(int(self.s[0]) >> bit & 1)

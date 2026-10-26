@@ -123,3 +123,12 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - CHESS47 runs in UNSIGN (INIT) and restores the user's mode: at WSIZE 8, 1 SINT NOT →REAL = 254 / -2 / -1 / -126 for
   UNSIGN / 2COMPL / 1COMPL / SIGNMT, kept in R.09 (LocR 10). The knight masks and :BIT: plain positive again (h8 = 2^63).
 - Tests: all OK with the range check; the mode back from 2COMPL and from UNSIGN; 2 matches whole.
+
+## Oct 26, 2026 - Invalid input data type: STOEL of a short integer (branch claude/chess47-stoel)
+
+- With UNSIGN the C47 (Victor's simulator) went past the SINTs and stopped in :GLYPHS: at STOEL: the glyph word
+  (5 592 405, a short integer) into the real matrix GL: "Invalid input data type for this operation". Now →REAL
+  before the STOEL (UNSIGN: the word's value, positive); :DRAWSQ: reads it with RCLEL SINT as before.
+- c47sim keeps the type: SINT and AND OR XOR NOT give a short integer (class SI), →REAL a real; STOEL refuses a short
+  integer as the C47 (marked chess47; to be taken to Almanac 47). Scanned over the whole test run: no other command
+  gets a short integer except SINT, →REAL, the bitwise ones, AGRAPH and the stores.
