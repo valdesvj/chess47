@@ -19,7 +19,9 @@ REM the same square drops it); + the C47 plays the side to move (you take the ot
 REM (CRAZY: random legal moves, a crazy face by the title);
 REM 0 ends. The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
-REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, GRMOD 0 and GRFNT 20 set.
+REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, your integer mode back (R.09), GRMOD 0 and GRFNT 20 set.
+REM The integer mode is UNSIGN while CHESS47 runs: its words are bit patterns (keys to 2^32, glyph columns to 2^24, the
+REM knights to 2^64): in 2COMPL SINT refuses the top bit (Out of range).
 REM Registers: R20 the side to move (+1 white, -1 black), R21 the en passant square (0 none), R22 the castling word,
 REM R23 SC, R24 R25 the white and black king's squares, R26 the level, R27 your side, R28 the cursor, R29 the
 REM square picked (0 none); R30-R39 the move generator (R30 the square, R31 its piece x its colour, R32 the colour,
@@ -37,10 +39,18 @@ REM Screen 400 x 240, row 0 = bottom: the board at x 12-203, rows 20-211 (python
 REM Control flow in the C47 STRUCT commands (IF / ELSE / ENDIF, DO / WHILE / ENDDO), indented two spaces per
 REM level; tools/build_chess47.py checks them, numbers them and fills the REM ==== line from python/layout.py.
 LBL "CHESS47"
-LocR 9
+LocR 10
 STOS R.00
 LASTx
 STO R.08
+REM your integer mode in R.09: at WSIZE 8, 1 SINT NOT ->REAL is 254 in UNSIGN, -2 in 2COMPL, -1 in 1COMPL, -126 in
+REM SIGNMT (11111110 read in each mode); CHESS47 runs in UNSIGN and gives your mode back at the end
+WSIZE 8
+1
+SINT
+NOT
+→REAL
+STO R.09
 XEQ :INIT:
 REM ---- the game: your move (the keys) or the C47's, until 0 (R98 = 82) ----
 DO
@@ -57,7 +67,7 @@ DO
   X≠Y?
 WHILE
 ENDDO
-REM ---- the end: R20-R99 cleared (R-CLR 20.79: 20 + 79 stays below 100, a count 0 is refused; then R99), the matrices deleted, WSIZE 64, GRMOD 0, GRFNT 20, the screen; your stack back ----
+REM ---- the end: R20-R99 cleared (R-CLR 20.79: 20 + 79 stays below 100, a count 0 is refused; then R99), the matrices deleted, WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20, the screen; your stack back ----
 20.79
 R-CLR
 0
@@ -72,6 +82,24 @@ DELITM "TB"
 DELITM "NW"
 DELITM "NB"
 WSIZE 64
+RCL R.09
+-2
+X=Y?
+IF
+  2COMPL
+ENDIF
+RCL R.09
+-1
+X=Y?
+IF
+  1COMPL
+ENDIF
+RCL R.09
+-126
+X=Y?
+IF
+  SIGNMT
+ENDIF
 0
 GRMOD
 20
@@ -995,8 +1023,8 @@ ELSE
   STO "NB"
 ENDIF
 RTN
-REM ---- LBL :BIT: X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZE 64);
-REM h8 (bit 63) from -2^63, so SINT never gets 2^63 or more (2COMPL) ----
+REM ---- LBL :BIT: X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZE 64,
+REM UNSIGN: h8 is 2^63) ----
 LBL :BIT:
 1
 -
@@ -1017,13 +1045,6 @@ IP
 2
 X<>Y
 Y^X
-9223372036854775807
-X<>Y
-X>Y?
-IF
-  18446744073709551616
-  -
-ENDIF
 SINT
 RTN
 REM ---- LBL :NINIT: row 22 of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the board ----
@@ -2834,6 +2855,7 @@ LBL :INIT:
 R-CLR
 0
 STO 99
+UNSIGN
 WSIZE 24
 CLLCD
 21

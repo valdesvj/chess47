@@ -169,6 +169,13 @@ def main():
           and not any(k in c.mats for k in ('BD', 'GL', 'GH', 'OB'))
           and not any(k in c.reg for k in ('TK', 'TW', 'TB', 'NW', 'NB')),
           '0 after two moves: your stack back, R20-R99 cleared, the matrices and the clock deleted')
+    import c47sim
+    for mode in ('2COMPL', 'UNSIGN'):                        # your integer mode back (CHESS47 runs in UNSIGN)
+        cc = c47sim.load([S.PROG]); cc.s = [D(1)] * 4; cc.pix = []; cc.keys = [S.HAND, S.END]; cc.steps = 0
+        cc.frames = []; cc.signmode = mode
+        cc.run('CHESS47', maxsteps=10 ** 9)
+        check(cc.signmode == mode, 'started in %s, ended in %s (the sim refuses SINT out of range, as the C47)'
+              % (mode, cc.signmode))
 
     print('== CRAZY (level 0): random legal moves')
     import chess
