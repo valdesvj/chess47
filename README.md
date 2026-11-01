@@ -36,7 +36,7 @@ see *Speed* below. v0.4.0 adds Chess960.
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **7** | a new game of normal chess (the level and your side kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
-| **1** | the level: 2 (2 plies, about 7-12 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
+| **1** | the level, in turn: 2 (2 plies, about 6-11 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **3** (level 2 first, then 3 plies for at most 60 s more: the deeper move when it is found in time, else the best found so far or level 2's) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
@@ -109,7 +109,7 @@ random games (castling included).
 - **Not used:** EIGEN and the 34-digit precision don't make a chess engine stronger, so they are not forced in.
   The plans are in `DEVELOPMENT_NOTES.md`.
 
-## Speed (v0.3.4)
+## Speed (v0.5.0)
 
 The same moves and the same values as v0.2 (the Python twin is unchanged), counted in simulator steps over three
 middle-game positions at level 2 (0.17 ms a step on the C47):
@@ -125,6 +125,8 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 | **v0.3** (h8's bit kept signed, below) | **263 000** | **13-19 s** |
 | v0.3.3 (the same search; the clock, the move list in SAN) | 253 000 | |
 | **v0.3.4**: the killer move: the reply that refuted the last root move is tried first (when it is still a move), before any reply is generated; when it refutes this one too, no reply is generated at all | **203 000** | **7-12 s** |
+
+| **v0.5.0**: ADD reads the target through the index its caller set and checks the list's room only in the list modes; GEN tests an own piece with one `X>0?`; DELTA takes from and to from R30 R33; VAL inlined in DELTA and MAKE; ATT's diagonals and lines in two loops; GPAWN, GSLIDE and 8 other routines inlined (10 local labels freed) | 15 positions: 901 000 -> 839 000 (93 %) | **6-11 s** |
 
 The killer move over 15 positions (these three, two of the tests, ten of random games): 1 407 000 steps -> 915 000
 (65 %: about 16 s -> 10 s a move on average), the same move and value in each.

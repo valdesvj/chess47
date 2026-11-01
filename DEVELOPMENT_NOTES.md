@@ -241,3 +241,34 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   as a quiet move. tests/test_chess47.py: 8 start positions, GEN and THINK in 14 positions with 19 castlings, ÷ 1 2 3
   and castling by the keys, C47 vs C47 (16 plies as the twin), 0 and back, ÷ 9 9 9 refused, ÷ ÷, 7.
   tools/selfplay47.py ... 960: games from random positions checked by python-chess (chess960=True).
+
+## Nov 1, 2026 - v0.5.0: level 3 (60 s), speed-ups, refactoring (branch claude/chess47-level3)
+
+- Level 3 (key 1: 2 -> 1 -> CRAZY -> 3): level 2 first, then :THINK3: the root moves again (level 2's move first),
+  each (:ROOT3:) rejected when not legal (:INCHK2:), else a mate (:MATEQ:) or the replies listed (GEN mode 4, ML row
+  3) and played (:REPLY3:, the killer first, skipped in the list when it was valued: flag BD (11, 17)); after each reply
+  (:R3ONE:, ply 2) S's answers valued as level 2 values the replies (GEN mode 5: :AQEVAL: / :ACEVAL:, RECAP with the
+  recapture by the side that did not move: its value with the sign that hurts the mover), the best legal one in R29
+  (legality tested only when it is the best so far: MAKE ply 3, INCHK2), the answer killer first (BD (11, 8-10),
+  :AKILL:, :KOK: shared with the level-2 killer, :KSET0: with R48 the first column); a reply that takes the king ends
+  the line (lost); no legal answer: -29500 in check (mate), 0 (stalemate). The cuts: answers at R29 >= R65, replies at
+  R65 <= R61. The time: BD (11, 15) TICKS at the start, (11, 18) the budget (600 tenths, INIT; the tests raise it),
+  :TIME3: after each reply and each root move; over: the reply's root move not counted (R65 -30000), then the best of
+  the root moves done, or level 2's move. R29 (0 while the C47 thinks) is kept in (11, 14).
+- The twin: search(3) = search(2), then search3(first) and answers(); Pos.budget (answers allowed) stands for the
+  C47's 60 s in tools/elo47.py (about 0.08 s an answer on the C47: 750). tests/test_chess47.py level3_tests: three
+  positions to the end as search(3) (the start 58 s, e5 en passant 118 s, a mate in one either way 37 s), the 60 s
+  budget (a legal move within 60 s + level 2), the key.
+- Found by tools/elo47.py on the way: level 3 played Nf4xg2 in check (Qxe8 took the king, then Nxe1 took White's:
+  even). Now the root move's legality first, the king's capture ends a line, mate below everything legal.
+- A bug of the level-3 port, found by the tests (the move lists): the mode-5 test in ADD's capture branch pushed two
+  values and the piece taken fell off the 4-level stack (every capture coded 3): DROP DROP after each mode test.
+- Speed-ups (15 positions at level 2, the same move in each): ADD reads the target through the index its callers set
+  (they all have just read it) and checks the room of the list only where it stores; GEN tests an own piece with X>0?
+  (GENSQ rejects the border); DELTA takes from and to from R30 R33 (all its callers have them; R40 is built only in
+  ALEGAL and KSET0); VAL inlined in DELTA and MAKE; ATT's diagonals and lines in two loops with the kind as a
+  constant. 913 577 -> 839 425 steps (level 3's build; v0.4.0: 901 370).
+- Refactoring: GPAWN, GSLIDE, ATTC, ADDC, PSQ, CSQ, FACE, SQXY, C960M and ALEGAL inlined where they were called (one
+  caller each; a call after a test became test / IF / ... / ENDIF): 99 -> 89 local labels, 26 steps fewer.
+- Tried and not done: the board in local registers (RCL IND: one step a square instead of four). LocR is run already,
+  but how local registers behave indirectly and inside subroutines is not checked on the C47: a test for Victor first.

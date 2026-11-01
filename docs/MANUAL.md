@@ -43,7 +43,7 @@ The moves are listed in standard algebraic notation, as in a book: `e4`, `Nf3`, 
 | **+** | swap sides: the C47 takes the side to move and you the other. At the start: you play black (the board turns) |
 | **9** | C47 vs C47: it plays both sides to the end; any key stops it and you take the side to move |
 | **3** | two players: the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
-| **1** | the level: 2 (two moves ahead), 1 (one move ahead), CRAZY (random legal moves) |
+| **1** | the level, in turn: 2 (two moves ahead), 1 (one move ahead), CRAZY (random legal moves), 3 (three moves ahead, at most about a minute more a move) |
 | **7** | a new game of normal chess (the level and your side kept) |
 | **÷** | a new Chess960 game (below) |
 | **0** | the end: an unfinished game is kept and goes on at the next XEQ CHESS47 |

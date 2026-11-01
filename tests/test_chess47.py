@@ -379,8 +379,39 @@ def main():
     shots, c = S.run([S.PICK, S.UP, S.UP, S.UP, S.PICK])
     check(c.reg.get('20') == 1 and S.board(c)[36] == 1, 'e2-e5 refused: the pawn stays, white to move')
     chess960_tests(prog)
+    level3_tests(prog)
     print('\n%s' % ('ALL OK' if not FAIL else '%d FAILED' % len(FAIL)))
     return 1 if FAIL else 0
+
+
+def level3_tests(prog):
+    """Level 3 (LBL :THINK3:) against chess47ref.search(3): to the end (the budget raised), then with the C47's 60 s."""
+    import copy
+    print('== level 3 (:THINK3:) against chess47ref.search(3)')
+    for f in (FENS[0], FENS[7], 'r1b1kb1r/2p1pppp/2Q5/p3N3/2PPpn2/P6P/1P3PP1/RN2K2R b KQkq - 0 12'):
+        p = R.Pos.fen(f)
+        shots, c = S.run([], prog=prog)
+        setpos(c, p)
+        c.reg['26'] = D(3)
+        c.mats['BD'][10][17] = D(10 ** 9)                      # no time limit
+        c.steps = 0
+        c.run('TTH3', maxsteps=10 ** 10)
+        m, v, n = copy.deepcopy(p).search(3)
+        got = (int(c.reg['62']), int(c.reg['61']))
+        check(got == (m, v), '%s: %s %d (%.0f s on the C47 to the end)%s' % (
+            f[:40], R.mname(got[0]), got[1], S.secs(c.steps), '' if got == (m, v) else ' WANT %s %d' % (R.mname(m), v)))
+    p = R.Pos.fen(FENS[1])
+    shots, c = S.run([], prog=prog)
+    setpos(c, p)
+    c.reg['26'] = D(3)
+    c.steps = 0
+    c.run('TTH3', maxsteps=10 ** 10)
+    secs = S.secs(c.steps)
+    check(int(c.reg['62']) in p.legal() and secs < 60 + 25 and c.reg.get('29') == 0,
+          '%s with the 60 s budget: %s, %.0f s in all (level 2 first; the time over: the best found so far), R29 '
+          'back to 0' % (FENS[1][:30], R.mname(int(c.reg['62'])), secs))
+    shots, c = S.run([S.LEVEL, S.LEVEL, S.LEVEL])
+    check(c.reg.get('26') == 3, 'the key 1 three times: level 2 -> 1 -> CRAZY -> 3')
 
 
 def setpos960(c, p, n):
