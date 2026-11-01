@@ -202,3 +202,19 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   MAKE + HTEXT + ANYMV + SUFFIX (LBL "TSAN") on every move of 12 positions (disambiguation by file, rank and both, a
   pinned knight, castling, en passant, promotion, check, mate) and the interesting moves of 12 random games, against
   san(); the game's and a saved game's lists too.
+
+## Nov 1, 2026 - v0.3.4: the killer move (branch claude/chess47-killer)
+
+- Tried first: a futility bound on the quiet replies (a reply by x from f gives at least S SC - S value(x, f) -
+  max value(x)). In the twin 40 % fewer replies valued, the same answers; in the program 4-5 % slower (the bound once a
+  reply, or once a piece kept in BD cells: no register is free): the lazy replies reach the cut early, so only 80 of
+  544 DELTA calls were saved. Reverted (branch claude/chess47-speed3, no change).
+- The killer move: the reply that cut a root move (:KSET:, from the cut in :QEVAL: / :CEVAL:: the move, its piece and
+  what stood on its target, in BD (11, 1-3), cleared by :THINK:) is valued first in the next :REPLY: by :KILLER: when
+  it is still a move of the position: its piece on its square, its target as it was, the squares between empty for a
+  bishop, rook, queen or a pawn's two steps, never en passant (then it is a pseudo-legal reply, as GEN would make it).
+  When it cuts, nothing is generated; else GEN runs as before (the killer valued twice: the least is the same). The
+  answer cannot change (the value of a root move is the least over its replies, or below the best when cut).
+- The twin: opts 'killer' (in ENGINE), Pos.killer_ok(); with it 13 % fewer replies valued over 44 positions, the same
+  moves and values, every killer it took was in GEN's list. The program over 15 positions: 1 407 376 steps -> 914 965
+  (65 %), the same move and value each; the three of the profile 253 160 -> 202 617.

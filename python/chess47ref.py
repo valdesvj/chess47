@@ -57,7 +57,7 @@ def value(p, s):
     return c * (V[abs(p)] + pst(abs(p), s, c))
 
 
-ENGINE = ('mate', 'recap', 'mvv')                # v0.2's search (v0.1: none of them)
+ENGINE = ('mate', 'recap', 'mvv', 'killer')      # v0.3.4's search (v0.2: no killer; v0.1: none of them)
 
 
 class Pos:
@@ -257,6 +257,29 @@ class Pos:
                 return True
         return False
 
+    def killer_ok(self):
+        """Is the killer still a move of this position (as LBL :KILLER:)? Its piece on its square, its target as it
+        was, the squares between empty for a bishop, rook, queen or a pawn's two steps; never en passant."""
+        r, x, y = self.killer
+        if not r:
+            return False
+        f, t = r // 1000, r % 1000
+        b = self.bd
+        if b[f] != x or b[t] != y:
+            return False
+        k = abs(x)
+        if k == 1 and y == 0 and (t - f) % 10 != 0:
+            return False
+        if 3 <= k <= 5 or (k == 1 and abs(t - f) == 20):
+            dr, dc = t // 10 - f // 10, t % 10 - f % 10
+            step = 10 * ((dr > 0) - (dr < 0)) + (dc > 0) - (dc < 0)
+            s = f + step
+            while s != t:
+                if b[s] != 0:
+                    return False
+                s += step
+        return True
+
     def order(self, moves):
         """The captures by the value of the piece taken (queen first; the order generated among equals), then the
         other moves as generated (opts 'mvv'); else the captures, then the others, each as generated."""
@@ -268,11 +291,13 @@ class Pos:
     def search(self, depth, opts=None):
         """opts: 'mate' (level 2: a checking move after which the other side has no legal move scores 29000),
         'recap' (level 2: a capture reply on a square S attacks is answered by its recapture: + the value of the
-        piece that took), 'mvv' (the captures by the value taken)."""
+        piece that took), 'mvv' (the captures by the value taken), 'killer' (level 2: the reply that cut the last
+        root move is valued first when it is still possible, LBL :KILLER:; the answer is the same, found sooner)."""
         self.opts = set(opts if opts is not None else ENGINE)
         S = self.sd
         moves = self.order(self.gen(S))
         best, bm, nodes = -30000, 0, 0
+        self.killer = (0, 0, 0)                   # the reply that cut, its piece, what stood on its target
         for m in moves:
             self.make(m, 1)
             if depth == 1:
@@ -287,8 +312,10 @@ class Pos:
                     v = S * self.sc
                 else:
                     v = 30000
-                    for r in self.order(replies):
+                    first = [self.killer[0]] if 'killer' in self.opts and self.killer_ok() else []
+                    for r in first + self.order(replies):
                         cap = self.bd[r % 1000] != 0
+                        x, y = self.bd[r // 1000], self.bd[r % 1000]
                         self.make(r, 2)
                         w = S * self.sc
                         nodes += 1
@@ -298,6 +325,7 @@ class Pos:
                         if w < v:
                             v = w
                         if v <= best:
+                            self.killer = (r, x, y)
                             break
             self.unmake(1)
             if v > best:

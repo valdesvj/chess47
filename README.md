@@ -103,7 +103,7 @@ random games (castling included).
 - **Not used:** EIGEN and the 34-digit precision don't make a chess engine stronger, so they are not forced in.
   The plans are in `DEVELOPMENT_NOTES.md`.
 
-## Speed (v0.3)
+## Speed (v0.3.4)
 
 The same moves and the same values as v0.2 (the Python twin is unchanged), counted in simulator steps over three
 middle-game positions at level 2 (0.17 ms a step on the C47):
@@ -117,10 +117,16 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 | the knight attack test with bitboards (`AND`), the square bits read from a table | 270 000 | |
 | the scan of the squares counted with `DSE` (the end test one step instead of nine) | 262 000 | |
 | **v0.3** (h8's bit kept signed, below) | **263 000** | **13-19 s** |
+| v0.3.3 (the same search; the clock, the move list in SAN) | 253 000 | |
+| **v0.3.4**: the killer move: the reply that refuted the last root move is tried first (when it is still a move), before any reply is generated; when it refutes this one too, no reply is generated at all | **203 000** | **7-12 s** |
 
-Tried and left out, as they cost as much as they saved: sorting the root moves before the search (`QSORT`), and a list
+The killer move over 15 positions (these three, two of the tests, ten of random games): 1 407 000 steps -> 915 000
+(65 %: about 16 s -> 10 s a move on average), the same move and value in each.
+
+Tried and left out, as they cost as much as they saved: sorting the root moves before the search (`QSORT`), a list
 of the pieces or occupancy bitboards for the scan (keeping them up to date in every move and take-back costs about what
-the scan saves).
+the scan saves), and (v0.3.4) a futility bound on the quiet replies (in the twin 40 % fewer replies valued, in the
+program 5 % slower: computing the bound costs more than the few replies it skips once the cut comes early).
 
 ## Tested
 
