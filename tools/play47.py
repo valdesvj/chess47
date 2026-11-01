@@ -87,19 +87,11 @@ class Game:
 
     def play(self, m, by_person):
         p = self.pos
-        f, t = m // 1000, m % 1000
-        castle = self.n is not None and p.castle_move(m)
-        pawn = abs(p.bd[f]) == 1
-        take = not castle and (p.bd[t] != 0 or (pawn and t == p.ep and (t - f) % 10 != 0))
-        name = ('O-O' if t > f else 'O-O-O') if castle else R.name(f) + ('x' if take else '') + R.name(t)
-        if pawn and (t > 90 or t < 30):
-            name += '=Q'
+        name = R.san(p, m)                                # standard algebraic notation, as CHESS47 v0.3.3
         side = p.sd
         k = len(self.moves)
         p.make(m, 3)
         p.undo.pop(3, None)
-        if p.attacked(p.king(p.sd), -p.sd):              # + check, # mate
-            name += '+' if p.legal() else '#'
         self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         self.moves.append(m)
         self.keys.append(self.key())
