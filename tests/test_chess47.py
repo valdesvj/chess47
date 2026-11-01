@@ -44,13 +44,16 @@ def labels():
 
 
 def test_copy():
-    """build/CHESS47.txt with LBL "TGEN" / XEQ :NINIT: / XEQ :GEN: / RTN and LBL "TTHK" / XEQ :NINIT: / XEQ :THINK: / RTN
-    before its END (:NINIT: the knight words of the position written into BD)."""
+    """build/CHESS47.txt with LBL "TGEN" / XEQ :NINIT: / XEQ :GEN: / RTN, LBL "TTHK" / XEQ :NINIT: / XEQ :THINK: / RTN
+    and LBL "TSAN" (the move R40 played at ply 3, its text as :PLAYED: writes it) before its END (:NINIT: the knight
+    words of the position written into BD)."""
     lab = labels()
     P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l]
     assert P[-1] == 'END'
     P = P[:-1] + ['LBL "TGEN"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['GEN'], 'RTN',
-                  'LBL "TTHK"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['THINK'], 'RTN', 'END']
+                  'LBL "TTHK"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['THINK'], 'RTN',
+                  'LBL "TSAN"', 'XEQ %s' % lab['NINIT'], '3', 'STO 46', 'XEQ %s' % lab['MAKE'], 'XEQ %s' % lab['HTEXT'],
+                  'XEQ %s' % lab['ANYMV'], 'STO 63', 'XEQ %s' % lab['SUFFIX'], 'RTN', 'END']
     fn = os.path.join(tempfile.mkdtemp(), 'CHESS47T.txt')
     open(fn, 'w', encoding='utf-8').write('\n'.join(P) + '\n')
     return fn
@@ -136,14 +139,15 @@ def play_tests():
     keep = {k: c.reg[k] for k in ('CHN', 'TW', 'TB')}
     gh = c.mats['GH']
     got = [int(v) for v in gh[0] if int(v)]
-    p = R.Pos()
+    p, sans = R.Pos(), []
     for m in got:
+        sans.append(R.san(p, m))
         p.make(m, 3)
     check(c.ended and keep['CHN'] == 223 and len(got) == 2, '0 after e2-e4 and the reply: CHN 223 (2 plies, level 2, white)')
     shots, c2 = S.run([], regs=keep, mats={'GH': gh})
     hist = [x for x in (c2.reg.get(str(r)) for r in range(73, 80)) if isinstance(x, str)]
     check(S.board(c2)[22:100] == p.bd[22:100] and c2.reg.get('23') == p.sc and c2.reg.get('20') == 1
-          and int(c2.reg['96']) == 2 and hist == ['1. e2e4', '1... ' + R.mname(got[1])]
+          and int(c2.reg['96']) == 2 and hist == ['1. e4', '1... ' + sans[1]]
           and onboard(shots[-1]) == {(x, 239 - y) for x, y in L.mock(p.bd)} | frame(4, 1),
           'the next start: the game played again (the board, SC, white to move, move 2, the list, the screen): '
           '%d steps (%.1f s)' % (c2.at_steps[0], S.secs(c2.at_steps[0])))
@@ -248,6 +252,49 @@ def main():
         check(got == want, '%s: %d moves%s' % (fen[:40], k, '' if got == want else ' WANT %d %s' % (
             len(want), [R.mname(m) for m in got if m not in want] + ['-' + R.mname(m) for m in want if m not in got])))
 
+    print('== the move list in standard algebraic notation (:HTEXT:, :SUFFIX:) against chess47ref.san')
+    import random
+    rnd = random.Random(47)
+    cases = []
+    for fen in ['4k3/8/8/8/8/8/8/1N1K1N2 w - - 0 1', '1n2k3/8/8/R7/8/8/8/R2K4 w - - 0 1',
+                '1k6/8/8/8/7Q/8/8/K3Q2Q w - - 0 1', '4k3/4r3/8/8/8/8/4N3/2N1K3 w - - 0 1',
+                '6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1', '8/P6k/8/8/8/8/8/K7 w - - 0 1', '1k6/P7/1K6/8/8/8/8/8 w - - 0 1',
+                FENS[7], FENS[1], FENS[2], FENS[4], FENS[5]]:
+        p = R.Pos.fen(fen)
+        cases += [(fen, m) for m in p.legal()]
+    for g in range(12):                                  # positions of random games: the interesting moves
+        p = R.Pos()
+        for k in range(rnd.randrange(10, 70)):
+            ms = p.legal()
+            if not ms:
+                break
+            p.make(rnd.choice(ms), 3)
+        ms = p.legal()
+        fen = p
+        for m in ms:
+            t = R.san(p, m)
+            if any(ch in t for ch in '+#=O') or (t[0] in 'NBRQ' and len(t.rstrip('+#').replace('x', '')) > 3) \
+                    or rnd.random() < 0.15:
+                cases.append((p, m))
+    bad, kinds = [], set()
+    for fen, m in cases:
+        p = R.Pos.fen(fen) if isinstance(fen, str) else fen
+        want = R.san(p, m)
+        shots, c = S.run([], prog=prog)
+        setpos(c, p)
+        c.reg['40'], c.reg['96'] = D(m), D(1)
+        c.run('TSAN', maxsteps=10 ** 8)
+        got = c.reg.get('79', '')
+        got = got.split(' ', 1)[1] if isinstance(got, str) and ' ' in got else got
+        if got != want:
+            bad.append('%s %s %s' % (want, got, p.bd[22:100]))
+        kinds |= {k for k, ok in (('capture', 'x' in want), ('check', '+' in want), ('mate', '#' in want),
+                                  ('castling', 'O-O' in want), ('promotion', '=Q' in want),
+                                  ('file or rank', want[0] in 'NBRQ' and len(want.rstrip('+#').replace('x', '')) == 4),
+                                  ('both', want[0] in 'NBRQ' and len(want.rstrip('+#').replace('x', '')) == 5)) if ok}
+    check(not bad, '%d moves as python/chess47ref.san (%s)%s' % (len(cases), ', '.join(sorted(kinds)),
+          '' if not bad else ' FIRST WANT/GOT %s' % bad[0]))
+
     print('== the search (:THINK:) against chess47ref.search')
     for fen in FENS[:3] + FENS[7:]:
         for level in (1, 2):
@@ -276,8 +323,8 @@ def main():
         else:
             want, v, nodes = p.search(2)
             good &= m == want
+        texts.append(('%d. ' % num if k % 2 == 0 else '%d... ' % num) + R.san(p, m))
         p.make(m, 3)
-        texts.append(('%d. ' % num if k % 2 == 0 else '%d... ' % num) + R.mname(m))
         num += k % 2
     check(len(got) == n and good, '%d moves, %d from the book (one of its lines that fit), the others as chess47ref.search: %s'
           % (len(got), inbook, ' '.join(texts)))

@@ -182,3 +182,23 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - c47sim keeps the type: SINT and AND OR XOR NOT give a short integer (class SI), →REAL a real; STOEL refuses a short
   integer as the C47 (marked chess47; to be taken to Almanac 47). Scanned over the whole test run: no other command
   gets a short integer except SINT, →REAL, the bitwise ones, AGRAPH and the stores.
+
+## Nov 1, 2026 - v0.3.3: the move list in standard algebraic notation (branch claude/chess47-san)
+
+- Victor: the list showed e5d4 (no capture, no piece). Now SAN as FIDE's Appendix C: e4, Nf3, exd5, Nbd2, R1e2, Qh1e4,
+  O-O, O-O-O, e8=Q, Qh7+, Ra8#. :HTEXT: reads the move from the undo row of ply 3 (row 20 of BD: the piece, the piece
+  taken, the flag; R47 is HASH's by then): a pawn its file and x on a capture (en passant too), =Q on the last row; a
+  piece its letter, then :SANDIS: when another piece of its kind could go there legally: from the target along the
+  piece's directions (R80-R95, a knight one step), the first piece on each, the square left counted as taken (the
+  piece stood there before the move); :SANC: tests the other one's king with the mover back on its square and the
+  other's square empty (a pinned piece is left out); then the file, the rank or both. :SQNAME: split into :SQF: and
+  :SQR:.
+- + and #: :PLAYED: runs :ANYMV: once (R63) before showing the list, :SUFFIX: appends + in check, # with no legal move.
+  ANYMV changes R65, so the draw flag is kept in R64; mate and stalemate now come before the draws by repetition and
+  material (FIDE; as tools/selfplay47.py's expected_end). A saved game's list (INIT) runs ANYMV only in check, R69 (the
+  loop's ply) kept in R62.
+- python/chess47ref.py san(p, m), the same rules (also Chess960's castling), checked against python-chess's
+  Board.san on 47,199 moves of random games (normal and 960): no difference. tests/test_chess47.py runs the program's
+  MAKE + HTEXT + ANYMV + SUFFIX (LBL "TSAN") on every move of 12 positions (disambiguation by file, rank and both, a
+  pinned knight, castling, en passant, promotion, check, mate) and the interesting moves of 12 random games, against
+  san(); the game's and a saved game's lists too.
