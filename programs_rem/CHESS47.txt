@@ -1793,15 +1793,22 @@ STOIJ
 1
 STOEL
 RTN
-REM ---- LBL :ROOT3: the root move R40 at level 3: MAKE (ply 1), a mate (LBL :MATEQ:) or the replies (LBL :REPLY3:),
+REM ---- LBL :ROOT3: the root move R40 at level 3: MAKE (ply 1); not legal (its king attacked: LBL :INCHK2:) -30000,
+REM never chosen; else a mate (LBL :MATEQ:) or the replies (LBL :REPLY3:),
 REM UNMK; R61 R62 the best (R65 -30000 when the time ran out within it: not counted) ----
 LBL :ROOT3:
 1
 STO 46
 XEQ :MAKE:
-XEQ :MATEQ:
+-30000
+STO 65
+XEQ :INCHK2:
 X=0?
-XEQ :REPLY3:
+IF
+  XEQ :MATEQ:
+  X=0?
+  XEQ :REPLY3:
+ENDIF
 1
 STO 46
 XEQ :UNMK:
@@ -1899,7 +1906,7 @@ DO
 WHILE
 ENDDO
 RTN
-REM ---- LBL :R3ONE: the reply R40 played (ply 2), then S's answers valued as they are generated (GEN mode 5: LBL :AQEVAL:,
+REM ---- LBL :R3ONE: the reply R40 played (ply 2) (when it takes S's king: lost), then S's answers valued as they are generated (GEN mode 5: LBL :AQEVAL:,
 REM :ACEVAL:; the answer killer first, LBL :AKILL:): R29 the best legal one (-30000 none legal; R60 x SC when S has no
 REM move); R65 the least over the replies; at the cut (R65 <= R61) the reply is the killer and the list ends ----
 LBL :R3ONE:
@@ -1914,6 +1921,20 @@ STO 39
 STO 29
 0
 STO 70
+RCL 44
+ABS
+6
+X=Y?
+IF
+  REM the reply took S's king (R44, MAKE's piece taken): lost, R60 x SC, no answer
+  RCL 60
+  RCL× 23
+  STO 29
+  1
+  STO 70
+ENDIF
+RCL 70
+X=0?
 XEQ :AKILL:
 RCL 70
 X=0?
@@ -1928,6 +1949,20 @@ IF
     IF
       RCL 60
       RCL× 23
+      STO 29
+    ENDIF
+    REM no legal answer (R29 still -30000): mated (-29500, S in check: LBL :INCHK:) or stalemated (0)
+    RCL 29
+    -30000
+    X=Y?
+    IF
+      XEQ :INCHK:
+      X≠0?
+      IF
+        -29500
+      ELSE
+        0
+      ENDIF
       STO 29
     ENDIF
   ENDIF

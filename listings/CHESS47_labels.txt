@@ -30,9 +30,9 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :THINK:    27  ======== the search ========
 :THINK3:   28  level 3, after level 2 (R62 its move, R61 its value; both kept in BD (11, 12) and (11, 16)
 :TIME3:    29  X = 1 when level 3's time is over (BD (11, 18) tenths since (11, 15): 600, 60 s; the flag 
-:ROOT3:    30  the root move R40 at level 3: MAKE (ply 1), a mate (LBL :MATEQ:) or the replies (LBL :REPL
+:ROOT3:    30  the root move R40 at level 3: MAKE (ply 1); not legal (its king attacked: LBL :INCHK2:) -3
 :REPLY3:   31  the replies of the other side (no castling) in a list (row 3 of ML: R69 captures, R67 move
-:R3ONE:    32  the reply R40 played (ply 2), then S's answers valued as they are generated (GEN mode 5: L
+:R3ONE:    32  the reply R40 played (ply 2) (when it takes S's king: lost), then S's answers valued as th
 :ACEVAL:   33  LBL :AQEVAL: S's quiet answer R30 -> R33 (GEN mode 5): R71 by LBL :DELTA:; LBL :ACEVAL: a 
 :AQEVAL:   34  
 :ABEST:    35  

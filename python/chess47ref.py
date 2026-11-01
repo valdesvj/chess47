@@ -276,8 +276,9 @@ class Pos:
         self.akiller = (0, 0, 0)                  # the answer that cut the last reply (LBL :AKILL:)
         for m in moves:
             self.make(m, 1)
-            if 'mate' in self.opts and not self.attacked(self.king(S), -S) and self.attacked(self.king(-S), S) \
-                    and not self.has_legal(-S):
+            if self.attacked(self.king(S), -S):
+                v = -30000                                 # not legal: never chosen (LBL :ROOT3:)
+            elif 'mate' in self.opts and self.attacked(self.king(-S), S) and not self.has_legal(-S):
                 v = 29000
             else:
                 replies = self.gen(-S, castle=False)
@@ -292,7 +293,10 @@ class Pos:
                     for r in rs:
                         x, y = self.bd[r // 1000], self.bd[r % 1000]
                         self.make(r, 2)
-                        w, n = self.answers(S, v)
+                        if abs(y) == 6:                   # the reply took S's king: lost, no answer
+                            w, n = S * self.sc, 0
+                        else:
+                            w, n = self.answers(S, v)
                         nodes += n
                         self.unmake(2)
                         if w < v:
@@ -313,7 +317,8 @@ class Pos:
 
     def answers(self, S, beta):
         """S's best answer (LBL :ANSW:): the most of S x SC after it (less the piece that took when -S can take back),
-        over the legal answers, stopped as soon as it reaches beta; S x SC when S has no move; -30000 when none is legal."""
+        over the legal answers, stopped as soon as it reaches beta; S x SC when S has no move; none legal: -29500 when S is
+        in check (mate), else 0 (stalemate)."""
         moves = self.gen(S, castle=False)
         if not moves:
             return S * self.sc, 0
@@ -335,6 +340,8 @@ class Pos:
             if amax >= beta:
                 self.akiller = (a, x, y)
                 break
+        if amax == -30000:                                 # no legal answer: mated, or stalemated
+            amax = -29500 if self.attacked(self.king(S), -S) else 0
         return amax, n
 
     def killer_ok(self, killer=None):
