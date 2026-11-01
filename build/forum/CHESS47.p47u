@@ -293,11 +293,7 @@ IF 13
     RCLEL
     RCL× 32
     STO 34
-    3.5
-    -
-    ABS
-    2.5
-    X≥Y?
+    X>0?
     XEQ 01                      ; -> :GENSQ:
     DSE 31
   WHILE 02
@@ -317,11 +313,7 @@ ELSE 13
     RCLEL
     RCL× 32
     STO 34
-    3.5
-    -
-    ABS
-    2.5
-    X≥Y?
+    X>0?
     XEQ 01                      ; -> :GENSQ:
     DSE 31
   WHILE 03
@@ -331,6 +323,10 @@ RTN
 @
 @ ---- LBL :GENSQ: the moves of the piece on R30 (R34 its kind; LBL :GSLIDE: reads it, then R34 is its direction) ----
 LBL 01                          ; :GENSQ:
+RCL 34
+7
+X<Y?
+RTN
 RCL 34
 1
 X=Y?
@@ -367,20 +363,13 @@ ELSE 14
 ENDIF 14
 RTN
 @
-@ ---- LBL :ADD: the move R30 -> R33 into the row R38 of ML. A quiet move (the target empty) at the column
+@ ---- LBL :ADD: the move R30 -> R33 (the matrix index already on (1, R33): every caller has just read the target)
+@ into the row R38 of ML. A quiet move (the target empty) at the column
 @ 121 - R72 (R72 + 1); a capture: the code (the value of the piece taken) x 100000 + the move, put in the captures
 @ (columns 1 - R37) after those that take as much or more (an insertion: the ones that take less move one
 @ column on): the captures by the piece taken, queen first, else in the order generated (MVV). At most 118 a ply.
 @ R47 R48 R49 work ----
 LBL 02                          ; :ADD:
-RCL 37
-RCL+ 72
-118
-X<Y?
-RTN
-1
-RCL 33
-STOIJ
 RCLEL
 X=0?
 IF 17
@@ -404,6 +393,15 @@ IF 17
     XEQ 34                      ; -> :AQEVAL:
     RTN
   ENDIF 19
+  RCL 37
+  RCL+ 72
+  119
+  X<Y?
+  IF 20
+    -1
+    STO+ 72
+    RTN
+  ENDIF 20
   RCL 38
   121
   RCL- 72
@@ -418,17 +416,26 @@ ENDIF 17
 RCL 39
 3
 X=Y?
-IF 20
+IF 21
   XEQ 43                        ; -> :CEVAL:
   RTN
-ENDIF 20
+ENDIF 21
+DROP
+DROP
 RCL 39
 5
 X=Y?
-IF 21
+IF 22
   XEQ 33                        ; -> :ACEVAL:
   RTN
-ENDIF 21
+ENDIF 22
+DROP
+DROP
+RCL 37
+RCL+ 72
+118
+X<Y?
+RTN
 DROP
 DROP
 ABS
@@ -450,7 +457,7 @@ DO 04
   RCL 49
   1
   X<Y?
-  IF 22
+  IF 23
     RCL 38
     RCL 49
     1
@@ -466,7 +473,7 @@ DO 04
     ÷
     IP
     X>Y?
-    IF 23
+    IF 24
       RCL 38
       RCL 49
       STOIJ
@@ -475,12 +482,12 @@ DO 04
       -1
       STO+ 49
       1
-    ELSE 23
+    ELSE 24
       0
-    ENDIF 23
-  ELSE 22
+    ENDIF 24
+  ELSE 23
     0
-  ENDIF 22
+  ENDIF 23
   X≠0?
 WHILE 04
 ENDDO 04
@@ -497,14 +504,14 @@ RTN
 @ from column 120 down; a capture's code without its value) ----
 LBL 03                          ; :MLK:
 X>Y?
-IF 24
+IF 25
   -
   121
   +
-ELSE 24
+ELSE 25
   X<>Y
   DROP
-ENDIF 24
+ENDIF 25
 STOIJ
 RCLEL
 100000
@@ -524,7 +531,7 @@ X<>Y
 STOIJ
 RCLEL
 X=0?
-IF 25
+IF 26
   XEQ 02                        ; -> :ADD:
   RCL 30
   1
@@ -538,7 +545,7 @@ IF 25
   ×
   -
   X=Y?
-  IF 26
+  IF 27
     RCL 32
     10
     ×
@@ -549,8 +556,8 @@ IF 25
     RCLEL
     X=0?
     XEQ 02                      ; -> :ADD:
-  ENDIF 26
-ENDIF 25
+  ENDIF 27
+ENDIF 26
 RCL 32
 9
 ×
@@ -620,17 +627,17 @@ STO 36
 RCL 34
 4
 X=Y?
-IF 27
+IF 28
   92
   STO 35
-ENDIF 27
+ENDIF 28
 RCL 34
 3
 X=Y?
-IF 28
+IF 29
   92
   STO 36
-ENDIF 28
+ENDIF 29
 @ each direction R35 of the table (R88-R95, to R36 - 1)
 DO 06
   RCL IND 35
@@ -647,10 +654,10 @@ DO 06
     STOIJ
     RCLEL
     X=0?
-    IF 29
+    IF 30
       XEQ 02                    ; -> :ADD:
       1
-    ELSE 29
+    ELSE 30
       RCL× 32
       3.5
       +
@@ -659,7 +666,7 @@ DO 06
       X≥Y?
       XEQ 02                    ; -> :ADD:
       0
-    ENDIF 29
+    ENDIF 30
     X≠0?
   WHILE 07
   ENDDO 07
@@ -788,17 +795,17 @@ DO 08
   STOIJ
   RCLEL
   X≠0?
-  IF 30
+  IF 31
     RCL 44
     RCL 30
     X≠Y?
-    IF 31
+    IF 32
       RCL 44
       RCL 41
       X≠Y?
       RTN
-    ENDIF 31
-  ENDIF 30
+    ENDIF 32
+  ENDIF 31
   1
   STO+ 44
   RCL 45
@@ -850,11 +857,11 @@ RTN
 STOIJ
 RCLEL
 X≠0?
-IF 32
+IF 33
   RCL 41
-ELSE 32
+ELSE 33
   RCL 42
-ENDIF 32
+ENDIF 33
 STO 33
 XEQ 13                          ; -> :ADDC:
 RTN
@@ -921,26 +928,25 @@ RCLEL
 SINT
 RCL 51
 X>0?
-IF 33
+IF 34
   DROP
   RCL "NW"
-ELSE 33
+ELSE 34
   DROP
   RCL "NB"
-ENDIF 33
+ENDIF 34
 SINT
 AND
 X≠0?
 RTN
 88
 STO 54
-@ each direction R54 of the table (R88-R95: the diagonals, then the lines)
+@ the diagonals R88-R91: to the first piece along each (R52); a queen or a bishop of R51, or its king next to R50
 DO 10
   RCL IND 54
   STO 53
   RCL 50
   STO 52
-@   from R50 along the direction R53 to the first square that is not empty (R52)
   DO 11
     RCL 53
     STO+ 52
@@ -956,33 +962,67 @@ DO 10
   5
   X=Y?
   RTN
-  RCL 54
-  88
-  -
-  4
-  ÷
-  IP
   3
-  +
   RCL 56
   X=Y?
   RTN
   6
   X=Y?
-  IF 34
+  IF 35
     RCL 52
     RCL- 50
     RCL 53
     X=Y?
     RTN
-  ENDIF 34
+  ENDIF 35
   1
   STO+ 54
-  96
+  91
   RCL 54
-  X<Y?
+  X≤Y?
 WHILE 10
 ENDDO 10
+@ the lines R92-R95: the same with a rook
+DO 12
+  RCL IND 54
+  STO 53
+  RCL 50
+  STO 52
+  DO 13
+    RCL 53
+    STO+ 52
+    1
+    RCL 52
+    STOIJ
+    RCLEL
+    X=0?
+  WHILE 13
+  ENDDO 13
+  RCL× 51
+  STO 56
+  5
+  X=Y?
+  RTN
+  4
+  RCL 56
+  X=Y?
+  RTN
+  6
+  X=Y?
+  IF 36
+    RCL 52
+    RCL- 50
+    RCL 53
+    X=Y?
+    RTN
+  ENDIF 36
+  1
+  STO+ 54
+  95
+  RCL 54
+  X≤Y?
+WHILE 12
+ENDDO 12
 0
 STO 55
 RTN
@@ -1045,11 +1085,19 @@ RCL 22
 STO IND 49
 RCL 42
 RCL 44
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 23
 RCL 41
 RCL 43
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 23
 1
 RCL 41
@@ -1062,11 +1110,11 @@ RCL 43
 ABS
 1
 X=Y?
-IF 35
+IF 37
   RCL 21
   RCL 42
   X=Y?
-  IF 36
+  IF 38
     RCL 42
     RCL 45
     10
@@ -1078,7 +1126,11 @@ IF 35
     STOIJ
     RCL 48
     RCLEL
-    XEQ 16                      ; -> :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 23
     1
     RCL 48
@@ -1087,7 +1139,7 @@ IF 35
     STOEL
     1
     STO 47
-  ENDIF 36
+  ENDIF 38
   RCL 42
   1
   -
@@ -1100,13 +1152,13 @@ IF 35
   5.5
   +
   X=Y?
-  IF 37
+  IF 39
     RCL 45
     5
     ×
     STO 43
-  ENDIF 37
-ENDIF 35
+  ENDIF 39
+ENDIF 37
 1
 RCL 42
 STOIJ
@@ -1114,13 +1166,17 @@ RCL 43
 STOEL
 RCL 42
 RCL 43
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO+ 23
 RCL 43
 ABS
 6
 X=Y?
-IF 38
+IF 40
   24.5
   RCL 45
   0.5
@@ -1145,19 +1201,27 @@ IF 38
   +
   2
   X=Y?
-  IF 39
+  IF 41
     XEQ 24                      ; -> :ROOKS:
     RCL 49
     RCL 45
     4
     ×
-    XEQ 16                      ; -> :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO+ 23
     RCL 48
     RCL 45
     4
     ×
-    XEQ 16                      ; -> :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 23
     1
     RCL 49
@@ -1173,28 +1237,28 @@ IF 38
     STOEL
     2
     STO 47
-  ENDIF 39
-ENDIF 38
+  ENDIF 41
+ENDIF 40
 0
 STO 21
 RCL 43
 ABS
 1
 X=Y?
-IF 40
+IF 42
   RCL 42
   RCL- 41
   ABS
   20
   X=Y?
-  IF 41
+  IF 43
     RCL 41
     RCL+ 42
     2
     ÷
     STO 21
-  ENDIF 41
-ENDIF 40
+  ENDIF 43
+ENDIF 42
 RCL 41
 XEQ 25                          ; -> :CRSQ:
 RCL 42
@@ -1219,7 +1283,7 @@ RCL 43
 ABS
 2
 X=Y?
-IF 42
+IF 44
   22
   RCL 41
   STOIJ
@@ -1237,12 +1301,12 @@ IF 42
   XOR
   RCL 45
   XEQ 19                        ; -> :NXOR:
-ENDIF 42
+ENDIF 44
 RCL 44
 ABS
 2
 X=Y?
-IF 43
+IF 45
   22
   RCL 42
   STOIJ
@@ -1253,27 +1317,27 @@ IF 43
   RCL 45
   CHS
   XEQ 19                        ; -> :NXOR:
-ENDIF 43
+ENDIF 45
 RTN
 @
 @ ---- LBL :NXOR: X = a colour, Y = bits: XORed into its knight word (NW white, NB black; kept as reals: →REAL) ----
 LBL 19                          ; :NXOR:
 X>0?
-IF 44
+IF 46
   DROP
   RCL "NW"
   SINT
   XOR
   →REAL
   STO "NW"
-ELSE 44
+ELSE 46
   DROP
   RCL "NB"
   SINT
   XOR
   →REAL
   STO "NB"
-ENDIF 44
+ENDIF 46
 RTN
 @
 @ ---- LBL :BIT: X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZE 64,
@@ -1309,14 +1373,14 @@ STO "NB"
 22
 STO 41
 @ the squares 22-99 (R41): the bit of each one into row 22, each knight's bit into its colour's word
-DO 12
+DO 14
   1
   RCL 41
   STOIJ
   RCLEL
   8
   X≠Y?
-  IF 45
+  IF 47
     22
     RCL 41
     STOIJ
@@ -1333,7 +1397,7 @@ DO 12
     ABS
     2
     X=Y?
-    IF 46
+    IF 48
       1
       RCL 41
       STOIJ
@@ -1344,15 +1408,15 @@ DO 12
       XEQ 20                    ; -> :BIT:
       RCL 42
       XEQ 19                    ; -> :NXOR:
-    ENDIF 46
-  ENDIF 45
+    ENDIF 48
+  ENDIF 47
   1
   STO+ 41
   99
   RCL 41
   X≤Y?
-WHILE 12
-ENDDO 12
+WHILE 14
+ENDDO 14
 RTN
 @ (normal castling: the king two squares to an empty square, |t - f| + 10 |y| = 2; Chess960's can be two squares too)
 @ ---- LBL :C960M: MAKE's Chess960 castling: the king R43 is on its rook's square R42 (its value added there): off it,
@@ -1416,17 +1480,17 @@ STO 49
 RCL 41
 RCL 42
 X<Y?
-IF 47
+IF 49
   2
   STO+ 48
   3
   STO+ 49
-ELSE 47
+ELSE 49
   6
   STO+ 48
   5
   STO+ 49
-ENDIF 47
+ENDIF 49
 RTN
 @
 @ ---- LBL :ROOKS: the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d) ----
@@ -1505,7 +1569,7 @@ STO 45
 RCL 47
 3
 X=Y?
-IF 48
+IF 50
   XEQ 23                        ; -> :KT960:
   1
   RCL 48
@@ -1517,7 +1581,7 @@ IF 48
   STOIJ
   0
   STOEL
-ENDIF 48
+ENDIF 50
 1
 RCL 41
 STOIJ
@@ -1532,7 +1596,7 @@ XEQ 18                          ; -> :NUPD:
 RCL 47
 1
 X=Y?
-IF 49
+IF 51
   1
   RCL 42
   RCL 45
@@ -1543,11 +1607,11 @@ IF 49
   RCL 45
   CHS
   STOEL
-ENDIF 49
+ENDIF 51
 RCL 47
 2
 X=Y?
-IF 50
+IF 52
   XEQ 24                        ; -> :ROOKS:
   1
   RCL 48
@@ -1561,12 +1625,12 @@ IF 50
   STOIJ
   0
   STOEL
-ENDIF 50
+ENDIF 52
 RCL 43
 ABS
 6
 X=Y?
-IF 51
+IF 53
   24.5
   RCL 45
   0.5
@@ -1575,7 +1639,7 @@ IF 51
   STO 48
   RCL 41
   STO IND 48
-ENDIF 51
+ENDIF 53
 RCL 20
 CHS
 STO 20
@@ -1613,7 +1677,7 @@ STOEL
 STO 63
 @ each root move R63 (1 to R64, captures first): MAKE, its value R65 (LEGAL1 at level 1; MATEQ, then REPLY at
 @ level 2), UNMK, the best kept (R61, R62)
-DO 13
+DO 15
   1
   STO+ 63
   2
@@ -1627,29 +1691,29 @@ DO 13
   RCL 26
   1
   X=Y?
-  IF 52
+  IF 54
     XEQ 40                      ; -> :LEGAL1:
-  ELSE 52
+  ELSE 54
     XEQ 39                      ; -> :MATEQ:
     X=0?
     XEQ 41                      ; -> :REPLY:
-  ENDIF 52
+  ENDIF 54
   1
   STO 46
   XEQ 26                        ; -> :UNMK:
   RCL 61
   RCL 65
   X>Y?
-  IF 53
+  IF 55
     STO 61
     RCL 40
     STO 62
-  ENDIF 53
+  ENDIF 55
   RCL 64
   RCL 63
   X<Y?
-WHILE 13
-ENDDO 13
+WHILE 15
+ENDDO 15
 RTN
 @
 @ ---- LBL :THINK3: level 3, after level 2 (R62 its move, R61 its value; both kept in BD (11, 12) and (11, 16)): the
@@ -1721,17 +1785,17 @@ STO 62
 0
 STO 63
 @ the root moves R63: 0 level 2's move, then 1 to R64 in their order (level 2's move skipped)
-DO 14
+DO 16
   RCL 63
   X=0?
-  IF 54
+  IF 56
     11
     12
     STOIJ
     RCLEL
     STO 40
     XEQ 30                      ; -> :ROOT3:
-  ELSE 54
+  ELSE 56
     2
     RCL 68
     RCL 63
@@ -1744,25 +1808,25 @@ DO 14
     RCL 40
     X≠Y?
     XEQ 30                      ; -> :ROOT3:
-  ENDIF 54
+  ENDIF 56
   1
   STO+ 63
   XEQ 29                        ; -> :TIME3:
   X≠0?
-  IF 55
+  IF 57
     RCL 64
     STO 63
     1
     STO+ 63
-  ENDIF 55
+  ENDIF 57
   RCL 64
   RCL 63
   X≤Y?
-WHILE 14
-ENDDO 14
+WHILE 16
+ENDDO 16
 RCL 62
 X=0?
-IF 56
+IF 58
   11
   12
   STOIJ
@@ -1773,7 +1837,7 @@ IF 56
   STOIJ
   RCLEL
   STO 61
-ENDIF 56
+ENDIF 58
 11
 14
 STOIJ
@@ -1800,10 +1864,10 @@ RCLEL
 STOIJ
 RCLEL
 X>Y?
-IF 57
+IF 59
   0
   RTN
-ENDIF 57
+ENDIF 59
 11
 13
 STOIJ
@@ -1826,11 +1890,11 @@ XEQ 26                          ; -> :UNMK:
 RCL 61
 RCL 65
 X>Y?
-IF 58
+IF 60
   STO 61
   RCL 40
   STO 62
-ENDIF 58
+ENDIF 60
 RTN
 @
 @ ---- LBL :REPLY3: the replies of the other side (no castling) in a list (row 3 of ML: R69 captures, R67 moves, R66
@@ -1850,12 +1914,12 @@ STO 69
 RCL+ 72
 STO 67
 X=0?
-IF 59
+IF 61
   RCL 60
   RCL× 23
   STO 65
   RTN
-ENDIF 59
+ENDIF 61
 30000
 STO 65
 0
@@ -1868,7 +1932,7 @@ STOEL
 1
 XEQ 49                          ; -> :KOK:
 X≠0?
-IF 60
+IF 62
   11
   17
   STOIJ
@@ -1879,9 +1943,9 @@ IF 60
   RCL 65
   X≤Y?
   RTN
-ENDIF 60
+ENDIF 62
 @ the replies R66 = 1 to R67 in their order (the captures first), the killer skipped when it was valued first
-DO 15
+DO 17
   1
   STO+ 66
   3
@@ -1895,28 +1959,28 @@ DO 15
   RCLEL
   RCL 40
   X=Y?
-  IF 61
+  IF 63
     11
     17
     STOIJ
     RCLEL
-  ELSE 61
+  ELSE 63
     0
-  ENDIF 61
+  ENDIF 63
   X=0?
   XEQ 32                        ; -> :R3ONE:
   XEQ 29                        ; -> :TIME3:
   X≠0?
-  IF 62
+  IF 64
     -30000
     STO 65
     RTN
-  ENDIF 62
+  ENDIF 64
   RCL 67
   RCL 66
   X<Y?
-WHILE 15
-ENDDO 15
+WHILE 17
+ENDDO 17
 RTN
 @
 @ ---- LBL :R3ONE: the reply R40 played (ply 2), then S's answers valued as they are generated (GEN mode 5: LBL :AQEVAL:,
@@ -1937,21 +2001,21 @@ STO 70
 XEQ 48                          ; -> :AKILL:
 RCL 70
 X=0?
-IF 63
+IF 65
   XEQ 00                        ; -> :GEN:
   RCL 70
   X=0?
-  IF 64
+  IF 66
     RCL 37
     RCL+ 72
     X=0?
-    IF 65
+    IF 67
       RCL 60
       RCL× 23
       STO 29
-    ENDIF 65
-  ENDIF 64
-ENDIF 63
+    ENDIF 67
+  ENDIF 66
+ENDIF 65
 2
 STO 46
 XEQ 26                          ; -> :UNMK:
@@ -1962,7 +2026,7 @@ STO 65
 RCL 61
 RCL 65
 X≤Y?
-IF 66
+IF 68
   RCL 40
   1000
   ÷
@@ -1975,7 +2039,7 @@ IF 66
   XEQ 45                        ; -> :KSET:
   RCL 67
   STO 66
-ENDIF 66
+ENDIF 68
 RTN
 @
 @ ---- LBL :AQEVAL: S's quiet answer R30 -> R33 (GEN mode 5): R71 by LBL :DELTA:; LBL :ACEVAL: a capture (R37 counts
@@ -1987,22 +2051,12 @@ STO+ 37
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ 50                          ; -> :RECAP:
 GTO 35                          ; -> :ABEST:
 LBL 34                          ; :AQEVAL:
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ 51                          ; -> :DELTA:
 LBL 35                          ; :ABEST:
 RCL 29
@@ -2012,18 +2066,23 @@ XEQ 36                          ; -> :ALEGAL:
 RCL 65
 RCL 29
 X≥Y?
-IF 67
+IF 69
   1
   STO 70
   0
   STO 31
   XEQ 44                        ; -> :AKSET:
-ENDIF 67
+ENDIF 69
 RTN
 @
 @ ---- LBL :ALEGAL: the answer R40 played (ply 3): when it does not leave S's king attacked (LBL :INCHK2:, kept in R70
 @ for the time of UNMK), R29 = its value R71 ----
 LBL 36                          ; :ALEGAL:
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
 3
 STO 46
 XEQ 17                          ; -> :MAKE:
@@ -2034,10 +2093,10 @@ STO 46
 XEQ 26                          ; -> :UNMK:
 RCL 70
 X=0?
-IF 68
+IF 70
   RCL 71
   STO 29
-ENDIF 68
+ENDIF 70
 0
 STO 70
 RTN
@@ -2049,10 +2108,10 @@ RTN
 LBL 37                          ; :CHKQ:
 RCL 47
 X≠0?
-IF 69
+IF 71
   1
   RTN
-ENDIF 69
+ENDIF 71
 24.5
 RCL 60
 0.5
@@ -2100,10 +2159,10 @@ RCL× 47
 ABS
 2
 X=Y?
-IF 70
+IF 72
   1
   RTN
-ENDIF 70
+ENDIF 72
 RCL 47
 ABS
 RCL 48
@@ -2112,10 +2171,10 @@ ABS
 RCL× 47
 RCL× 48
 X=0?
-IF 71
+IF 73
   1
   RTN
-ENDIF 71
+ENDIF 73
 0
 RTN
 @
@@ -2133,16 +2192,16 @@ RCL 60
 CHS
 XEQ 55                          ; -> :KATT:
 X≠0?
-IF 72
+IF 74
   0
   RTN
-ENDIF 72
+ENDIF 74
 XEQ 52                          ; -> :ANYMV:
 X≠0?
-IF 73
+IF 75
   0
   RTN
-ENDIF 73
+ENDIF 75
 29000
 STO 65
 1
@@ -2208,11 +2267,6 @@ LBL 42                          ; :QEVAL:
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ 51                          ; -> :DELTA:
 RCL 65
 RCL 71
@@ -2221,13 +2275,13 @@ STO 65
 RCL 61
 RCL 65
 X≤Y?
-IF 74
+IF 76
   1
   STO 70
   0
   STO 31
   XEQ 45                        ; -> :KSET:
-ENDIF 74
+ENDIF 76
 RTN
 @
 @ ---- LBL :CEVAL: the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, the
@@ -2238,11 +2292,6 @@ STO+ 37
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ 50                          ; -> :RECAP:
 RCL 65
 RCL 71
@@ -2251,13 +2300,13 @@ STO 65
 RCL 61
 RCL 65
 X≤Y?
-IF 75
+IF 77
   1
   STO 70
   0
   STO 31
   XEQ 45                        ; -> :KSET:
-ENDIF 75
+ENDIF 77
 RTN
 @
 @ ---- LBL :KSET: the reply R30 -> R33 (R40) cut the root move: it is the killer, BD (11, 1), with its piece (11, 2) and
@@ -2273,7 +2322,10 @@ STO 48
 11
 X<>Y
 STOIJ
-RCL 40
+RCL 30
+1000
+×
+RCL+ 33
 STOEL
 1
 RCL 30
@@ -2311,11 +2363,11 @@ X=0?
 RTN
 RCL 44
 X≠0?
-IF 76
+IF 78
   XEQ 43                        ; -> :CEVAL:
-ELSE 76
+ELSE 78
   XEQ 42                        ; -> :QEVAL:
-ENDIF 76
+ENDIF 78
 RTN
 LBL 48                          ; :AKILL:
 8
@@ -2324,11 +2376,11 @@ X=0?
 RTN
 RCL 44
 X≠0?
-IF 77
+IF 79
   XEQ 33                        ; -> :ACEVAL:
-ELSE 77
+ELSE 79
   XEQ 34                        ; -> :AQEVAL:
-ENDIF 77
+ENDIF 79
 RTN
 @
 @ ---- LBL :KOK: X = the first column c of a killer in row 11 of BD (1 or 8): X = 1 when it is still a move of this
@@ -2365,10 +2417,10 @@ STOIJ
 RCLEL
 RCL 43
 X≠Y?
-IF 78
+IF 80
   0
   RTN
-ENDIF 78
+ENDIF 80
 1
 RCL 33
 STOIJ
@@ -2382,10 +2434,10 @@ STOIJ
 RCLEL
 RCL 44
 X≠Y?
-IF 79
+IF 81
   0
   RTN
-ENDIF 79
+ENDIF 81
 RCL 43
 ABS
 STO 45
@@ -2397,40 +2449,40 @@ RCL 45
 ABS
 1
 X≥Y?
-IF 80
+IF 82
   1
   STO 46
-ENDIF 80
+ENDIF 82
 RCL 45
 1
 X=Y?
-IF 81
+IF 83
   RCL 44
   X=0?
-  IF 82
+  IF 84
     RCL 33
     RCL- 30
     10
     MOD
     X≠0?
-    IF 83
+    IF 85
       0
       RTN
-    ENDIF 83
-  ENDIF 82
+    ENDIF 85
+  ENDIF 84
   RCL 33
   RCL- 30
   ABS
   20
   X=Y?
-  IF 84
+  IF 86
     1
     STO 46
-  ENDIF 84
-ENDIF 81
+  ENDIF 86
+ENDIF 83
 RCL 46
 X≠0?
-IF 85
+IF 87
   RCL 33
   10
   ÷
@@ -2456,30 +2508,30 @@ IF 85
   RCL 30
   STO 46
 @   the squares between from and to (R46, by the step R47): all of them empty, or it is not a move here
-  DO 16
+  DO 18
     RCL 47
     STO+ 46
     RCL 33
     RCL 46
     X=Y?
-    IF 86
+    IF 88
       0
-    ELSE 86
+    ELSE 88
       1
       RCL 46
       STOIJ
       RCLEL
       X≠0?
-      IF 87
+      IF 89
         0
         RTN
-      ENDIF 87
+      ENDIF 89
       1
-    ENDIF 86
+    ENDIF 88
     X≠0?
-  WHILE 16
-  ENDDO 16
-ENDIF 85
+  WHILE 18
+  ENDDO 18
+ENDIF 87
 1
 RTN
 @
@@ -2508,7 +2560,7 @@ RCL 46
 STOEL
 RCL 55
 X≠0?
-IF 88
+IF 90
   RCL 42
   RCL 43
   XEQ 16                        ; -> :VAL:
@@ -2516,21 +2568,16 @@ IF 88
   RCL× 32
   RCL× 60
   STO- 71
-ENDIF 88
+ENDIF 90
 RTN
 @
 @ ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
 @ makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken
 @ en passant ----
 LBL 51                          ; :DELTA:
-RCL 40
-1000
-÷
-IP
+RCL 30
 STO 41
-RCL 40
-1000
-MOD
+RCL 33
 STO 42
 1
 RCL 41
@@ -2546,21 +2593,29 @@ RCL 42
 RCL 42
 STOIJ
 RCLEL
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 71
 RCL 41
 RCL 43
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 71
 RCL 43
 ABS
 1
 X=Y?
-IF 89
+IF 91
   RCL 21
   RCL 42
   X=Y?
-  IF 90
+  IF 92
     RCL 42
     RCL 45
     10
@@ -2568,9 +2623,13 @@ IF 89
     -
     RCL 45
     CHS
-    XEQ 16                      ; -> :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 71
-  ENDIF 90
+  ENDIF 92
   RCL 42
   1
   -
@@ -2583,16 +2642,20 @@ IF 89
   5.5
   +
   X=Y?
-  IF 91
+  IF 93
     RCL 45
     5
     ×
     STO 43
-  ENDIF 91
-ENDIF 89
+  ENDIF 93
+ENDIF 91
 RCL 42
 RCL 43
-XEQ 16                          ; -> :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO+ 71
 RCL 60
 STO× 71
@@ -2617,13 +2680,13 @@ STO 66
 0
 STO 71
 @ each move of the list in turn: played at ply 3 and taken back, until one does not leave the king attacked
-DO 17
+DO 19
   RCL 67
   RCL 66
   X≥Y?
-  IF 92
+  IF 94
     0
-  ELSE 92
+  ELSE 94
     1
     STO+ 66
     4
@@ -2636,19 +2699,19 @@ DO 17
     XEQ 17                      ; -> :MAKE:
     XEQ 54                      ; -> :INCHK2:
     X=0?
-    IF 93
+    IF 95
       1
       STO 71
-    ENDIF 93
+    ENDIF 95
     3
     STO 46
     XEQ 26                      ; -> :UNMK:
     1
     RCL- 71
-  ENDIF 92
+  ENDIF 94
   X≠0?
-WHILE 17
-ENDDO 17
+WHILE 19
+ENDDO 19
 RCL 71
 RTN
 @
@@ -2682,14 +2745,14 @@ RTN
 @ ---- LBL :HUMAN: your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The wait:
 @ PAUSE 10, KEY? 98 (true: no key yet), then the clock (LBL :CLOCK: leaves 1: wait on; a key leaves the 0) ----
 LBL 56                          ; :HUMAN:
-DO 18
+DO 20
   0
   PAUSE 10
   KEY? 98
   XEQ 70                        ; -> :CLOCK:
   X≠0?
-WHILE 18
-ENDDO 18
+WHILE 20
+ENDDO 20
 RCL 98
 82
 X=Y?
@@ -2697,58 +2760,58 @@ RTN
 RCL 98
 52
 X=Y?
-IF 94
+IF 96
   XEQ 57                        ; -> :NEWG:
   RTN
-ENDIF 94
+ENDIF 96
 RCL 98
 55
 X=Y?
-IF 95
+IF 97
   XEQ 58                        ; -> :ASK960:
   RTN
-ENDIF 95
+ENDIF 97
 RCL 97
 X≠0?
 RTN
 RCL 98
 85
 X=Y?
-IF 96
+IF 98
   RCL 27
   2
   X=Y?
-  IF 97
+  IF 99
     RCL 20
-  ELSE 97
+  ELSE 99
     RCL 27
-  ENDIF 97
+  ENDIF 99
   CHS
-  XEQ 86                        ; -> :SETME:
-  XEQ 87                        ; -> :STATE:
-  RTN
-ENDIF 96
-RCL 98
-74
-X=Y?
-IF 98
-  2
   XEQ 86                        ; -> :SETME:
   XEQ 87                        ; -> :STATE:
   RTN
 ENDIF 98
 RCL 98
+74
+X=Y?
+IF 100
+  2
+  XEQ 86                        ; -> :SETME:
+  XEQ 87                        ; -> :STATE:
+  RTN
+ENDIF 100
+RCL 98
 54
 X=Y?
-IF 99
+IF 101
   0
   XEQ 86                        ; -> :SETME:
   RTN
-ENDIF 99
+ENDIF 101
 RCL 98
 72
 X=Y?
-IF 100
+IF 102
   RCL 26
   3
   +
@@ -2757,45 +2820,45 @@ IF 100
   STO 26
   XEQ 76                        ; -> :PANEL:
   RTN
-ENDIF 100
+ENDIF 102
 RCL 98
 63
 X=Y?
-IF 101
+IF 103
   XEQ 59                        ; -> :PICK:
   RTN
-ENDIF 101
+ENDIF 103
 @ the arrows: 8 (53) +10, 2 (73) -10, 4 (62) -1, 6 (64) +1 (R49); not onto the border (8)
 0
 STO 49
 RCL 98
 53
 X=Y?
-IF 102
-  10
-  STO 49
-ENDIF 102
-RCL 98
-73
-X=Y?
-IF 103
-  -10
-  STO 49
-ENDIF 103
-RCL 98
-62
-X=Y?
 IF 104
-  -1
+  10
   STO 49
 ENDIF 104
 RCL 98
-64
+73
 X=Y?
 IF 105
-  1
+  -10
   STO 49
 ENDIF 105
+RCL 98
+62
+X=Y?
+IF 106
+  -1
+  STO 49
+ENDIF 106
+RCL 98
+64
+X=Y?
+IF 107
+  1
+  STO 49
+ENDIF 107
 RCL 49
 X=0?
 RTN
@@ -2844,32 +2907,32 @@ STO 63
 0
 STO 64
 @ the three digits of the number (R64 of them so far), each shown in the status line; ÷ gives a random one
-DO 19
+DO 21
   "960? "
   STO 48
   RCL 64
   X≠0?
-  IF 106
+  IF 108
     RCL 63
     αIP 48
-  ENDIF 106
+  ENDIF 108
   "_  ÷ RANDOM"
   x→α 48
   RCL 48
   XEQ 75                        ; -> :STATUS:
 @   the wait for a key (KEY? 98: a key ends it)
-  DO 20
+  DO 22
     0
     PAUSE 10
     KEY? 98
     1
     X≠0?
-  WHILE 20
-  ENDDO 20
+  WHILE 22
+  ENDDO 22
   RCL 98
   55
   X=Y?
-  IF 107
+  IF 109
     RAN#
     960
     ×
@@ -2877,16 +2940,16 @@ DO 19
     STO 63
     3
     STO 64
-  ELSE 107
+  ELSE 109
     -1
     STO 65
     RCL 98
     82
     X=Y?
-    IF 108
+    IF 110
       0
       STO 65
-    ENDIF 108
+    ENDIF 110
     RCL 98
     10
     MOD
@@ -2901,14 +2964,14 @@ DO 19
     ABS
     1
     X≥Y?
-    IF 109
+    IF 111
       RCL 66
       3
       -
       ABS
       1
       X≥Y?
-      IF 110
+      IF 112
         7
         RCL- 67
         3
@@ -2917,14 +2980,14 @@ DO 19
         1
         -
         STO 65
-      ENDIF 110
-    ENDIF 109
+      ENDIF 112
+    ENDIF 111
     RCL 65
     X<0?
-    IF 111
+    IF 113
       XEQ 87                    ; -> :STATE:
       RTN
-    ENDIF 111
+    ENDIF 113
     RCL 63
     10
     ×
@@ -2932,20 +2995,20 @@ DO 19
     STO 63
     1
     STO+ 64
-  ENDIF 107
+  ENDIF 109
   3
   RCL 64
   X<Y?
-WHILE 19
-ENDDO 19
+WHILE 21
+ENDDO 21
 RCL 63
 959
 X<Y?
-IF 112
+IF 114
   "960: 000 TO 959"
   XEQ 75                        ; -> :STATUS:
   RTN
-ENDIF 112
+ENDIF 114
 RCL 63
 1
 +
@@ -2967,19 +3030,19 @@ RTN
 LBL 59                          ; :PICK:
 RCL 29
 X≠0?
-IF 113
+IF 115
   RCL 28
   RCL 29
   X=Y?
-  IF 114
+  IF 116
     0
     STO 29
     XEQ 88                      ; -> :CURS:
     RTN
-  ENDIF 114
+  ENDIF 116
   XEQ 60                        ; -> :TRYMV:
   RTN
-ENDIF 113
+ENDIF 115
 1
 RCL 28
 STOIJ
@@ -3020,13 +3083,13 @@ STO 63
 0
 STO 65
 @ the generated moves (R63 from 1 to R66): is one of them R29 -> R28? (R65 = 1)
-DO 21
+DO 23
   RCL 66
   RCL 63
   X≥Y?
-  IF 115
+  IF 117
     0
-  ELSE 115
+  ELSE 117
     1
     STO+ 63
     4
@@ -3035,24 +3098,24 @@ DO 21
     XEQ 03                      ; -> :MLK:
     RCL 62
     X=Y?
-    IF 116
+    IF 118
       1
       STO 65
       0
-    ELSE 116
+    ELSE 118
       1
-    ENDIF 116
-  ENDIF 115
+    ENDIF 118
+  ENDIF 117
   X≠0?
-WHILE 21
-ENDDO 21
+WHILE 23
+ENDDO 23
 RCL 65
 X=0?
-IF 117
+IF 119
   "ILLEGAL MOVE"
   XEQ 75                        ; -> :STATUS:
   RTN
-ENDIF 117
+ENDIF 119
 XEQ 70                          ; -> :CLOCK:
 RCL 97
 X≠0?
@@ -3064,14 +3127,14 @@ STO 46
 XEQ 17                          ; -> :MAKE:
 XEQ 54                          ; -> :INCHK2:
 X≠0?
-IF 118
+IF 120
   3
   STO 46
   XEQ 26                        ; -> :UNMK:
   "ILLEGAL: CHECK"
   XEQ 75                        ; -> :STATUS:
   RTN
-ENDIF 118
+ENDIF 120
 0
 STO 29
 XEQ 64                          ; -> :PLAYED:
@@ -3081,45 +3144,45 @@ RTN
 LBL 61                          ; :C47MV:
 RCL 97
 X≠0?
-IF 119
+IF 121
   XEQ 56                        ; -> :HUMAN:
   RTN
-ENDIF 119
+ENDIF 121
 RCL 26
 X=0?
-IF 120
+IF 122
   XEQ 62                        ; -> :CRAZY:
-ELSE 120
+ELSE 122
   "THINKING ..."
   XEQ 75                        ; -> :STATUS:
   XEQ 66                        ; -> :BOOK:
   RCL 62
   X=0?
-  IF 121
+  IF 123
     XEQ 27                      ; -> :THINK:
     RCL 26
     3
     X=Y?
     XEQ 28                      ; -> :THINK3:
-  ENDIF 121
-ENDIF 120
+  ENDIF 123
+ENDIF 122
 XEQ 70                          ; -> :CLOCK:
 RCL 97
 X≠0?
 RTN
 RCL 62
 X=0?
-IF 122
+IF 124
   XEQ 63                        ; -> :NOMOVE:
   RTN
-ENDIF 122
+ENDIF 124
 -10000
 RCL 61
 X<Y?
-IF 123
+IF 125
   XEQ 63                        ; -> :NOMOVE:
   RTN
-ENDIF 123
+ENDIF 125
 RCL 62
 STO 40
 3
@@ -3155,7 +3218,7 @@ STO 66
 0
 STO 63
 @ from the random place R66 on (around the list, MOD R67): the first move that does not leave the king attacked
-DO 22
+DO 24
   RCL 66
   RCL+ 63
   RCL 67
@@ -3178,10 +3241,10 @@ DO 22
   XEQ 26                        ; -> :UNMK:
   RCL 65
   X=0?
-  IF 124
+  IF 126
     RCL 40
     STO 62
-  ENDIF 124
+  ENDIF 126
   1
   STO+ 63
   RCL 67
@@ -3192,8 +3255,8 @@ DO 22
   -
   ×
   X>0?
-WHILE 22
-ENDDO 22
+WHILE 24
+ENDDO 24
 RTN
 @
 @ ---- LBL :NOMOVE: the side to move has no legal move: CHECKMATE or STALEMATE; the game is over ----
@@ -3202,11 +3265,11 @@ LBL 63                          ; :NOMOVE:
 STO 97
 XEQ 53                          ; -> :INCHK:
 X≠0?
-IF 125
+IF 127
   "CHECKMATE"
-ELSE 125
+ELSE 127
   "STALEMATE"
-ENDIF 125
+ENDIF 127
 XEQ 75                          ; -> :STATUS:
 RTN
 @
@@ -3222,51 +3285,51 @@ XEQ 90                          ; -> :DRAWSQ:
 RCL 47
 1
 X=Y?
-IF 126
+IF 128
   RCL 42
   RCL 45
   10
   ×
   -
   XEQ 90                        ; -> :DRAWSQ:
-ENDIF 126
+ENDIF 128
 RCL 47
 2
 X=Y?
-IF 127
+IF 129
   XEQ 24                        ; -> :ROOKS:
   RCL 48
   XEQ 90                        ; -> :DRAWSQ:
   RCL 49
   XEQ 90                        ; -> :DRAWSQ:
-ENDIF 127
+ENDIF 129
 RCL 47
 3
 X=Y?
-IF 128
+IF 130
   XEQ 23                        ; -> :KT960:
   RCL 48
   XEQ 90                        ; -> :DRAWSQ:
   RCL 49
   XEQ 90                        ; -> :DRAWSQ:
-ENDIF 128
+ENDIF 130
 XEQ 68                          ; -> :GHADD:
 @ the clock: 10 s (100 tenths) more for the side that moved (R45), when a person plays it
 RCL 45
 XEQ 74                          ; -> :HUMQ:
 X≠0?
-IF 129
+IF 131
   100
   RCL 45
   X>0?
-  IF 130
+  IF 132
     DROP
     STO+ "TW"
-  ELSE 130
+  ELSE 132
     DROP
     STO+ "TB"
-  ENDIF 130
-ENDIF 129
+  ENDIF 132
+ENDIF 131
 @ the move's text, then + (check) or # (mate) by LBL :ANYMV: (R63; it changes R65: the draw kept in R64)
 XEQ 79                          ; -> :HTEXT:
 RCL 65
@@ -3277,26 +3340,26 @@ XEQ 65                          ; -> :SUFFIX:
 XEQ 78                          ; -> :HSHOW:
 RCL 63
 X=0?
-IF 131
+IF 133
   XEQ 63                        ; -> :NOMOVE:
   RTN
-ENDIF 131
+ENDIF 133
 RCL 64
 X≠0?
-IF 132
+IF 134
   1
   STO 97
   RCL 64
   1
   X=Y?
-  IF 133
+  IF 135
     "DRAW: REPETITION"
-  ELSE 133
+  ELSE 135
     "DRAW: MATERIAL"
-  ENDIF 133
+  ENDIF 135
   XEQ 75                        ; -> :STATUS:
   RTN
-ENDIF 132
+ENDIF 134
 XEQ 87                          ; -> :STATE:
 RTN
 @
@@ -3308,11 +3371,11 @@ X=0?
 RTN
 RCL 63
 X=0?
-IF 134
+IF 136
   "#"
-ELSE 134
+ELSE 136
   "+"
-ENDIF 134
+ENDIF 136
 x→α 79
 RTN
 @
@@ -3350,21 +3413,21 @@ STO 65
 1
 STO 63
 @ each row R63 of the book: does it follow the game so far? (LBL :BKM:; R65 counts them)
-DO 23
+DO 25
   XEQ 67                        ; -> :BKM:
   X≠0?
-  IF 135
+  IF 137
     1
     STO+ 65
-  ENDIF 135
+  ENDIF 137
   1
   STO+ 63
 @   the rows of OB (written by the build)
   14
   RCL 63
   X≤Y?
-WHILE 23
-ENDDO 23
+WHILE 25
+ENDDO 25
 RCL 65
 X=0?
 RTN
@@ -3377,35 +3440,35 @@ STO 66
 1
 STO 63
 @ again over the rows, to the R66-th that fits (chosen at random): its next move into R62
-DO 24
+DO 26
   XEQ 67                        ; -> :BKM:
   X≠0?
-  IF 136
+  IF 138
     -1
     STO+ 66
     RCL 66
     X=0?
-    IF 137
+    IF 139
       XEQ 67                    ; -> :BKM:
       STO 62
-    ENDIF 137
-  ENDIF 136
+    ENDIF 139
+  ENDIF 138
   1
   STO+ 63
   RCL 62
   X=0?
-WHILE 24
-ENDDO 24
+WHILE 26
+ENDDO 26
 RTN
 LBL 67                          ; :BKM:
 1
 STO 64
 @ the game's plies (R64 from 1 to R67) against the row R63 of the book: all the same, or X = 0
-DO 25
+DO 27
   RCL 67
   RCL 64
   X≤Y?
-  IF 138
+  IF 140
     INDEX "OB"
     RCL 63
     RCL 64
@@ -3420,21 +3483,21 @@ DO 25
     INDEX "BD"
     RCL 49
     X=Y?
-    IF 139
+    IF 141
       1
       STO+ 64
       1
-    ELSE 139
+    ELSE 141
       0
       STO 64
       0
-    ENDIF 139
-  ELSE 138
+    ENDIF 141
+  ELSE 140
     0
-  ENDIF 138
+  ENDIF 140
   X≠0?
-WHILE 25
-ENDDO 25
+WHILE 27
+ENDDO 27
 RCL 64
 X=0?
 RTN
@@ -3469,14 +3532,14 @@ STO 64
 RCL 47
 1
 X≥Y?
-IF 140
+IF 142
   RCL 46
   X=0?
-  IF 141
+  IF 143
     2
     STO 65
-  ENDIF 141
-ENDIF 140
+  ENDIF 143
+ENDIF 142
 299
 RCL 63
 X>Y?
@@ -3501,37 +3564,37 @@ RCL 63
 -
 STO 67
 @ back through the record, two plies at a time (the same side to move): R66 counts the keys equal to this one
-DO 26
+DO 28
   RCL 67
   X≤0?
-  IF 142
+  IF 144
     0
-  ELSE 142
+  ELSE 144
     2
     RCL 67
     STOIJ
     RCLEL
     RCL 64
     X=Y?
-    IF 143
+    IF 145
       1
       STO+ 66
-    ENDIF 143
+    ENDIF 145
     -2
     STO+ 67
     1
-  ENDIF 142
+  ENDIF 144
   X≠0?
-WHILE 26
-ENDDO 26
+WHILE 28
+ENDDO 28
 INDEX "BD"
 RCL 66
 2
 X≤Y?
-IF 144
+IF 146
   1
   STO 65
-ENDIF 144
+ENDIF 146
 RTN
 @
 @ ---- LBL :HASH: X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): for each
@@ -3550,7 +3613,7 @@ STO 46
 22
 STO 30
 @ the squares 22-99 (R30): each piece's word XORed into the key; R47 counts the pieces that are not kings
-DO 27
+DO 29
   1
   RCL 30
   STOIJ
@@ -3562,7 +3625,7 @@ DO 27
   ABS
   2.5
   X≥Y?
-  IF 145
+  IF 147
     RCL 31
     7
     +
@@ -3581,7 +3644,7 @@ DO 27
     ABS
     6
     X≠Y?
-    IF 146
+    IF 148
       1
       STO+ 47
       RCL 31
@@ -3591,28 +3654,28 @@ DO 27
       ABS
       0.5
       X<Y?
-      IF 147
+      IF 149
         1
         STO+ 46
-      ENDIF 147
-    ENDIF 146
-  ENDIF 145
+      ENDIF 149
+    ENDIF 148
+  ENDIF 147
   1
   STO+ 30
   99
   RCL 30
   X≤Y?
-WHILE 27
-ENDDO 27
+WHILE 29
+ENDDO 29
 RCL 20
 X<0?
-IF 148
+IF 150
   3141592653
   SINT
   RCL 49
   XOR
   STO 49
-ENDIF 148
+ENDIF 150
 RCL 49
 →REAL
 WSIZE 64
@@ -3630,75 +3693,75 @@ X<>Y
 -
 RCL 97
 X≠0?
-IF 149
+IF 151
   DROP
   DROP
   0
-ELSE 149
+ELSE 151
   DROP
-ENDIF 149
+ENDIF 151
 @ only a person's clock runs (the C47 never loses on time: at level 2 it thinks longer than the 10 s a move)
 STO 49
 RCL 20
 XEQ 74                          ; -> :HUMQ:
 X=0?
-IF 150
+IF 152
   0
   STO 49
-ENDIF 150
+ENDIF 152
 RCL 49
 RCL 20
 X>0?
-IF 151
+IF 153
   DROP
   STO- "TW"
-ELSE 151
+ELSE 153
   DROP
   STO- "TB"
-ENDIF 151
+ENDIF 153
 @ the time left of the side to move run out (0 or less) while the game is on: it loses on time
 RCL 97
 X=0?
-IF 152
+IF 154
   RCL 20
   X>0?
-  IF 153
+  IF 155
     RCL "TW"
-  ELSE 153
+  ELSE 155
     RCL "TB"
-  ENDIF 153
+  ENDIF 155
   X≤0?
-  IF 154
+  IF 156
     1
     STO 97
     RCL 20
     X>0?
-    IF 155
+    IF 157
       0
       STO "TW"
-    ELSE 155
+    ELSE 157
       0
       STO "TB"
-    ENDIF 155
+    ENDIF 157
 @     FIDE 6.9: a draw when the opponent cannot mate by any series of legal moves (LBL :TMAT:), else a loss
     RCL 20
     CHS
     XEQ 71                      ; -> :TMAT:
     X≠0?
-    IF 156
+    IF 158
       "DRAW: TIME, NO MATE"
-    ELSE 156
+    ELSE 158
       RCL 20
       X>0?
-      IF 157
+      IF 159
         "WHITE LOST ON TIME"
-      ELSE 157
+      ELSE 159
         "BLACK LOST ON TIME"
-      ENDIF 157
-    ENDIF 156
+      ENDIF 159
+    ENDIF 158
     XEQ 75                      ; -> :STATUS:
-  ENDIF 154
-ENDIF 152
+  ENDIF 156
+ENDIF 154
 ""
 STO 48
 "W "
@@ -3745,7 +3808,7 @@ INDEX "BD"
 22
 STO 30
 @ the squares 22-99 (R30): each piece counted for the side that may still mate or the other
-DO 28
+DO 30
   1
   RCL 30
   STOIJ
@@ -3757,53 +3820,53 @@ DO 28
   ABS
   2
   X≥Y?
-  IF 158
+  IF 160
     RCL 39
     RCL× 31
     X>0?
-    IF 159
+    IF 161
       RCL 39
       ABS
       2
       X=Y?
-      IF 160
+      IF 162
         1
         STO+ 33
-      ELSE 160
+      ELSE 162
         DROP
         3
         X=Y?
-        IF 161
+        IF 163
           1
           STO+ 34
-        ELSE 161
+        ELSE 163
           1
           STO+ 32
-        ENDIF 161
-      ENDIF 160
-    ELSE 159
+        ENDIF 163
+      ENDIF 162
+    ELSE 161
       RCL 39
       ABS
       5
       X≠Y?
-      IF 162
+      IF 164
         1
         STO+ 35
-      ENDIF 162
-    ENDIF 159
+      ENDIF 164
+    ENDIF 161
     RCL 39
     ABS
     2.5
     X>Y?
-    IF 163
+    IF 165
       1
       STO+ 38
-    ENDIF 163
+    ENDIF 165
     RCL 39
     ABS
     3
     X=Y?
-    IF 164
+    IF 166
       RCL 30
       1
       -
@@ -3823,56 +3886,56 @@ DO 28
       X<>Y
       -
       STO+ 37
-    ENDIF 164
-  ENDIF 158
+    ENDIF 166
+  ENDIF 160
   1
   STO+ 30
   99
   RCL 30
   X≤Y?
-WHILE 28
-ENDDO 28
+WHILE 30
+ENDDO 30
 RCL 32
 X≠0?
-IF 165
+IF 167
   0
   RTN
-ENDIF 165
+ENDIF 167
 RCL 33
 X≠0?
-IF 166
+IF 168
   RCL 33
   RCL+ 34
   1
   X=Y?
-  IF 167
+  IF 169
     RCL 35
     X=0?
-    IF 168
+    IF 170
       1
       RTN
-    ENDIF 168
-  ENDIF 167
+    ENDIF 170
+  ENDIF 169
   0
   RTN
-ENDIF 166
+ENDIF 168
 RCL 34
 X≠0?
-IF 169
+IF 171
   RCL 38
   X≠0?
-  IF 170
+  IF 172
     0
     RTN
-  ENDIF 170
+  ENDIF 172
   RCL 36
   RCL× 37
   X≠0?
-  IF 171
+  IF 173
     0
     RTN
-  ENDIF 171
-ENDIF 169
+  ENDIF 173
+ENDIF 171
 1
 RTN
 @
@@ -3894,10 +3957,10 @@ MOD
 STO 49
 10
 X>Y?
-IF 172
+IF 174
   "0"
   x→α 48
-ENDIF 172
+ENDIF 174
 RCL 49
 αIP 48
 RTN
@@ -3907,24 +3970,24 @@ LBL 73                          ; :TOMOVE:
 RCL 27
 2
 X=Y?
-IF 173
+IF 175
   RCL 20
   X>0?
-  IF 174
+  IF 176
     "WHITE TO MOVE"
-  ELSE 174
+  ELSE 176
     "BLACK TO MOVE"
-  ENDIF 174
-ELSE 173
+  ENDIF 176
+ELSE 175
   RCL 20
   RCL 27
   X=Y?
-  IF 175
+  IF 177
     "YOUR MOVE"
-  ELSE 175
+  ELSE 177
     "C47 TO MOVE"
-  ENDIF 175
-ENDIF 173
+  ENDIF 177
+ENDIF 175
 XEQ 75                          ; -> :STATUS:
 RTN
 @
@@ -3932,16 +3995,16 @@ RTN
 LBL 74                          ; :HUMQ:
 RCL 27
 X=Y?
-IF 176
+IF 178
   1
   RTN
-ENDIF 176
+ENDIF 178
 2
 X=Y?
-IF 177
+IF 179
   1
   RTN
-ENDIF 177
+ENDIF 179
 0
 RTN
 @
@@ -3989,36 +4052,36 @@ ATEXT Z
 STO 48
 RCL 27
 X>0?
-IF 178
+IF 180
   "WHITE"
-ELSE 178
+ELSE 180
   "BLACK"
-ENDIF 178
+ENDIF 180
 x→α 48
 RCL 27
 X=0?
-IF 179
+IF 181
   "C47 VS C47"
   STO 48
-ENDIF 179
+ENDIF 181
 RCL 27
 2
 X=Y?
-IF 180
+IF 182
   "2 PLAYERS"
   STO 48
-ENDIF 180
+ENDIF 182
 "   LEVEL "
 x→α 48
 RCL 26
 X=0?
-IF 181
+IF 183
   "CRAZY"
   x→α 48
-ELSE 181
+ELSE 183
   RCL 26
   αIP 48
-ENDIF 181
+ENDIF 183
 RCL 48
 200
 212
@@ -4045,7 +4108,7 @@ INDEX "BD"
 STOIJ
 RCLEL
 X≠0?
-IF 182
+IF 184
   "CHESS960 No "
   STO 48
   DROP
@@ -4056,7 +4119,7 @@ IF 182
   186
   212
   ATEXT Z
-ENDIF 182
+ENDIF 184
 XEQ 77                          ; -> :FACE:
 0
 GRMOD
@@ -4075,7 +4138,7 @@ STO 30
 STO 31
 RCL 26
 X=0?
-IF 183
+IF 185
 @   the face of python/layout.py, one column a word (written by the build)
   16320
   SINT
@@ -4237,7 +4300,7 @@ IF 183
   RCL 30
   AGRAPH 99
   STO 30
-ELSE 183
+ELSE 185
   0
   SINT
   STO 99
@@ -4245,15 +4308,15 @@ ELSE 183
   20
   STO 33
 @   the 20 columns of the face cleared (AGRAPH of a 0 word, R33 counts down)
-  DO 29
+  DO 31
     RCL 31
     RCL 30
     AGRAPH 99
     STO 30
     DSE 33
-  WHILE 29
-  ENDDO 29
-ENDIF 183
+  WHILE 31
+  ENDDO 31
+ENDIF 185
 0
 GRMOD
 WSIZE 64
@@ -4273,19 +4336,19 @@ STO 48
 136
 STO 49
 @ the seven lines R73-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
-DO 30
+DO 32
   "                    "
   RCL 49
   212
   ATEXT Z
   RCL IND 48
   STRI?
-  IF 184
+  IF 186
     RCL IND 48
     RCL 49
     212
     ATEXT Z
-  ENDIF 184
+  ENDIF 186
   -12
   STO+ 49
   1
@@ -4293,8 +4356,8 @@ DO 30
   79
   RCL 48
   X≤Y?
-WHILE 30
-ENDDO 30
+WHILE 32
+ENDDO 32
 0
 GRMOD
 RTN
@@ -4320,15 +4383,15 @@ RCL 96
 αIP 79
 RCL 45
 X>0?
-IF 185
+IF 187
   ". "
   x→α 79
-ELSE 185
+ELSE 187
   "... "
   x→α 79
   1
   STO+ 96
-ENDIF 185
+ENDIF 187
 @ the move in standard algebraic notation (FIDE): from the undo row of ply 3 (row 20 of BD): R43 the piece that
 @ moved, R44 not 0 for a capture (the piece taken, or 1 en passant), the flag 2 castling; R47 its kind
 INDEX "BD"
@@ -4353,33 +4416,33 @@ STO 44
 RCL 47
 2
 X≤Y?
-IF 186
+IF 188
   "O-O"
   x→α 79
   RCL 41
   RCL 42
   X<Y?
-  IF 187
+  IF 189
     "-O"
     x→α 79
-  ENDIF 187
+  ENDIF 189
   RTN
-ENDIF 186
+ENDIF 188
 RCL 43
 ABS
 STO 47
 1
 X=Y?
-IF 188
+IF 190
 @   a pawn: its file and x for a capture, the target, =Q on the last row
   RCL 44
   X≠0?
-  IF 189
+  IF 191
     RCL 41
     XEQ 84                      ; -> :SQF:
     "x"
     x→α 79
-  ENDIF 189
+  ENDIF 191
   RCL 42
   XEQ 82                        ; -> :SQNAME:
   1
@@ -4389,42 +4452,42 @@ IF 188
   ABS
   5
   X=Y?
-  IF 190
+  IF 192
     "=Q"
     x→α 79
-  ENDIF 190
+  ENDIF 192
   RTN
-ENDIF 188
+ENDIF 190
 @ a piece: its letter, the square it left as far as needed (LBL :SANDIS:; not for the king), x, the target
 RCL 47
 2
 X=Y?
-IF 191
+IF 193
   "N"
-ELSE 191
+ELSE 193
   RCL 47
   3
   X=Y?
-  IF 192
+  IF 194
     "B"
-  ELSE 192
+  ELSE 194
     RCL 47
     4
     X=Y?
-    IF 193
+    IF 195
       "R"
-    ELSE 193
+    ELSE 195
       RCL 47
       5
       X=Y?
-      IF 194
+      IF 196
         "Q"
-      ELSE 194
+      ELSE 196
         "K"
-      ENDIF 194
-    ENDIF 193
-  ENDIF 192
-ENDIF 191
+      ENDIF 196
+    ENDIF 195
+  ENDIF 194
+ENDIF 193
 x→α 79
 RCL 47
 6
@@ -4432,10 +4495,10 @@ X≠Y?
 XEQ 80                          ; -> :SANDIS:
 RCL 44
 X≠0?
-IF 195
+IF 197
   "x"
   x→α 79
-ENDIF 195
+ENDIF 197
 RCL 42
 XEQ 82                          ; -> :SQNAME:
 RTN
@@ -4456,86 +4519,86 @@ STO 32
 RCL 47
 2
 X=Y?
-IF 196
+IF 198
   80
   STO 31
   88
   STO 32
-ENDIF 196
+ENDIF 198
 RCL 47
 4
 X=Y?
-IF 197
+IF 199
   92
   STO 31
-ENDIF 197
+ENDIF 199
 RCL 47
 3
 X=Y?
-IF 198
+IF 200
   92
   STO 32
-ENDIF 198
+ENDIF 200
 @ each direction or offset R31 of the moving piece's kind (to R32 - 1)
-DO 31
+DO 33
   RCL IND 31
   STO 38
   RCL 42
   STO 39
 @   from the target R42 along it (R39): an empty square goes on (not for a knight), a piece like R43 is counted
 @   (LBL :SANC:), anything else stops
-  DO 32
+  DO 34
     RCL 38
     STO+ 39
     RCL 41
     RCL 39
     X=Y?
-    IF 199
+    IF 201
       0
-    ELSE 199
+    ELSE 201
       1
       RCL 39
       STOIJ
       RCLEL
       X=0?
-      IF 200
+      IF 202
         RCL 47
         2
         -
-      ELSE 200
+      ELSE 202
         RCL 43
         X=Y?
         XEQ 81                  ; -> :SANC:
         0
-      ENDIF 200
-    ENDIF 199
+      ENDIF 202
+    ENDIF 201
     X≠0?
-  WHILE 32
-  ENDDO 32
+  WHILE 34
+  ENDDO 34
   1
   STO+ 31
   RCL 32
   RCL 31
   X<Y?
-WHILE 31
-ENDDO 31
+WHILE 33
+ENDDO 33
 RCL 33
 X=0?
 RTN
 RCL 34
 X=0?
-IF 201
+IF 203
   RCL 41
   XEQ 84                        ; -> :SQF:
   RTN
-ENDIF 201
+ENDIF 203
 RCL 35
 X=0?
-IF 202
+IF 204
   RCL 41
   XEQ 83                        ; -> :SQR:
   RTN
-ENDIF 202
+ENDIF 204
 RCL 41
 XEQ 82                          ; -> :SQNAME:
 RTN
@@ -4579,10 +4642,10 @@ RCL 41
 10
 MOD
 X=Y?
-IF 203
+IF 205
   1
   STO+ 34
-ENDIF 203
+ENDIF 205
 RCL 39
 10
 ÷
@@ -4592,10 +4655,10 @@ RCL 41
 ÷
 IP
 X=Y?
-IF 204
+IF 206
   1
   STO+ 35
-ENDIF 204
+ENDIF 206
 RTN
 @
 @ ---- LBL :SQNAME: X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (the
@@ -4630,24 +4693,24 @@ LBL 85                          ; :BOARD:
 22
 STO 41
 @ the squares 22-99 (R41), each drawn (LBL :DRAWSQ:); the border is skipped
-DO 33
+DO 35
   1
   RCL 41
   STOIJ
   RCLEL
   8
   X≠Y?
-  IF 205
+  IF 207
     RCL 41
     XEQ 90                      ; -> :DRAWSQ:
-  ENDIF 205
+  ENDIF 207
   1
   STO+ 41
   99
   RCL 41
   X≤Y?
-WHILE 33
-ENDDO 33
+WHILE 35
+ENDDO 35
 1
 GRMOD
 DROP
@@ -4670,7 +4733,7 @@ STO 30
 21
 STO 33
 @ the letters a-h under the board (R30 the character, R33 its x; h-a when you play black)
-DO 34
+DO 36
   ""
   STO 48
   RCL 30
@@ -4686,8 +4749,8 @@ DO 34
   189
   RCL 33
   X≤Y?
-WHILE 34
-ENDDO 34
+WHILE 36
+ENDDO 36
 RCL 34
 3.5
 ×
@@ -4698,7 +4761,7 @@ STO 30
 28
 STO 33
 @ the numbers 1-8 left of the board (R30 the number, R33 its row; 8-1 when you play black)
-DO 35
+DO 37
   ""
   STO 48
   RCL 30
@@ -4714,8 +4777,8 @@ DO 35
   196
   RCL 33
   X≤Y?
-WHILE 35
-ENDDO 35
+WHILE 37
+ENDDO 37
 0
 GRMOD
 DROP
@@ -4736,7 +4799,7 @@ RCL 68
 STO 27
 DROP
 X≠Y?
-IF 206
+IF 208
   RCL 27
   ABS
   RCL- 27
@@ -4746,7 +4809,7 @@ IF 206
   +
   STO 28
   XEQ 85                        ; -> :BOARD:
-ENDIF 206
+ENDIF 208
 XEQ 76                          ; -> :PANEL:
 RTN
 @
@@ -4754,11 +4817,11 @@ RTN
 LBL 87                          ; :STATE:
 XEQ 53                          ; -> :INCHK:
 X≠0?
-IF 207
+IF 209
   "CHECK"
   XEQ 75                        ; -> :STATUS:
   RTN
-ENDIF 207
+ENDIF 209
 XEQ 73                          ; -> :TOMOVE:
 RTN
 @
@@ -4781,11 +4844,11 @@ MOD
 STO 35
 RCL 27
 X<0?
-IF 208
+IF 210
   7
   RCL- 35
   STO 35
-ENDIF 208
+ENDIF 210
 RCL 35
 24
 ×
@@ -4803,11 +4866,11 @@ IP
 STO 36
 RCL 27
 X<0?
-IF 209
+IF 211
   7
   RCL- 36
   STO 36
-ENDIF 209
+ENDIF 211
 RCL 36
 24
 ×
@@ -4844,24 +4907,24 @@ STO 35
 RCL 29
 RCL 34
 X=Y?
-IF 210
+IF 212
   1
   STO 35
-ELSE 210
+ELSE 212
   RCL 32
   13
   ×
   STO+ 36
-ENDIF 210
+ENDIF 212
 0
 STO 32
 RCL 28
 RCL 34
 X=Y?
-IF 211
+IF 213
   1
   STO 32
-ENDIF 211
+ENDIF 213
 INDEX "GL"
 RCL 36
 1
@@ -4875,9 +4938,9 @@ STO 33
 RCL 32
 RCL+ 35
 X=0?
-IF 212
+IF 214
 @   a plain square: its 24 columns from the row of GL (RCLSEQ), each an AGRAPH word (R33 counts down)
-  DO 36
+  DO 38
     RCLSEQ
     SINT
     STO 99
@@ -4887,17 +4950,17 @@ IF 212
     AGRAPH 99
     STO 30
     DSE 33
-  WHILE 36
-  ENDDO 36
-ELSE 212
+  WHILE 38
+  ENDDO 38
+ELSE 214
 @   the cursor or the piece picked: its 24 columns, inverted (NOT) for the piece picked, the frame ORed for the
 @   cursor
-  DO 37
+  DO 39
     RCLSEQ
     SINT
     RCL 32
     X≠0?
-    IF 213
+    IF 215
       DROP
       RCL 33
       12.5
@@ -4905,28 +4968,28 @@ ELSE 212
       ABS
       10
       X<Y?
-      IF 214
+      IF 216
         DROP
         DROP
         16777215
-      ELSE 214
+      ELSE 216
         DROP
         DROP
         12582915
-      ENDIF 214
+      ENDIF 216
       SINT
       OR
-    ELSE 213
-      DROP
-    ENDIF 213
-    RCL 35
-    X≠0?
-    IF 215
-      DROP
-      NOT
     ELSE 215
       DROP
     ENDIF 215
+    RCL 35
+    X≠0?
+    IF 217
+      DROP
+      NOT
+    ELSE 217
+      DROP
+    ENDIF 217
     STO 99
     DROP
     RCL 31
@@ -4934,9 +4997,9 @@ ELSE 212
     AGRAPH 99
     STO 30
     DSE 33
-  WHILE 37
-  ENDDO 37
-ENDIF 212
+  WHILE 39
+  ENDDO 39
+ENDIF 214
 0
 GRMOD
 INDEX "BD"
@@ -5495,12 +5558,12 @@ NEWMAT
 STO "GL"
 RCL 68
 X=0?
-IF 216
+IF 218
   2
   300
   NEWMAT
   STO "GH"
-ENDIF 216
+ENDIF 218
 @ the opening book of python/book.py: the matrix OB (written by the build)
 14
 11
@@ -6036,17 +6099,17 @@ INDEX "BD"
 120
 STO 33
 @ the whole row 1 of BD set to 8 (the border)
-DO 38
+DO 40
   8
   STOSEQ
   DROP
   DSE 33
-WHILE 38
-ENDDO 38
+WHILE 40
+ENDDO 40
 22
 STO 30
 @ the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
-DO 39
+DO 41
   1
   RCL 30
   STOIJ
@@ -6060,18 +6123,18 @@ DO 39
   MOD
   8
   X≤Y?
-  IF 217
+  IF 219
     3
     STO+ 30
-  ELSE 217
+  ELSE 219
     1
     STO+ 30
-  ENDIF 217
+  ENDIF 219
   99
   RCL 30
   X≤Y?
-WHILE 39
-ENDDO 39
+WHILE 41
+ENDDO 41
 1
 22
 STOIJ
@@ -6116,26 +6179,26 @@ STO 33
 32
 STOIJ
 @ the eight white pawns on 32-39
-DO 40
+DO 42
   1
   STOSEQ
   DROP
   DSE 33
-WHILE 40
-ENDDO 40
+WHILE 42
+ENDDO 42
 8
 STO 33
 1
 82
 STOIJ
 @ the eight black pawns on 82-89
-DO 41
+DO 43
   -1
   STOSEQ
   DROP
   DSE 33
-WHILE 41
-ENDDO 41
+WHILE 43
+ENDDO 43
 @ the state: white to move, no en passant square, all four castling rights, SC 0 (the start is symmetric)
 1
 STO 20
@@ -6164,7 +6227,7 @@ STO 97
 @ the level and your side of the saved game (CHN 0: level 2, white)
 RCL "CHN"
 X≠0?
-IF 218
+IF 220
   10
   MOD
   2
@@ -6177,7 +6240,7 @@ IF 218
   10
   MOD
   STO 26
-ENDIF 218
+ENDIF 220
 @ Chess960: BD (11, 7) = n + 1 (0: normal chess), the back ranks of the position n (LBL :BACK9:); the kings, the
 @ castling rooks and the castling rights' masks (LBL :CSQ:)
 INDEX "BD"
@@ -6214,21 +6277,21 @@ TICKS
 STO "TK"
 RCL 68
 X=0?
-IF 219
+IF 221
   3000
   STO "TW"
   STO "TB"
-ENDIF 219
+ENDIF 221
 @ the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
 WSIZE 64
 XEQ 21                          ; -> :NINIT:
 RCL 68
 X≠0?
-IF 220
+IF 222
   1
   STO 69
 @   the saved game's moves played again (R69 the ply, 1 to R68): MAKE, the record, the move list (+ or # in check)
-  DO 42
+  DO 44
     INDEX "GH"
     1
     RCL 69
@@ -6243,7 +6306,7 @@ IF 220
     XEQ 79                      ; -> :HTEXT:
     XEQ 53                      ; -> :INCHK:
     X≠0?
-    IF 221
+    IF 223
       RCL 69
       STO 62
       XEQ 52                    ; -> :ANYMV:
@@ -6251,15 +6314,15 @@ IF 220
       RCL 62
       STO 69
       XEQ 65                    ; -> :SUFFIX:
-    ENDIF 221
+    ENDIF 223
     1
     STO+ 69
     RCL 68
     RCL 69
     X≤Y?
-  WHILE 42
-  ENDDO 42
-ENDIF 220
+  WHILE 44
+  ENDDO 44
+ENDIF 222
 @ the screen: the board, the panel, the moves, the state
 CLLCD
 XEQ 85                          ; -> :BOARD:
@@ -6289,13 +6352,13 @@ STO 33
 22
 STOIJ
 @ white's back rank 22-29 emptied
-DO 43
+DO 45
   0
   STOSEQ
   DROP
   DSE 33
-WHILE 43
-ENDDO 43
+WHILE 45
+ENDDO 45
 RCL 30
 4
 MOD
@@ -6345,24 +6408,24 @@ STO 30
 0
 STO 34
 @ the pair of free squares of the knights: R34 the first (0-3), R30 what is left over
-DO 44
+DO 46
   4
   RCL- 34
   STO 35
   RCL 30
   X≥Y?
-  IF 222
+  IF 224
     RCL 35
     STO- 30
     1
     STO+ 34
     1
-  ELSE 222
+  ELSE 224
     0
-  ENDIF 222
+  ENDIF 224
   X≠0?
-WHILE 44
-ENDDO 44
+WHILE 46
+ENDDO 46
 RCL 34
 1
 +
@@ -6404,7 +6467,7 @@ STOEL
 22
 STO 33
 @ black's back rank: each piece of white's (22-29), the other colour, 70 squares up
-DO 45
+DO 47
   1
   RCL 33
   STOIJ
@@ -6423,8 +6486,8 @@ DO 45
   29
   RCL 33
   X≤Y?
-WHILE 45
-ENDDO 45
+WHILE 47
+ENDDO 47
 RTN
 @
 @ ---- LBL :NTH: X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the square) ----
@@ -6433,7 +6496,7 @@ STO 31
 21
 STO 32
 @ the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
-DO 46
+DO 48
   1
   STO+ 32
   1
@@ -6441,15 +6504,15 @@ DO 46
   STOIJ
   RCLEL
   X=0?
-  IF 223
+  IF 225
     -1
     STO+ 31
-  ENDIF 223
+  ENDIF 225
   RCL 31
   0
   X≤Y?
-WHILE 46
-ENDDO 46
+WHILE 48
+ENDDO 48
 RCL 32
 RTN
 @
@@ -6462,7 +6525,7 @@ STO 34
 22
 STO 33
 @ white's back rank 22-29: the king's square, the rook on its left (before it) and on its right (after it)
-DO 47
+DO 49
   1
   RCL 33
   STOIJ
@@ -6470,7 +6533,7 @@ DO 47
   STO 35
   6
   X=Y?
-  IF 224
+  IF 226
     11
     4
     STOIJ
@@ -6478,44 +6541,44 @@ DO 47
     STOEL
     1
     STO 34
-  ENDIF 224
+  ENDIF 226
   RCL 35
   4
   X=Y?
-  IF 225
+  IF 227
     RCL 34
     X=0?
-    IF 226
+    IF 228
       6
-    ELSE 226
+    ELSE 228
       5
-    ENDIF 226
+    ENDIF 228
     11
     X<>Y
     STOIJ
     RCL 33
     STOEL
-  ENDIF 225
+  ENDIF 227
   1
   STO+ 33
   29
   RCL 33
   X≤Y?
-WHILE 47
-ENDDO 47
+WHILE 49
+ENDDO 49
 23
 22
 STOIJ
 78
 STO 33
 @ the masks of the castling rights: 15 into row 23 for the squares 22-99
-DO 48
+DO 50
   15
   STOSEQ
   DROP
   DSE 33
-WHILE 48
-ENDDO 48
+WHILE 50
+ENDDO 50
 11
 4
 STOIJ
@@ -6582,7 +6645,7 @@ LBL 95                          ; :PSTALL:
 22
 STO 42
 @ the squares 22-99 (R42): the six pieces' values there (LBL :PSQ:), white's and black's
-DO 49
+DO 51
   RCL 42
   1
   -
@@ -6593,16 +6656,16 @@ DO 49
   ABS
   3.5
   X≥Y?
-  IF 227
+  IF 229
     XEQ 96                      ; -> :PSQ:
-  ENDIF 227
+  ENDIF 229
   1
   STO+ 42
   99
   RCL 42
   X≤Y?
-WHILE 49
-ENDDO 49
+WHILE 51
+ENDDO 51
 INDEX "BD"
 RTN
 @
@@ -6668,18 +6731,18 @@ RCL 47
 ABS
 0.5
 X=Y?
-IF 228
+IF 230
   RCL 48
   3
   -
   ABS
   1
   X≥Y?
-  IF 229
+  IF 231
     8
     STO+ 43
-  ENDIF 229
-ENDIF 228
+  ENDIF 231
+ENDIF 230
 1
 XEQ 97                          ; -> :PSTO:
 RCL 49
@@ -6703,10 +6766,10 @@ STO 43
 RCL 48
 6
 X=Y?
-IF 230
+IF 232
   10
   STO+ 43
-ENDIF 230
+ENDIF 232
 4
 XEQ 97                          ; -> :PSTO:
 RCL 49
@@ -6725,10 +6788,10 @@ RCL 49
 STO 43
 RCL 48
 X=0?
-IF 231
+IF 233
   10
   STO+ 43
-ENDIF 231
+ENDIF 233
 6
 XEQ 97                          ; -> :PSTO:
 RTN
@@ -7822,11 +7885,11 @@ DROP
 -6
 STO 41
 @ each piece R41 (-6 to 6)
-DO 50
+DO 52
   1
   STO 33
 @   its 24 columns R33: the dither AND NOT the mask OR the glyph, into its dark square's row of GL
-  DO 51
+  DO 53
     RCL 41
     7
     +
@@ -7842,7 +7905,7 @@ DO 50
     DROP
     RCL 41
     X≠0?
-    IF 232
+    IF 234
       RCL 41
       ABS
       26
@@ -7853,20 +7916,20 @@ DO 50
       SINT
       STO 49
       DROP
-    ENDIF 232
+    ENDIF 234
     5592405
     SINT
     RCL 33
     2
     MOD
     X=0?
-    IF 233
+    IF 235
       DROP
       11184810
       SINT
-    ELSE 233
+    ELSE 235
       DROP
-    ENDIF 233
+    ENDIF 235
     RCL 49
     NOT
     AND
@@ -7886,15 +7949,15 @@ DO 50
     24
     RCL 33
     X≤Y?
-  WHILE 51
-  ENDDO 51
+  WHILE 53
+  ENDDO 53
   1
   STO+ 41
   6
   RCL 41
   X≤Y?
-WHILE 50
-ENDDO 50
+WHILE 52
+ENDDO 52
 INDEX "BD"
 RTN
 END

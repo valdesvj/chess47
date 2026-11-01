@@ -235,11 +235,7 @@ IF
     RCLEL
     RCL× 32
     STO 34
-    3.5
-    -
-    ABS
-    2.5
-    X≥Y?
+    X>0?
     XEQ :GENSQ:
     DSE 31
   WHILE
@@ -259,11 +255,7 @@ ELSE
     RCLEL
     RCL× 32
     STO 34
-    3.5
-    -
-    ABS
-    2.5
-    X≥Y?
+    X>0?
     XEQ :GENSQ:
     DSE 31
   WHILE
@@ -272,6 +264,10 @@ ENDIF
 RTN
 REM ---- LBL :GENSQ: the moves of the piece on R30 (R34 its kind; LBL :GSLIDE: reads it, then R34 is its direction) ----
 LBL :GENSQ:
+RCL 34
+7
+X<Y?
+RTN
 RCL 34
 1
 X=Y?
@@ -307,20 +303,13 @@ ELSE
   ENDIF
 ENDIF
 RTN
-REM ---- LBL :ADD: the move R30 -> R33 into the row R38 of ML. A quiet move (the target empty) at the column
+REM ---- LBL :ADD: the move R30 -> R33 (the matrix index already on (1, R33): every caller has just read the target)
+REM into the row R38 of ML. A quiet move (the target empty) at the column
 REM 121 - R72 (R72 + 1); a capture: the code (the value of the piece taken) x 100000 + the move, put in the captures
 REM (columns 1 - R37) after those that take as much or more (an insertion: the ones that take less move one
 REM column on): the captures by the piece taken, queen first, else in the order generated (MVV). At most 118 a ply.
 REM R47 R48 R49 work ----
 LBL :ADD:
-RCL 37
-RCL+ 72
-118
-X<Y?
-RTN
-1
-RCL 33
-STOIJ
 RCLEL
 X=0?
 IF
@@ -344,6 +333,15 @@ IF
     XEQ :AQEVAL:
     RTN
   ENDIF
+  RCL 37
+  RCL+ 72
+  119
+  X<Y?
+  IF
+    -1
+    STO+ 72
+    RTN
+  ENDIF
   RCL 38
   121
   RCL- 72
@@ -362,6 +360,8 @@ IF
   XEQ :CEVAL:
   RTN
 ENDIF
+DROP
+DROP
 RCL 39
 5
 X=Y?
@@ -369,6 +369,13 @@ IF
   XEQ :ACEVAL:
   RTN
 ENDIF
+DROP
+DROP
+RCL 37
+RCL+ 72
+118
+X<Y?
+RTN
 DROP
 DROP
 ABS
@@ -864,13 +871,12 @@ X≠0?
 RTN
 88
 STO 54
-REM each direction R54 of the table (R88-R95: the diagonals, then the lines)
+REM the diagonals R88-R91: to the first piece along each (R52); a queen or a bishop of R51, or its king next to R50
 DO
   RCL IND 54
   STO 53
   RCL 50
   STO 52
-  REM from R50 along the direction R53 to the first square that is not empty (R52)
   DO
     RCL 53
     STO+ 52
@@ -886,14 +892,7 @@ DO
   5
   X=Y?
   RTN
-  RCL 54
-  88
-  -
-  4
-  ÷
-  IP
   3
-  +
   RCL 56
   X=Y?
   RTN
@@ -908,9 +907,50 @@ DO
   ENDIF
   1
   STO+ 54
-  96
+  91
   RCL 54
-  X<Y?
+  X≤Y?
+WHILE
+ENDDO
+REM the lines R92-R95: the same with a rook
+DO
+  RCL IND 54
+  STO 53
+  RCL 50
+  STO 52
+  DO
+    RCL 53
+    STO+ 52
+    1
+    RCL 52
+    STOIJ
+    RCLEL
+    X=0?
+  WHILE
+  ENDDO
+  RCL× 51
+  STO 56
+  5
+  X=Y?
+  RTN
+  4
+  RCL 56
+  X=Y?
+  RTN
+  6
+  X=Y?
+  IF
+    RCL 52
+    RCL- 50
+    RCL 53
+    X=Y?
+    RTN
+  ENDIF
+  1
+  STO+ 54
+  95
+  RCL 54
+  X≤Y?
 WHILE
 ENDDO
 0
@@ -974,11 +1014,19 @@ RCL 22
 STO IND 49
 RCL 42
 RCL 44
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 23
 RCL 41
 RCL 43
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 23
 1
 RCL 41
@@ -1007,7 +1055,11 @@ IF
     STOIJ
     RCL 48
     RCLEL
-    XEQ :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 23
     1
     RCL 48
@@ -1043,7 +1095,11 @@ RCL 43
 STOEL
 RCL 42
 RCL 43
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO+ 23
 RCL 43
 ABS
@@ -1080,13 +1136,21 @@ IF
     RCL 45
     4
     ×
-    XEQ :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO+ 23
     RCL 48
     RCL 45
     4
     ×
-    XEQ :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 23
     1
     RCL 49
@@ -1902,22 +1966,12 @@ STO+ 37
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ :RECAP:
 GTO :ABEST:
 LBL :AQEVAL:
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ :DELTA:
 LBL :ABEST:
 RCL 29
@@ -1938,6 +1992,11 @@ RTN
 REM ---- LBL :ALEGAL: the answer R40 played (ply 3): when it does not leave S's king attacked (LBL :INCHK2:, kept in R70
 REM for the time of UNMK), R29 = its value R71 ----
 LBL :ALEGAL:
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
 3
 STO 46
 XEQ :MAKE:
@@ -2116,11 +2175,6 @@ LBL :QEVAL:
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ :DELTA:
 RCL 65
 RCL 71
@@ -2145,11 +2199,6 @@ STO+ 37
 RCL 70
 X≠0?
 RTN
-RCL 30
-1000
-×
-RCL+ 33
-STO 40
 XEQ :RECAP:
 RCL 65
 RCL 71
@@ -2179,7 +2228,10 @@ STO 48
 11
 X<>Y
 STOIJ
-RCL 40
+RCL 30
+1000
+×
+RCL+ 33
 STOEL
 1
 RCL 30
@@ -2425,14 +2477,9 @@ REM ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + 
 REM makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken
 REM en passant ----
 LBL :DELTA:
-RCL 40
-1000
-÷
-IP
+RCL 30
 STO 41
-RCL 40
-1000
-MOD
+RCL 33
 STO 42
 1
 RCL 41
@@ -2448,11 +2495,19 @@ RCL 42
 RCL 42
 STOIJ
 RCLEL
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 71
 RCL 41
 RCL 43
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO- 71
 RCL 43
 ABS
@@ -2470,7 +2525,11 @@ IF
     -
     RCL 45
     CHS
-    XEQ :VAL:
+    11
+    +
+    X<>Y
+    STOIJ
+    RCLEL
     STO- 71
   ENDIF
   RCL 42
@@ -2494,7 +2553,11 @@ IF
 ENDIF
 RCL 42
 RCL 43
-XEQ :VAL:
+11
++
+X<>Y
+STOIJ
+RCLEL
 STO+ 71
 RCL 60
 STO× 71
