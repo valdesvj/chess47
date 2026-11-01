@@ -89,12 +89,18 @@ class Game:
         p = self.pos
         f, t = m // 1000, m % 1000
         castle = self.n is not None and p.castle_move(m)
-        name = ('O-O' if t > f else 'O-O-O') if castle else R.name(f) + R.name(t)
+        pawn = abs(p.bd[f]) == 1
+        take = not castle and (p.bd[t] != 0 or (pawn and t == p.ep and (t - f) % 10 != 0))
+        name = ('O-O' if t > f else 'O-O-O') if castle else R.name(f) + ('x' if take else '') + R.name(t)
+        if pawn and (t > 90 or t < 30):
+            name += '=Q'
         side = p.sd
         k = len(self.moves)
-        self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         p.make(m, 3)
         p.undo.pop(3, None)
+        if p.attacked(p.king(p.sd), -p.sd):              # + check, # mate
+            name += '+' if p.legal() else '#'
+        self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         self.moves.append(m)
         self.keys.append(self.key())
         if by_person:
