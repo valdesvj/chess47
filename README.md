@@ -57,6 +57,22 @@ misses deeper tactics. The matches against an independent player in the simulato
 
 ![crazy](docs/CHESS47_crazy.png)
 
+## On the computer, with Chess960 (`tools/play47.py`)
+
+A trial version for the computer: the C47's screen (the same glyphs, fonts, places and LCD colours), the same engine
+(`python/chess47ref.py`), the same keys and rules, and Chess960 (Fischer random chess), not in CHESS47 yet.
+
+    pip install pygame
+    python3 tools/play47.py          (--new for a new game; else the last one goes on, kept in ~/.chess47_play.json)
+
+`/` starts a Chess960 game: type its number 0-959 and Enter (Enter alone: a random one; 518 is normal chess). Castling
+in Chess960: pick the king, then its own rook (the king goes to g or c, the rook to f or d). The book is for normal
+chess only. The engine's Chess960 (`python/chess960.py`, a subclass of the twin, which is not changed) is checked
+against python-chess by `tests/test_960.py`: the 960 start positions, perft, and the legal moves at every ply of 300
+random games (castling included).
+
+![chess960](docs/PLAY47_960.png)
+
 ## How it works
 
 - **One matrix BD (22 × 120)** holds everything the search reads, so it never switches INDEX:
@@ -148,6 +164,8 @@ Almanac 47's MOON47.
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |
 | `python/chess47sim.py` | runs the program in the simulator and writes the screens in `docs/` |
 | `python/c47sim.py`, `stdfont.py`, `tinyfont.py` | the C47 simulator and fonts, from Almanac 47; the bitwise commands from Logic 47 |
+| `tools/play47.py` | Chess 47 on the computer (pygame), with Chess960 |
+| `python/chess960.py`, `tests/test_960.py` | Chess960 on the twin's engine (a subclass), checked against python-chess |
 | `tests/test_chess47.py`, `tests/test_forum.py` | the tests above; the forum file (its steps = the listing's, no REM, the narrative) |
 
 ## Author
