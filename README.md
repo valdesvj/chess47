@@ -38,7 +38,8 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
 CHECK, CHECKMATE, STALEMATE, DRAW: REPETITION (the same position the third time, the same side to move) and DRAW: MATERIAL
 (kings only, or one bishop or knight) are shown; there is no 50-move rule. An illegal move is refused (ILLEGAL MOVE, or
-ILLEGAL: CHECK when it leaves your king attacked). The last seven moves are listed on the right. The clock at the top
+ILLEGAL: CHECK when it leaves your king attacked). The last seven moves are listed on the right in standard algebraic notation, as in a book or a
+scoresheet: e4, Nf3, exd5, Nbd2, R1e2, O-O, e8=Q, Qh7+, Ra8#. The clock at the top
 left shows each side's time left: **5 minutes each, 10 seconds more for every move played** (a Fischer clock, so a
 lively game can go on as long as it flows). **Only a person's clock runs**: the C47's stops while it thinks (at
 level 2 it needs more than the 10 s a move), so it never loses on time, and C47 vs C47 always plays to the end. The side whose time runs out loses (WHITE / BLACK LOST ON TIME), unless the opponent cannot mate by any
