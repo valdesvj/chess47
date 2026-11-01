@@ -15,7 +15,10 @@ Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have 
             take over the side to move.
   3         two players: two people play on the calculator; the C47 only checks that every move is legal and
             calls check, checkmate and the draws (+ or 9 give it a side again)
-  7         a new game
+  7         a new game of normal chess
+  ÷         a new Chess960 game (Fischer random chess): type the position's number with three digits (066 for
+            66; 518 is the normal start) or press ÷ again for a random one. To castle, pick the king and then its
+            own rook: the king goes to g or c and the rook to f or d. The opening book is not used.
   1         the level: 2 (two moves ahead, about 10-20 s a move), 1 (one move ahead, a few seconds), 0 CRAZY
             (random legal moves, with a crazy face by the title)
   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.

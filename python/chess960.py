@@ -11,7 +11,7 @@ Chess960 changes, and nothing else.
 python3 python/chess960.py   checks the move counts (perft) of positions against python-chess, when it is there."""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from chess47ref import Pos, OFF, value
+from chess47ref import Pos, OFF, value, ENGINE
 
 KNIGHTS = ((0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4))
 
@@ -67,10 +67,13 @@ class Pos960(Pos):
         return (base + 6, base + 5) if r > k else (base + 2, base + 3)
 
     def gen(self, c, castle=True):
+        """As chess47ref's gen, with Chess960's castling where CHESS47 makes it: right after the king's own moves (the
+        squares are scanned a1 ... h8), short (the rook on the king's right) before long."""
         out = super().gen(c, castle=False)           # the moves of normal chess, castling left out
         if castle:
             b, k = self.bd, self.king(c)
-            for bit, r in self.rook[c].items():
+            cast = []
+            for bit, r in sorted(self.rook[c].items()):
                 if not self.cr & bit or k != self.home[c] or b[r] != 4 * c:
                     continue
                 kt, rt = self.targets(k, r)
@@ -81,13 +84,19 @@ class Pos960(Pos):
                 safe = not any(self.attacked(s, -c) for s in range(min(k, kt), max(k, kt) + 1))
                 b[r] = 4 * c
                 if safe:
-                    out.append(k * 1000 + r)
+                    cast.append(k * 1000 + r)
+            i = sum(1 for m in out if m // 1000 <= k)
+            out[i:i] = cast
         return out
 
     def order(self, moves):
-        """As chess47ref (the captures first); castling (onto its own rook) is not a capture: last."""
-        own = [m for m in moves if self.castle_move(m)]
-        return super().order([m for m in moves if m not in own]) + own
+        """As chess47ref (the captures first, by the piece taken); castling (onto its own rook) is a quiet move, in
+        its place among them (CHESS47's LBL :ADDC:)."""
+        b = self.bd
+        caps = [m for m in moves if b[m % 1000] != 0 and not self.castle_move(m)]
+        if 'mvv' in getattr(self, 'opts', ENGINE):
+            caps = [m for k in (6, 5, 4, 3, 2, 1) for m in caps if abs(b[m % 1000]) == k]
+        return caps + [m for m in moves if m not in caps]
 
     def make(self, m, ply):
         b = self.bd

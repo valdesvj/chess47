@@ -31,7 +31,8 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 | **+** | swap sides: the C47 plays the side to move and you take the other; at the start: you play black (the board turns, black at the bottom) |
 | **9** | C47 vs C47: it plays both sides until checkmate or a draw; any key stops it and you take the side to move (0 ends) |
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
-| **7** | a new game (the level and your side kept) |
+| **7** | a new game of normal chess (the level and your side kept) |
+| **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
 | **1** | the level: 2 (2 plies, about 10-20 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
@@ -61,7 +62,7 @@ misses deeper tactics. The matches against an independent player in the simulato
 ## On the computer, with Chess960 (`tools/play47.py`)
 
 A trial version for the computer: the C47's screen (the same glyphs, fonts, places and LCD colours), the same engine
-(`python/chess47ref.py`), the same keys and rules, and Chess960 (Fischer random chess), not in CHESS47 yet.
+(`python/chess47ref.py`), the same keys and rules, and Chess960 (Fischer random chess, in CHESS47 too since v0.4.0).
 
     pip install pygame
     python3 tools/play47.py          (--new for a new game; else the last one goes on, kept in ~/.chess47_play.json)
@@ -172,7 +173,7 @@ Almanac 47's MOON47.
 | `python/chess47sim.py` | runs the program in the simulator and writes the screens in `docs/` |
 | `python/c47sim.py`, `stdfont.py`, `tinyfont.py` | the C47 simulator and fonts, from Almanac 47; the bitwise commands from Logic 47 |
 | `tools/play47.py` | Chess 47 on the computer (pygame), with Chess960 |
-| `python/chess960.py`, `tests/test_960.py` | Chess960 on the twin's engine (a subclass), checked against python-chess |
+| `python/chess960.py`, `tests/test_960.py` | Chess960 on the twin's engine (a subclass): the twin of CHESS47's Chess960 games (the same castling moves in the same places), checked against python-chess |
 | `tests/test_chess47.py`, `tests/test_forum.py` | the tests above; the forum file (its steps = the listing's, no REM, the narrative) |
 
 ## Author
