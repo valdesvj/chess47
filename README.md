@@ -171,6 +171,7 @@ Almanac 47's MOON47.
 | `tools/build_p47.py` | on your computer with rejig: `build/p47/CHESS47.p47` from the forum file (`--validate=r47`), checked byte for byte against the plain listing's |
 | `python/layout.py` | the board's place, the piece glyphs, the crazy face (the build writes their words into the program) |
 | `python/book.py` | the opening book (the build writes it into the matrix OB) |
+| `tools/elo47.py` | the rating: CHESS47's engine (the twin: the calculator's moves) against Stockfish at fixed strengths (UCI_Elo), refereed by python-chess; the rating by maximum likelihood with its 95 % interval, `docs/ELO.md` and the games in `docs/ELO_games.pgn` |
 | `tools/match47.py` | matches in the simulator against a python-chess player, written to `docs/MATCHES.md` |
 | `tools/selfplay47.py` | the rules check (python-chess): the C47 against itself, 5 games at each level by default; every move legal, the board after it, every end of game (mate, stalemate, repetition, material, time-out) as the rules say; `docs/SELFPLAY.md` |
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |
