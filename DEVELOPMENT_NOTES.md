@@ -272,3 +272,18 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   caller each; a call after a test became test / IF / ... / ENDIF): 99 -> 89 local labels, 26 steps fewer.
 - Tried and not done: the board in local registers (RCL IND: one step a square instead of four). LocR is run already,
   but how local registers behave indirectly and inside subroutines is not checked on the C47: a test for Victor first.
+
+## Nov 2, 2026 - tried: bitboards for the sliders in the attack test (branch claude/chess47-bitboards, not merged)
+
+- First, the board in local registers (RCL IND: one step a square instead of STOIJ + RCLEL): not possible. The C47
+  firmware (upstream src/c47/programming/lblGtoXeq.c, fnExecute) gives every XEQ in a running program a new
+  subroutine level with no local registers (currentLocalRegisters = NULL): a subroutine cannot see its caller's
+  LocR registers, and the engine is a chain of subroutines (GEN -> ADD -> QEVAL -> DELTA, ATT, MAKE ...).
+- Then: the bishops+queens and rooks+queens of each colour as 64-bit words (DW DB LW LB, kept by NUPD in MAKE and UNMK:
+  the mover, a capture, a promotion, the castling rook), the rays of each square in 8 directions (rows 24-31 of BD, made
+  once by :RAYS:), and ATT walking a direction only when ray AND word is not 0 (the king checked by its distance
+  first). Right: every ray, the words after 20 moves C47 vs C47 (castling, captures, a queen trade), the same moves.
+- Measured (15 positions, level 2, NINIT not counted): 783 091 -> 818 251 steps, 4 % slower. ATT 132 000 -> 84 000,
+  but NUPD 17 000 -> 53 000 plus its XOR routines: MAKE and UNMK run about 2 000 times, as often as ATT is used, and
+  the tests alone (did a slider move, promote or get taken?) cost about 24 steps each time. Not kept, as the occupancy
+  bitboards before (README: tried and left out).
