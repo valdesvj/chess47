@@ -29,7 +29,7 @@
 @   ÷         a new Chess960 game (Fischer random chess): type the position's number with three digits (066 for
 @             66; 518 is the normal start) or press ÷ again for a random one. To castle, pick the king and then its
 @             own rook: the king goes to g or c and the rook to f or d. The opening book is not used.
-@   1         the level: 2 (two moves ahead, about 10-20 s a move), 1 (one move ahead, a few seconds), 0 CRAZY
+@   1         the level: 2 (two moves ahead, about 7-12 s a move), 1 (one move ahead, a few seconds), 0 CRAZY
 @             (random legal moves, with a crazy face by the title)
 @   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 @ The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
@@ -60,10 +60,13 @@
 @ of the row 1 of the matrix BD (column s = 10 row + col + 1: a1 22 ... h1 29 ... a8 92 ... h8 99, the border 8); a move
 @ is from x 1000 + to; the score SC (material + piece-square, white positive) is kept up to date by each move from
 @ the table PT (row piece + 11, column the square: the signed value of that piece there); the moves of a ply go
-@ in a row ML, the undo data in a row UN. Board, ML, PT and UN are the rows of ONE matrix BD (22 x 120: row 1 the
+@ in a row ML, the undo data in a row UN. Board, ML, PT and UN are the rows of ONE matrix BD (23 x 120: row 1 the
 @ board, 2-4 the move lists of the root, the replies, the moves played; 5-17 PT; 18-20 UN; 21 the knight masks,
-@ 22 the square bits): one INDEX, no switching. The search: 2 plies (level 2) or 1, alpha-beta
-@ cuts, the captures first; python/chess47ref.py is the same algorithm in Python (the tests compare the two).
+@ 22 the square bits, 23 the masks of the castling rights; row 11, the empty piece's, columns 1-7: the killer move,
+@ its piece and target, the king's and the castling rooks' first squares, the Chess960 number + 1): one INDEX, no
+@ switching. The search: 2 plies (level 2) or 1, alpha-beta cuts, the captures first, the killer move (the reply
+@ that refuted the last root move) tried first; python/chess47ref.py is the same algorithm in Python (the tests
+@ compare the two; python/chess960.py for Chess960).
 @ The 64-bit bitwise commands: the castling rights are a 4-bit word (1 white short, 2 white long, 4 black short,
 @ 8 black long: AND clears a right, BS? tests one); the dark squares are worked out with AND, NOT and OR from the
 @ glyph words (dither AND NOT mask OR glyph), WSIZE 24 while drawing: a square is 24 rows, one AGRAPH word a column;
@@ -71,7 +74,8 @@
 @ Keys: 8 2 4 6 the cursor up, down, left, right (as seen on the screen); 5 picks a piece of yours, then 5 on the
 @ square to play it (5 on the same square drops it); + swaps sides (the C47 plays the side to move; black: the board
 @ turns); 9 C47 vs C47 until the end (a key: you take the side to move); 3 two players (the C47 only checks the
-@ moves and the end); 7 a new game; 1 the level 2 -> 1 -> 0
+@ moves and the end); 7 a new game of normal chess; ÷ a Chess960 game (its number, three digits, or ÷ again for a
+@ random one; castling: the king onto its own rook); 1 the level 2 -> 1 -> 0
 @ (CRAZY: random legal moves, a crazy face by the title);
 @ 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
 @ for each move played, for the sides a person plays (the C47's clock stops while it thinks); a person whose time
@@ -85,7 +89,8 @@
 @ square picked (0 none); R30-R39 the move generator (R30 the square, R31 its piece x its colour, R32 the colour,
 @ R33 the target, R34 the direction, R35 R36 the first and the end offset register, R37 the moves, R38 the row
 @ of ML, R39 1 with castling); R40-R49 make / unmake (R40 the move, R41 from, R42 to, R43 the piece, R44 the
-@ piece taken, R45 its colour, R46 the ply: the row of UN, R47 1 en passant / 2 castling, R48 R49 work);
+@ piece taken, R45 its colour, R46 the ply: the row of UN, R47 1 en passant / 2 castling / 3 Chess960's castling,
+@ R48 R49 work);
 @ R50-R56 attacked? (R50 the square, R51 the colour of the attackers, R52 the target, R53 the direction, R54 its
 @ register, R55 the answer, R56 work); R57-R59 the castling word before the move of ply 1-3; R60-R71 the
 @ search (R60 its side, R61 the best value, R62 the best move, R63 R64 the root move and count, R65 the value,
@@ -276,6 +281,8 @@ X>0?
 IF 13
   78
   STO 31
+@   the loop over the squares a1 -> h8: R31 from 78 down to 1 (DSE), the square 100 - R31; a piece of the colour:
+@   its moves (LBL :GENSQ:)
   DO 02
     100
     RCL- 31
@@ -298,6 +305,8 @@ IF 13
 ELSE 13
   99.021
   STO 31
+@   the loop over the squares h8 -> a1 (black's replies in mode 3: its pieces first): R31 99.021, the square IP
+@   R31
   DO 03
     RCL 31
     IP
@@ -421,6 +430,8 @@ RCL 37
 1
 +
 STO 49
+@ the insertion: from the column R37 + 1 down, the captures that take less (R47 the one before) move one column
+@ on; the loop ends at the place of the new capture (R49)
 DO 04
   RCL 49
   1
@@ -560,6 +571,7 @@ RTN
 @ ---- LBL :GSTEP: the knight (R80-R87) or the king (R88-R95): one step to an empty square or a piece of the
 @ other colour (|y c + 3.5| <= 3.5) ----
 LBL 06                          ; :GSTEP:
+@ each offset R35 of the table (to R36 - 1): one step, an empty square or a piece of the other colour is a move
 DO 05
   RCL IND 35
   RCL+ 30
@@ -605,11 +617,14 @@ IF 26
   92
   STO 36
 ENDIF 26
+@ each direction R35 of the table (R88-R95, to R36 - 1)
 DO 06
   RCL IND 35
   STO 34
   RCL 30
   STO 33
+@   along the direction R34 from R33: an empty square is a move and the walk goes on; a piece of the other colour
+@   is a capture and it stops; the border or a piece of its own colour stops it
   DO 07
     RCL 34
     STO+ 33
@@ -752,6 +767,7 @@ RCL 43
 X<Y?
 X<>Y
 STO 45
+@ the squares R44 to R45: each one empty, or the king or that rook
 DO 08
   1
   RCL 44
@@ -793,6 +809,7 @@ X<>Y
 STO 45
 0
 STO 47
+@ the king's squares from where it stands to its target (R44 to R45): attacked? (LBL :ATTC:, R47 counts them)
 DO 09
   RCL 44
   XEQ 14                        ; -> :ATTC:
@@ -903,11 +920,13 @@ X≠0?
 RTN
 88
 STO 54
+@ each direction R54 of the table (R88-R95: the diagonals, then the lines)
 DO 10
   RCL IND 54
   STO 53
   RCL 50
   STO 52
+@   from R50 along the direction R53 to the first square that is not empty (R52)
   DO 11
     RCL 53
     STO+ 52
@@ -1275,6 +1294,7 @@ STO "NW"
 STO "NB"
 22
 STO 41
+@ the squares 22-99 (R41): the bit of each one into row 22, each knight's bit into its colour's word
 DO 12
   1
   RCL 41
@@ -1577,6 +1597,8 @@ STOIJ
 STOEL
 0
 STO 63
+@ each root move R63 (1 to R64, captures first): MAKE, its value R65 (LEGAL1 at level 1; MATEQ, then REPLY at
+@ level 2), UNMK, the best kept (R61, R62)
 DO 13
   1
   STO+ 63
@@ -1976,6 +1998,7 @@ IF 63
   STO 47
   RCL 30
   STO 46
+@   the squares between from and to (R46, by the step R47): all of them empty, or the killer is not a move here
   DO 14
     RCL 47
     STO+ 46
@@ -2136,6 +2159,7 @@ STO 67
 STO 66
 0
 STO 71
+@ each move of the list in turn: played at ply 3 and taken back, until one does not leave the king attacked
 DO 15
   RCL 67
   RCL 66
@@ -2362,6 +2386,7 @@ LBL 45                          ; :ASK960:
 STO 63
 0
 STO 64
+@ the three digits of the number (R64 of them so far), each shown in the status line; ÷ gives a random one
 DO 17
   "960? "
   STO 48
@@ -2375,6 +2400,7 @@ DO 17
   x→α 48
   RCL 48
   XEQ 62                        ; -> :STATUS:
+@   the wait for a key (KEY? 98: a key ends it)
   DO 18
     0
     PAUSE 10
@@ -2536,6 +2562,7 @@ STO 66
 STO 63
 0
 STO 65
+@ the generated moves (R63 from 1 to R66): is one of them R29 -> R28? (R65 = 1)
 DO 19
   RCL 66
   RCL 63
@@ -2664,6 +2691,7 @@ IP
 STO 66
 0
 STO 63
+@ from the random place R66 on (around the list, MOD R67): the first move that does not leave the king attacked
 DO 20
   RCL 66
   RCL+ 63
@@ -2858,6 +2886,7 @@ RTN
 STO 65
 1
 STO 63
+@ each row R63 of the book: does it follow the game so far? (LBL :BKM:; R65 counts them)
 DO 21
   XEQ 54                        ; -> :BKM:
   X≠0?
@@ -2884,6 +2913,7 @@ IP
 STO 66
 1
 STO 63
+@ again over the rows, to the R66-th that fits (chosen at random): its next move into R62
 DO 22
   XEQ 54                        ; -> :BKM:
   X≠0?
@@ -2907,6 +2937,7 @@ RTN
 LBL 54                          ; :BKM:
 1
 STO 64
+@ the game's plies (R64 from 1 to R67) against the row R63 of the book: all the same, or X = 0
 DO 23
   RCL 67
   RCL 64
@@ -3006,6 +3037,7 @@ RCL 63
 1
 -
 STO 67
+@ back through the record, two plies at a time (the same side to move): R66 counts the keys equal to this one
 DO 24
   RCL 67
   X≤0?
@@ -3054,6 +3086,7 @@ STO 47
 STO 46
 22
 STO 30
+@ the squares 22-99 (R30): each piece's word XORed into the key; R47 counts the pieces that are not kings
 DO 25
   1
   RCL 30
@@ -3248,6 +3281,7 @@ STO 38
 INDEX "BD"
 22
 STO 30
+@ the squares 22-99 (R30): each piece counted for the side that may still mate or the other
 DO 26
   1
   RCL 30
@@ -3747,6 +3781,7 @@ ELSE 160
   DROP
   20
   STO 33
+@   the 20 columns of the face cleared (AGRAPH of a 0 word, R33 counts down)
   DO 27
     RCL 31
     RCL 30
@@ -3774,6 +3809,7 @@ DROP
 STO 48
 136
 STO 49
+@ the seven lines R73-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
 DO 28
   "                    "
   RCL 49
@@ -3977,11 +4013,14 @@ IF 175
   92
   STO 32
 ENDIF 175
+@ each direction or offset R31 of the moving piece's kind (to R32 - 1)
 DO 29
   RCL IND 31
   STO 38
   RCL 42
   STO 39
+@   from the target R42 along it (R39): an empty square goes on (not for a knight), a piece like R43 is counted
+@   (LBL :SANC:), anything else stops
   DO 30
     RCL 38
     STO+ 39
@@ -4127,6 +4166,7 @@ RTN
 LBL 72                          ; :BOARD:
 22
 STO 41
+@ the squares 22-99 (R41), each drawn (LBL :DRAWSQ:); the border is skipped
 DO 31
   1
   RCL 41
@@ -4166,6 +4206,7 @@ X<>Y
 STO 30
 21
 STO 33
+@ the letters a-h under the board (R30 the character, R33 its x; h-a when you play black)
 DO 32
   ""
   STO 48
@@ -4193,6 +4234,7 @@ X<>Y
 STO 30
 28
 STO 33
+@ the numbers 1-8 left of the board (R30 the number, R33 its row; 8-1 when you play black)
 DO 33
   ""
   STO 48
@@ -4371,6 +4413,7 @@ RCL 32
 RCL+ 35
 X=0?
 IF 189
+@   a plain square: its 24 columns from the row of GL (RCLSEQ), each an AGRAPH word (R33 counts down)
   DO 34
     RCLSEQ
     SINT
@@ -4384,6 +4427,8 @@ IF 189
   WHILE 34
   ENDDO 34
 ELSE 189
+@   the cursor or the piece picked: its 24 columns, inverted (NOT) for the piece picked, the frame ORed for the
+@   cursor
   DO 35
     RCLSEQ
     SINT
@@ -5527,6 +5572,7 @@ STO 95
 INDEX "BD"
 120
 STO 33
+@ the whole row 1 of BD set to 8 (the border)
 DO 36
   8
   STOSEQ
@@ -5536,6 +5582,7 @@ WHILE 36
 ENDDO 36
 22
 STO 30
+@ the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
 DO 37
   1
   RCL 30
@@ -5605,6 +5652,7 @@ STO 33
 1
 32
 STOIJ
+@ the eight white pawns on 32-39
 DO 38
   1
   STOSEQ
@@ -5617,6 +5665,7 @@ STO 33
 1
 82
 STOIJ
+@ the eight black pawns on 82-89
 DO 39
   -1
   STOSEQ
@@ -5709,6 +5758,7 @@ X≠0?
 IF 197
   1
   STO 69
+@   the saved game's moves played again (R69 the ply, 1 to R68): MAKE, the record, the move list (+ or # in check)
   DO 40
     INDEX "GH"
     1
@@ -5769,6 +5819,7 @@ STO 33
 1
 22
 STOIJ
+@ white's back rank 22-29 emptied
 DO 41
   0
   STOSEQ
@@ -5824,6 +5875,7 @@ IP
 STO 30
 0
 STO 34
+@ the pair of free squares of the knights: R34 the first (0-3), R30 what is left over
 DO 42
   4
   RCL- 34
@@ -5882,6 +5934,7 @@ STOIJ
 STOEL
 22
 STO 33
+@ black's back rank: each piece of white's (22-29), the other colour, 70 squares up
 DO 43
   1
   RCL 33
@@ -5910,6 +5963,7 @@ LBL 80                          ; :NTH:
 STO 31
 21
 STO 32
+@ the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
 DO 44
   1
   STO+ 32
@@ -5938,6 +5992,7 @@ LBL 81                          ; :CSQ:
 STO 34
 22
 STO 33
+@ white's back rank 22-29: the king's square, the rook on its left (before it) and on its right (after it)
 DO 45
   1
   RCL 33
@@ -5984,6 +6039,7 @@ ENDDO 45
 STOIJ
 78
 STO 33
+@ the masks of the castling rights: 15 into row 23 for the squares 22-99
 DO 46
   15
   STOSEQ
@@ -6056,6 +6112,7 @@ RTN
 LBL 82                          ; :PSTALL:
 22
 STO 42
+@ the squares 22-99 (R42): the six pieces' values there (LBL :PSQ:), white's and black's
 DO 47
   RCL 42
   1
@@ -7295,9 +7352,11 @@ STOSEQ
 DROP
 -6
 STO 41
+@ each piece R41 (-6 to 6)
 DO 48
   1
   STO 33
+@   its 24 columns R33: the dither AND NOT the mask OR the glyph, into its dark square's row of GL
   DO 49
     RCL 41
     7
