@@ -1,12 +1,27 @@
 # The rating of CHESS47
 
-`python3 tools/elo47.py `: CHESS47's engine (python/chess47ref.py, the same moves as the calculator) at level 2 with its book, against Stockfish 16 with UCI_LimitStrength (0.5 s a move), refereed by python-chess. 2026-11-01, 9 min.
+`python3 tools/elo47.py --ladder`: a ladder, every player against every other (8 games a pair, the colours alternating), refereed by python-chess; Stockfish 16; CHESS47 is python/chess47ref.py (the same moves as the calculator) with its book. One fit rates them all with Stockfish 1320 fixed (Bradley-Terry); the intervals from 200 refits on resampled games. 2026-11-01, 15 min.
 
-**Rating: about **596** (95 %: 112 to 1081)**, on Stockfish's UCI_Elo scale (engine blitz, CCRL-like; not a FIDE rating).
+**CHESS47 level 2: about 1113** (95 %: 995 to 1218), on Stockfish's UCI_Elo scale (engine blitz, CCRL-like; not a FIDE rating).
 
-| Stockfish UCI_Elo | CHESS47 scored | games | performance |
-|---|---|---|---|
-| 1320 | 0.5 | 20 | 684 |
-| 1400 | 0.0 | 20 | < 1000 |
+| player | rating | 95 % |
+|---|---|---|
+| Stockfish skill 0, depth 1 | 1423 | 1292 to 1564 |
+| Stockfish skill 0, depth 3 | 1387 | 1254 to 1540 |
+| Stockfish 1320 | 1320 | 1320 to 1320 |
+| Stockfish skill 0, 0.1 s | 1263 | 1132 to 1391 |
+| CHESS47 level 2 | 1113 | 995 to 1218 |
+| CHESS47 level 1 | 892 | 776 to 996 |
+| material 2 plies | 718 | 542 to 862 |
 
-The games: `docs/ELO_games.pgn`.
+|  | Stockfish 1320 | Stockfish skill 0, 0.1 s | Stockfish skill 0, depth 3 | Stockfish skill 0, depth 1 | CHESS47 level 2 | CHESS47 level 1 | material 2 plies |
+|---|---|---|---|---|---|---|---|
+| Stockfish 1320 | - | 5 | 4 | 1 | 7.5 | 7 | 8 |
+| Stockfish skill 0, 0.1 s | 3 | - | 2 | 2 | 6 | 8 | 8 |
+| Stockfish skill 0, depth 3 | 4 | 6 | - | 2.5 | 8 | 8 | 8 |
+| Stockfish skill 0, depth 1 | 7 | 6 | 5.5 | - | 5 | 7.5 | 7.5 |
+| CHESS47 level 2 | 0.5 | 2 | 0 | 3 | - | 7 | 7.5 |
+| CHESS47 level 1 | 1 | 0 | 0 | 0.5 | 1 | - | 6.5 |
+| material 2 plies | 0 | 0 | 0 | 0.5 | 0.5 | 1.5 | - |
+
+The score of the row's player against the column's (8 games each). The games: `docs/ELO_games.pgn`.
