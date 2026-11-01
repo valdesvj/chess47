@@ -10,14 +10,17 @@ The engine follows the idea of the "matrix" mini engines (Micro-Max, H.G. Muller
 with a score kept up to date by every move. v0.2 adds mate detection, the recapture after a capture and the
 biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, a chess clock, draws by
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
-move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count): see *Speed* below.
+move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
+see *Speed* below. v0.4.0 adds Chess960.
 
 | | |
 |---|---|
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
-| Size | 5 411 steps, about 16 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 200 numbers) and the variables NW NB |
+| Size | 6 969 steps, about 21 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 300 numbers) and the variables NW NB |
 | At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
+
+**The manual, with pictures: [docs/MANUAL.md](docs/MANUAL.md).**
 
 ## Playing
 
@@ -33,7 +36,7 @@ move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count)
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **7** | a new game of normal chess (the level and your side kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
-| **1** | the level: 2 (2 plies, about 10-20 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
+| **1** | the level: 2 (2 plies, about 7-12 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
@@ -161,6 +164,7 @@ Almanac 47's MOON47.
 
 | | |
 |---|---|
+| `docs/MANUAL.md` | the manual, with the screens (`tools/manual47.py` makes them in `docs/manual/` from the keys) |
 | `programs_rem/CHESS47.txt` | the commented source (STRUCT, named labels) |
 | `tools/build_chess47.py` | writes `programs/`, `build/` and `listings/`, and `build/forum/CHESS47.p47u` |
 | `build/forum/CHESS47.p47u` | the commented file for the forum and the C47's PROGRAMS folder: how to use it in plain words, then the code with its comments in `@` lines (rejig does not compile them: no REM steps); its narrative is `tools/forum/CHESS47.txt` |
