@@ -257,10 +257,97 @@ class Pos:
                 return True
         return False
 
-    def killer_ok(self):
+    budget = None                                 # level 3's answers allowed (None: no limit; the C47: its 60 s)
+
+    def search3(self, first=0):
+        """Level 3 (CHESS47's LBL :THINK3:): the root moves (level 2's best one first), the replies of -S played (no
+        castling; the killer first), and S's answers valued as level 2 values the replies, from S's side: S x SC after
+        the answer, less the value of the piece that took when -S attacks its target (the recapture); the best legal
+        answer (its legality tested only when it is the best so far). The cuts: the answers when the best reaches the
+        least reply so far (beta), the replies when the least is not above the best root move (alpha)."""
+        S = self.sd
+        moves = self.order(self.gen(S))
+        if first in moves:
+            moves.remove(first)
+            moves.insert(0, first)
+        best, bm, nodes = -30000, 0, 0
+        self.aborted = False
+        self.killer = (0, 0, 0)
+        self.akiller = (0, 0, 0)                  # the answer that cut the last reply (LBL :AKILL:)
+        for m in moves:
+            self.make(m, 1)
+            if self.attacked(self.king(S), -S):
+                v = -30000                                 # not legal: never chosen (LBL :ROOT3:)
+            elif 'mate' in self.opts and self.attacked(self.king(-S), S) and not self.has_legal(-S):
+                v = 29000
+            else:
+                replies = self.gen(-S, castle=False)
+                if not replies:
+                    v = S * self.sc
+                else:
+                    v = 30000
+                    rs = self.order(replies)
+                    if 'killer' in self.opts and self.killer_ok():
+                        rs.remove(self.killer[0])
+                        rs.insert(0, self.killer[0])
+                    for r in rs:
+                        x, y = self.bd[r // 1000], self.bd[r % 1000]
+                        self.make(r, 2)
+                        if abs(y) == 6:                   # the reply took S's king: lost, no answer
+                            w, n = S * self.sc, 0
+                        else:
+                            w, n = self.answers(S, v)
+                        nodes += n
+                        self.unmake(2)
+                        if w < v:
+                            v = w
+                        if v <= best:
+                            self.killer = (r, x, y)
+                            break
+                        if self.budget is not None and nodes >= self.budget:
+                            self.aborted, v = True, -30000     # LBL :TIME3: within the replies
+                            break
+            self.unmake(1)
+            if v > best:
+                best, bm = v, m
+            if self.aborted or (self.budget is not None and nodes >= self.budget):
+                self.aborted = True
+                break
+        return bm, best, nodes
+
+    def answers(self, S, beta):
+        """S's best answer (LBL :ANSW:): the most of S x SC after it (less the piece that took when -S can take back),
+        over the legal answers, stopped as soon as it reaches beta; S x SC when S has no move; none legal: -29500 when S is
+        in check (mate), else 0 (stalemate)."""
+        moves = self.gen(S, castle=False)
+        if not moves:
+            return S * self.sc, 0
+        if self.killer_ok(self.akiller):          # the answer killer first (it is then in the list: valued twice)
+            moves = [self.akiller[0]] + moves
+        amax, n = -30000, 0
+        for a in moves:
+            t = a % 1000
+            cap = self.bd[t] != 0
+            x, y = self.bd[a // 1000], self.bd[t]
+            self.make(a, 3)
+            n += 1
+            w = S * self.sc
+            if cap and self.attacked(t, -S):
+                w -= abs(value(self.bd[t], t))
+            if w > amax and not self.attacked(self.king(S), -S):
+                amax = w
+            self.unmake(3)
+            if amax >= beta:
+                self.akiller = (a, x, y)
+                break
+        if amax == -30000:                                 # no legal answer: mated, or stalemated
+            amax = -29500 if self.attacked(self.king(S), -S) else 0
+        return amax, n
+
+    def killer_ok(self, killer=None):
         """Is the killer still a move of this position (as LBL :KILLER:)? Its piece on its square, its target as it
         was, the squares between empty for a bishop, rook, queen or a pawn's two steps; never en passant."""
-        r, x, y = self.killer
+        r, x, y = self.killer if killer is None else killer
         if not r:
             return False
         f, t = r // 1000, r % 1000
@@ -294,6 +381,12 @@ class Pos:
         piece that took), 'mvv' (the captures by the value taken), 'killer' (level 2: the reply that cut the last
         root move is valued first when it is still possible, LBL :KILLER:; the answer is the same, found sooner)."""
         self.opts = set(opts if opts is not None else ENGINE)
+        if depth == 3:
+            first, v2, n2 = self.search(2, opts)
+            m, v, n = self.search3(first)
+            if self.budget is not None and self.aborted and m == 0:
+                return first, v2, n                # not even the first root move done: level 2's move
+            return m, v, n
         S = self.sd
         moves = self.order(self.gen(S))
         best, bm, nodes = -30000, 0, 0

@@ -36,7 +36,7 @@ see *Speed* below. v0.4.0 adds Chess960.
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **7** | a new game of normal chess (the level and your side kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
-| **1** | the level: 2 (2 plies, about 7-12 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title) |
+| **1** | the level, in turn: 2 (2 plies, about 6-11 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **3** (level 2 first, then 3 plies for at most 60 s more: the deeper move when it is found in time, else the best found so far or level 2's) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
@@ -57,7 +57,11 @@ follows one of them, choosing at random among those that fit; then it thinks.
 ![a game](docs/CHESS47_game.png)
 
 **Strength:** v0.1 by my estimate about 800-1100 Elo; v0.2 beat v0.1 18.5-1.5 in 20 games (the Python twins), so
-perhaps 1100-1300. Not measured against rated players. It sees mates in one, one-move tactics and the recapture; it
+perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games against Stockfish 1320, weakened
+Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE): level 3 searched to the end about
+**1100** (95 %: 980-1200), level 3 with the C47's 60 s about **1010**, level 2 about **980** (an earlier run: 1110),
+level 1 about 670. Head to head level 3 beat level 2 7-1 to the end, 4.5-3.5 with 60 s: the 60 s let it finish only
+the quieter positions. 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
 misses deeper tactics. The matches against an independent player in the simulator: `docs/MATCHES.md`.
 
 ![crazy](docs/CHESS47_crazy.png)
@@ -107,7 +111,7 @@ random games (castling included).
 - **Not used:** EIGEN and the 34-digit precision don't make a chess engine stronger, so they are not forced in.
   The plans are in `DEVELOPMENT_NOTES.md`.
 
-## Speed (v0.3.4)
+## Speed (v0.5.0)
 
 The same moves and the same values as v0.2 (the Python twin is unchanged), counted in simulator steps over three
 middle-game positions at level 2 (0.17 ms a step on the C47):
@@ -123,6 +127,8 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 | **v0.3** (h8's bit kept signed, below) | **263 000** | **13-19 s** |
 | v0.3.3 (the same search; the clock, the move list in SAN) | 253 000 | |
 | **v0.3.4**: the killer move: the reply that refuted the last root move is tried first (when it is still a move), before any reply is generated; when it refutes this one too, no reply is generated at all | **203 000** | **7-12 s** |
+
+| **v0.5.0**: ADD reads the target through the index its caller set and checks the list's room only in the list modes; GEN tests an own piece with one `X>0?`; DELTA takes from and to from R30 R33; VAL inlined in DELTA and MAKE; ATT's diagonals and lines in two loops; GPAWN, GSLIDE and 8 other routines inlined (10 local labels freed) | 15 positions: 901 000 -> 839 000 (93 %) | **6-11 s** |
 
 The killer move over 15 positions (these three, two of the tests, ten of random games): 1 407 000 steps -> 915 000
 (65 %: about 16 s -> 10 s a move on average), the same move and value in each.
@@ -171,6 +177,7 @@ Almanac 47's MOON47.
 | `tools/build_p47.py` | on your computer with rejig: `build/p47/CHESS47.p47` from the forum file (`--validate=r47`), checked byte for byte against the plain listing's |
 | `python/layout.py` | the board's place, the piece glyphs, the crazy face (the build writes their words into the program) |
 | `python/book.py` | the opening book (the build writes it into the matrix OB) |
+| `tools/elo47.py` | the rating: CHESS47's engine (the twin: the calculator's moves) against Stockfish at fixed strengths (UCI_Elo), refereed by python-chess; the rating by maximum likelihood with its 95 % interval, `docs/ELO.md` and the games in `docs/ELO_games.pgn` |
 | `tools/match47.py` | matches in the simulator against a python-chess player, written to `docs/MATCHES.md` |
 | `tools/selfplay47.py` | the rules check (python-chess): the C47 against itself, 5 games at each level by default; every move legal, the board after it, every end of game (mate, stalemate, repetition, material, time-out) as the rules say; `docs/SELFPLAY.md` |
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |

@@ -89,7 +89,7 @@ def game(level, seed, n960=None):
     c = c47sim.load([S.PROG])
     c.s = [D(0)] * 4; c.pix = []; c.keys = []; c.steps = 0; c.frames = []
     c.seed = seed
-    presses = {2: [], 1: [S.LEVEL], 0: [S.LEVEL, S.LEVEL]}[level]
+    presses = {2: [], 1: [S.LEVEL], 0: [S.LEVEL, S.LEVEL], 3: [S.LEVEL] * 3}[level]
     first = [] if n960 is None else [55] + digit_keys(n960)    # ÷ and the number: a Chess960 game
     st = {'synced': 0, 'err': None, 'note': None, 'status': '', 'started': False, 'end': None,
           'keys': first + presses + [S.AUTO]}
