@@ -87,14 +87,12 @@ class Game:
 
     def play(self, m, by_person):
         p = self.pos
-        f, t = m // 1000, m % 1000
-        castle = self.n is not None and p.castle_move(m)
-        name = ('O-O' if t > f else 'O-O-O') if castle else R.name(f) + R.name(t)
+        name = R.san(p, m)                                # standard algebraic notation, as CHESS47 v0.3.3
         side = p.sd
         k = len(self.moves)
-        self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         p.make(m, 3)
         p.undo.pop(3, None)
+        self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         self.moves.append(m)
         self.keys.append(self.key())
         if by_person:
