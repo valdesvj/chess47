@@ -57,9 +57,11 @@ follows one of them, choosing at random among those that fit; then it thinks.
 ![a game](docs/CHESS47_game.png)
 
 **Strength:** v0.1 by my estimate about 800-1100 Elo; v0.2 beat v0.1 18.5-1.5 in 20 games (the Python twins), so
-perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`): level 2 about **1110** (95 %: 1000-1220), level 1
-about 890, on Stockfish's UCI_Elo scale (engine blitz, not FIDE), from 168 games against Stockfish 1320, weakened
-Stockfish and a material player. It sees mates in one, one-move tactics and the recapture; it
+perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games against Stockfish 1320, weakened
+Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE): level 3 searched to the end about
+**1100** (95 %: 980-1200), level 3 with the C47's 60 s about **1010**, level 2 about **980** (an earlier run: 1110),
+level 1 about 670. Head to head level 3 beat level 2 7-1 to the end, 4.5-3.5 with 60 s: the 60 s let it finish only
+the quieter positions. 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
 misses deeper tactics. The matches against an independent player in the simulator: `docs/MATCHES.md`.
 
 ![crazy](docs/CHESS47_crazy.png)
