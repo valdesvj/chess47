@@ -1,4 +1,4 @@
-REM CHESS47 v0.3.3 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.3.4 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -1365,6 +1365,11 @@ RCL+ 72
 STO 64
 X=0?
 RTN
+11
+1
+STOIJ
+0
+STOEL
 0
 STO 63
 DO
@@ -1547,6 +1552,10 @@ STO 39
 STO 65
 0
 STO 70
+XEQ :KILLER:
+RCL 70
+X≠0?
+RTN
 XEQ :GEN:
 RCL 37
 RCL+ 72
@@ -1580,6 +1589,7 @@ IF
   STO 70
   0
   STO 31
+  XEQ :KSET:
 ENDIF
 RTN
 REM ---- LBL :CEVAL: the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, the
@@ -1608,6 +1618,177 @@ IF
   STO 70
   0
   STO 31
+  XEQ :KSET:
+ENDIF
+RTN
+REM ---- LBL :KSET: the reply R30 -> R33 cut the root move: it is the killer, BD (11, 1), with its piece (11, 2) and what
+REM stands on its target (11, 3) (the empty piece's row has no column 1-3) ----
+LBL :KSET:
+11
+1
+STOIJ
+RCL 40
+STOEL
+1
+RCL 30
+STOIJ
+RCLEL
+11
+2
+STOIJ
+X<>Y
+DROP
+X<>Y
+STOEL
+1
+RCL 33
+STOIJ
+RCLEL
+11
+3
+STOIJ
+X<>Y
+DROP
+X<>Y
+STOEL
+RTN
+REM ---- LBL :KILLER: the killer (the reply that cut the last root move) valued first (LBL :QEVAL: or :CEVAL:) when it
+REM is still a move here: its piece on its square, its target as it was, the squares between empty for a bishop,
+REM rook, queen or a pawn's two steps (R47 the step); never en passant (python/chess47ref.py killer_ok). When it cuts
+REM (R70), LBL :REPLY: generates nothing ----
+LBL :KILLER:
+11
+1
+STOIJ
+RCLEL
+X=0?
+RTN
+STO 40
+1000
+÷
+IP
+STO 30
+RCL 40
+1000
+MOD
+STO 33
+1
+RCL 30
+STOIJ
+RCLEL
+STO 43
+11
+2
+STOIJ
+RCLEL
+RCL 43
+X≠Y?
+RTN
+1
+RCL 33
+STOIJ
+RCLEL
+STO 44
+11
+3
+STOIJ
+RCLEL
+RCL 44
+X≠Y?
+RTN
+RCL 43
+ABS
+STO 45
+0
+STO 46
+RCL 45
+4
+-
+ABS
+1
+X≥Y?
+IF
+  1
+  STO 46
+ENDIF
+RCL 45
+1
+X=Y?
+IF
+  RCL 44
+  X=0?
+  IF
+    RCL 33
+    RCL- 30
+    10
+    MOD
+    X≠0?
+    RTN
+  ENDIF
+  RCL 33
+  RCL- 30
+  ABS
+  20
+  X=Y?
+  IF
+    1
+    STO 46
+  ENDIF
+ENDIF
+RCL 46
+X≠0?
+IF
+  RCL 33
+  10
+  ÷
+  IP
+  RCL 30
+  10
+  ÷
+  IP
+  -
+  SIGN
+  10
+  ×
+  RCL 33
+  10
+  MOD
+  RCL 30
+  10
+  MOD
+  -
+  SIGN
+  +
+  STO 47
+  RCL 30
+  STO 46
+  DO
+    RCL 47
+    STO+ 46
+    RCL 33
+    RCL 46
+    X=Y?
+    IF
+      0
+    ELSE
+      1
+      RCL 46
+      STOIJ
+      RCLEL
+      X≠0?
+      RTN
+      1
+    ENDIF
+    X≠0?
+  WHILE
+  ENDDO
+ENDIF
+RCL 44
+X≠0?
+IF
+  XEQ :CEVAL:
+ELSE
+  XEQ :QEVAL:
 ENDIF
 RTN
 REM ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the
