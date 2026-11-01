@@ -337,6 +337,13 @@ IF
     XEQ :QEVAL:
     RTN
   ENDIF
+  RCL 39
+  5
+  X=Y?
+  IF
+    XEQ :AQEVAL:
+    RTN
+  ENDIF
   RCL 38
   121
   RCL- 72
@@ -353,6 +360,13 @@ RCL 39
 X=Y?
 IF
   XEQ :CEVAL:
+  RTN
+ENDIF
+RCL 39
+5
+X=Y?
+IF
+  XEQ :ACEVAL:
   RTN
 ENDIF
 DROP
@@ -1558,6 +1572,389 @@ DO
 WHILE
 ENDDO
 RTN
+REM ---- LBL :THINK3: level 3, after level 2 (R62 its move, R61 its value; both kept in BD (11, 12) and (11, 16)): the
+REM root moves again, level 2's first (LBL :ROOT3: each: MAKE, MATEQ or REPLY3, UNMK, the best), until the time
+REM budget (LBL :TIME3:, 60 s from here, the C47's clock does not run) runs out: then the best of the root moves done,
+REM or level 2's move when not even the first is done. R29 (0 while the C47 thinks; kept in (11, 14)) is the best
+REM answer of level 3. As python/chess47ref.py search(3) when the time is enough ----
+LBL :THINK3:
+INDEX "BD"
+RCL 61
+-10000
+X≥Y?
+RTN
+RCL 61
+28000
+X≤Y?
+RTN
+11
+12
+STOIJ
+RCL 62
+STOEL
+11
+16
+STOIJ
+RCL 61
+STOEL
+11
+14
+STOIJ
+RCL 29
+STOEL
+11
+15
+STOIJ
+TICKS
+STOEL
+11
+13
+STOIJ
+0
+STOEL
+11
+8
+STOIJ
+0
+STOEL
+11
+1
+STOIJ
+0
+STOEL
+RCL 20
+STO 60
+STO 32
+2
+STO 38
+1
+STO 39
+XEQ :GEN:
+RCL 37
+STO 68
+RCL+ 72
+STO 64
+-30000
+STO 61
+0
+STO 62
+0
+STO 63
+REM the root moves R63: 0 level 2's move, then 1 to R64 in their order (level 2's move skipped)
+DO
+  RCL 63
+  X=0?
+  IF
+    11
+    12
+    STOIJ
+    RCLEL
+    STO 40
+    XEQ :ROOT3:
+  ELSE
+    2
+    RCL 68
+    RCL 63
+    XEQ :MLK:
+    STO 40
+    11
+    12
+    STOIJ
+    RCLEL
+    RCL 40
+    X≠Y?
+    XEQ :ROOT3:
+  ENDIF
+  1
+  STO+ 63
+  XEQ :TIME3:
+  X≠0?
+  IF
+    RCL 64
+    STO 63
+    1
+    STO+ 63
+  ENDIF
+  RCL 64
+  RCL 63
+  X≤Y?
+WHILE
+ENDDO
+RCL 62
+X=0?
+IF
+  11
+  12
+  STOIJ
+  RCLEL
+  STO 62
+  11
+  16
+  STOIJ
+  RCLEL
+  STO 61
+ENDIF
+11
+14
+STOIJ
+RCLEL
+STO 29
+RTN
+REM ---- LBL :TIME3: X = 1 when level 3's time is over (BD (11, 18) tenths since (11, 15): 600, 60 s; the flag (11, 13)) ----
+LBL :TIME3:
+11
+13
+STOIJ
+RCLEL
+X≠0?
+RTN
+11
+15
+STOIJ
+TICKS
+RCLEL
+-
+11
+18
+STOIJ
+RCLEL
+X>Y?
+IF
+  0
+  RTN
+ENDIF
+11
+13
+STOIJ
+1
+STOEL
+RTN
+REM ---- LBL :ROOT3: the root move R40 at level 3: MAKE (ply 1), a mate (LBL :MATEQ:) or the replies (LBL :REPLY3:),
+REM UNMK; R61 R62 the best (R65 -30000 when the time ran out within it: not counted) ----
+LBL :ROOT3:
+1
+STO 46
+XEQ :MAKE:
+XEQ :MATEQ:
+X=0?
+XEQ :REPLY3:
+1
+STO 46
+XEQ :UNMK:
+RCL 61
+RCL 65
+X>Y?
+IF
+  STO 61
+  RCL 40
+  STO 62
+ENDIF
+RTN
+REM ---- LBL :REPLY3: the replies of the other side (no castling) in a list (row 3 of ML: R69 captures, R67 moves, R66
+REM the one valued), the killer first (LBL :KOK:; the flag (11, 17) skips it in the list), each played and answered
+REM (LBL :R3ONE:); R65 the least, stopped when not above the best root move R61 (the cut) or when the time is over ----
+LBL :REPLY3:
+RCL 60
+CHS
+STO 32
+3
+STO 38
+4
+STO 39
+XEQ :GEN:
+RCL 37
+STO 69
+RCL+ 72
+STO 67
+X=0?
+IF
+  RCL 60
+  RCL× 23
+  STO 65
+  RTN
+ENDIF
+30000
+STO 65
+0
+STO 66
+11
+17
+STOIJ
+0
+STOEL
+1
+XEQ :KOK:
+X≠0?
+IF
+  11
+  17
+  STOIJ
+  1
+  STOEL
+  XEQ :R3ONE:
+  RCL 61
+  RCL 65
+  X≤Y?
+  RTN
+ENDIF
+REM the replies R66 = 1 to R67 in their order (the captures first), the killer skipped when it was valued first
+DO
+  1
+  STO+ 66
+  3
+  RCL 69
+  RCL 66
+  XEQ :MLK:
+  STO 40
+  11
+  1
+  STOIJ
+  RCLEL
+  RCL 40
+  X=Y?
+  IF
+    11
+    17
+    STOIJ
+    RCLEL
+  ELSE
+    0
+  ENDIF
+  X=0?
+  XEQ :R3ONE:
+  XEQ :TIME3:
+  X≠0?
+  IF
+    -30000
+    STO 65
+    RTN
+  ENDIF
+  RCL 67
+  RCL 66
+  X<Y?
+WHILE
+ENDDO
+RTN
+REM ---- LBL :R3ONE: the reply R40 played (ply 2), then S's answers valued as they are generated (GEN mode 5: LBL :AQEVAL:,
+REM :ACEVAL:; the answer killer first, LBL :AKILL:): R29 the best legal one (-30000 none legal; R60 x SC when S has no
+REM move); R65 the least over the replies; at the cut (R65 <= R61) the reply is the killer and the list ends ----
+LBL :R3ONE:
+2
+STO 46
+XEQ :MAKE:
+RCL 60
+STO 32
+5
+STO 39
+-30000
+STO 29
+0
+STO 70
+XEQ :AKILL:
+RCL 70
+X=0?
+IF
+  XEQ :GEN:
+  RCL 70
+  X=0?
+  IF
+    RCL 37
+    RCL+ 72
+    X=0?
+    IF
+      RCL 60
+      RCL× 23
+      STO 29
+    ENDIF
+  ENDIF
+ENDIF
+2
+STO 46
+XEQ :UNMK:
+RCL 65
+RCL 29
+X<Y?
+STO 65
+RCL 61
+RCL 65
+X≤Y?
+IF
+  RCL 40
+  1000
+  ÷
+  IP
+  STO 30
+  RCL 40
+  1000
+  MOD
+  STO 33
+  XEQ :KSET:
+  RCL 67
+  STO 66
+ENDIF
+RTN
+REM ---- LBL :AQEVAL: S's quiet answer R30 -> R33 (GEN mode 5): R71 by LBL :DELTA:; LBL :ACEVAL: a capture (R37 counts
+REM it): R71 by LBL :RECAP: (less the piece that took when the other side can take back). Better than R29: legal?
+REM (LBL :ALEGAL:); the cut R70 when R29 >= R65 (the answer killer kept, the scan ended: R31 = 0) ----
+LBL :ACEVAL:
+1
+STO+ 37
+RCL 70
+X≠0?
+RTN
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
+XEQ :RECAP:
+GTO :ABEST:
+LBL :AQEVAL:
+RCL 70
+X≠0?
+RTN
+RCL 30
+1000
+×
+RCL+ 33
+STO 40
+XEQ :DELTA:
+LBL :ABEST:
+RCL 29
+RCL 71
+X>Y?
+XEQ :ALEGAL:
+RCL 65
+RCL 29
+X≥Y?
+IF
+  1
+  STO 70
+  0
+  STO 31
+  XEQ :AKSET:
+ENDIF
+RTN
+REM ---- LBL :ALEGAL: the answer R40 played (ply 3): when it does not leave S's king attacked (LBL :INCHK2:, kept in R70
+REM for the time of UNMK), R29 = its value R71 ----
+LBL :ALEGAL:
+3
+STO 46
+XEQ :MAKE:
+XEQ :INCHK2:
+STO 70
+3
+STO 46
+XEQ :UNMK:
+RCL 70
+X=0?
+IF
+  RCL 71
+  STO 29
+ENDIF
+0
+STO 70
+RTN
 REM ---- LBL :CHKQ: after the root move R41 -> R42 (flag R47): can it give check? X = 1 when the other king (R48 its
 REM register 24.5 + R60 / 2, R49 its square) is on a line, a diagonal or a knight's jump from the target or from the
 REM square left (a discovered check), or after en passant or castling; else 0 (no attack test needed: the king was not
@@ -1769,11 +2166,18 @@ IF
   XEQ :KSET:
 ENDIF
 RTN
-REM ---- LBL :KSET: the reply R30 -> R33 cut the root move: it is the killer, BD (11, 1), with its piece (11, 2) and what
-REM stands on its target (11, 3) (the empty piece's row has no column 1-3) ----
+REM ---- LBL :KSET: the reply R30 -> R33 (R40) cut the root move: it is the killer, BD (11, 1), with its piece (11, 2) and
+REM what stands on its target (11, 3) (the empty piece's row has no column 1-17); LBL :AKSET: the answer that cut a
+REM reply (level 3), BD (11, 8-10) (R48 the first column) ----
+LBL :AKSET:
+8
+GTO :KSET0:
 LBL :KSET:
-11
 1
+LBL :KSET0:
+STO 48
+11
+X<>Y
 STOIJ
 RCL 40
 STOEL
@@ -1781,32 +2185,64 @@ STOEL
 RCL 30
 STOIJ
 RCLEL
+STO 47
 11
-2
+RCL 48
+1
++
 STOIJ
-X<>Y
-DROP
-X<>Y
+RCL 47
 STOEL
 1
 RCL 33
 STOIJ
 RCLEL
+STO 47
 11
-3
+RCL 48
+2
++
 STOIJ
-X<>Y
-DROP
-X<>Y
+RCL 47
 STOEL
 RTN
 REM ---- LBL :KILLER: the killer (the reply that cut the last root move) valued first (LBL :QEVAL: or :CEVAL:) when it
-REM is still a move here: its piece on its square, its target as it was, the squares between empty for a bishop,
-REM rook, queen or a pawn's two steps (R47 the step); never en passant (python/chess47ref.py killer_ok). When it cuts
-REM (R70), LBL :REPLY: generates nothing ----
+REM is still a move here (LBL :KOK:); when it cuts (R70), LBL :REPLY: generates nothing. LBL :AKILL: the same for
+REM the answer killer of level 3 (LBL :AQEVAL: or :ACEVAL:) ----
 LBL :KILLER:
-11
 1
+XEQ :KOK:
+X=0?
+RTN
+RCL 44
+X≠0?
+IF
+  XEQ :CEVAL:
+ELSE
+  XEQ :QEVAL:
+ENDIF
+RTN
+LBL :AKILL:
+8
+XEQ :KOK:
+X=0?
+RTN
+RCL 44
+X≠0?
+IF
+  XEQ :ACEVAL:
+ELSE
+  XEQ :AQEVAL:
+ENDIF
+RTN
+REM ---- LBL :KOK: X = the first column c of a killer in row 11 of BD (1 or 8): X = 1 when it is still a move of this
+REM position, else 0: its piece on its square (column c + 1), its target as it was (c + 2), the squares between empty
+REM for a bishop, rook, queen or a pawn's two steps (R47 the step), never en passant (python/chess47ref.py
+REM killer_ok); R40 the move, R30 R33 from and to, R43 the piece, R44 what stands on the target ----
+LBL :KOK:
+STO 48
+11
+X<>Y
 STOIJ
 RCLEL
 X=0?
@@ -1826,24 +2262,34 @@ STOIJ
 RCLEL
 STO 43
 11
-2
+RCL 48
+1
++
 STOIJ
 RCLEL
 RCL 43
 X≠Y?
-RTN
+IF
+  0
+  RTN
+ENDIF
 1
 RCL 33
 STOIJ
 RCLEL
 STO 44
 11
-3
+RCL 48
+2
++
 STOIJ
 RCLEL
 RCL 44
 X≠Y?
-RTN
+IF
+  0
+  RTN
+ENDIF
 RCL 43
 ABS
 STO 45
@@ -1871,7 +2317,10 @@ IF
     10
     MOD
     X≠0?
-    RTN
+    IF
+      0
+      RTN
+    ENDIF
   ENDIF
   RCL 33
   RCL- 30
@@ -1910,7 +2359,7 @@ IF
   STO 47
   RCL 30
   STO 46
-  REM the squares between from and to (R46, by the step R47): all of them empty, or the killer is not a move here
+  REM the squares between from and to (R46, by the step R47): all of them empty, or it is not a move here
   DO
     RCL 47
     STO+ 46
@@ -1925,20 +2374,17 @@ IF
       STOIJ
       RCLEL
       X≠0?
-      RTN
+      IF
+        0
+        RTN
+      ENDIF
       1
     ENDIF
     X≠0?
   WHILE
   ENDDO
 ENDIF
-RCL 44
-X≠0?
-IF
-  XEQ :CEVAL:
-ELSE
-  XEQ :QEVAL:
-ENDIF
+1
 RTN
 REM ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the
 REM piece that took (R43, a queen if it promoted) when R60 attacks the target; the attack test with the square it left
@@ -1954,7 +2400,8 @@ STO 46
 STOEL
 RCL 42
 STO 50
-RCL 60
+RCL 32
+CHS
 STO 51
 XEQ :ATT:
 1
@@ -1969,7 +2416,9 @@ IF
   RCL 43
   XEQ :VAL:
   ABS
-  STO+ 71
+  RCL× 32
+  RCL× 60
+  STO- 71
 ENDIF
 RTN
 REM ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
@@ -2200,9 +2649,9 @@ RCL 98
 X=Y?
 IF
   RCL 26
-  2
-  +
   3
+  +
+  4
   MOD
   STO 26
   XEQ :PANEL:
@@ -2540,7 +2989,13 @@ ELSE
   XEQ :BOOK:
   RCL 62
   X=0?
-  XEQ :THINK:
+  IF
+    XEQ :THINK:
+    RCL 26
+    3
+    X=Y?
+    XEQ :THINK3:
+  ENDIF
 ENDIF
 XEQ :CLOCK:
 RCL 97
@@ -4437,6 +4892,12 @@ STOEL
 X≠0?
 XEQ :BACK9:
 XEQ :CSQ:
+REM level 3's time budget, tenths of a second
+11
+18
+STOIJ
+600
+STOEL
 REM R72-R79: no moves yet (0, not a text)
 XEQ :PSTALL:
 XEQ :GLYPHS:

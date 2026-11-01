@@ -52,6 +52,7 @@ def test_copy():
     assert P[-1] == 'END'
     P = P[:-1] + ['LBL "TGEN"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['GEN'], 'RTN',
                   'LBL "TTHK"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['THINK'], 'RTN',
+                  'LBL "TTH3"', 'XEQ %s' % lab['NINIT'], 'XEQ %s' % lab['THINK'], 'XEQ %s' % lab['THINK3'], 'RTN',
                   'LBL "TSAN"', 'XEQ %s' % lab['NINIT'], '3', 'STO 46', 'XEQ %s' % lab['MAKE'], 'XEQ %s' % lab['HTEXT'],
                   'XEQ %s' % lab['ANYMV'], 'STO 63', 'XEQ %s' % lab['SUFFIX'], 'RTN', 'END']
     fn = os.path.join(tempfile.mkdtemp(), 'CHESS47T.txt')

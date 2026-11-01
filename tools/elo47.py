@@ -23,7 +23,7 @@ The games are written to docs/ELO_games.pgn, the results and the estimate to doc
     python3 tools/elo47.py --ladder [--games 8]     the ladder (recommended): CHESS47 is far below Stockfish's lowest
 setting, so a direct match says little. Every player meets every other (--games each pair, the colours alternate):
 Stockfish 1320 (the anchor, its rating fixed), Stockfish at Skill Level 0 (0.1 s a move, depth 3, depth 1), CHESS47
-levels 2 and 1, and a plain material player (two plies, python-chess, random among equals: tools/match47.py's). One
+levels 3, 2 and 1, and a plain material player (two plies, python-chess, random among equals: tools/match47.py's). One
 fit rates them all (Bradley-Terry, as Ordo / BayesElo; a half draw of prior between each pair keeps a clean sweep
 finite), and the 95 % interval comes from 200 refits on resampled games (bootstrap)."""
 import argparse, math, os, random, shutil, sys, time
@@ -134,7 +134,8 @@ LADDER = [('Stockfish 1320', ('sf', {'UCI_LimitStrength': True, 'UCI_Elo': 1320}
           ('Stockfish skill 0, 0.1 s', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 0.1)),
           ('Stockfish skill 0, depth 3', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 'd3')),
           ('Stockfish skill 0, depth 1', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 'd1')),
-          ('CHESS47 level 2', ('c47', 2)), ('CHESS47 level 1', ('c47', 1)), ('material 2 plies', ('mat',))]
+          ('CHESS47 level 3', ('c47', 3)), ('CHESS47 level 3, 60 s', ('c47', 3, 750)), ('CHESS47 level 2', ('c47', 2)), ('CHESS47 level 1', ('c47', 1)),
+          ('material 2 plies', ('mat',))]
 
 
 def ladder_game(engine, white, black, secs, maxply, rnd):
@@ -148,7 +149,9 @@ def ladder_game(engine, white, black, secs, maxply, rnd):
             h = hist[b.turn] if hist[b.turn] is not None and len(b.move_stack) <= 10 else None
             if h is not None:
                 h[:] = [mb(m.from_square) * 1000 + mb(m.to_square) for m in b.move_stack]
+            R.Pos.budget = spec[2] if len(spec) > 2 else None      # level 3 on the C47: about 750 answers in 60 s
             mv = to_move(b, chess47_move(b, h, spec[1], rnd))
+            R.Pos.budget = None
             if mv not in b.legal_moves:
                 raise RuntimeError('CHESS47 played an illegal move %s in %s' % (mv.uci(), b.fen()))
         elif spec[0] == 'mat':
@@ -233,14 +236,17 @@ def ladder(a):
     for p in order:
         print('%-28s %5d   (95 %%: %d to %d)' % (LADDER[p][0], round(r[p]), round(ci[p][0]), round(ci[p][1])))
     c2 = [p for p in range(n) if LADDER[p][0] == 'CHESS47 level 2'][0]
+    c3 = [p for p in range(n) if LADDER[p][0] == 'CHESS47 level 3'][0]
     md = ['# The rating of CHESS47', '',
           '`python3 tools/elo47.py %s`: a ladder, every player against every other (%d games a pair, the colours '
           'alternating), refereed by python-chess; %s; CHESS47 is python/chess47ref.py (the same moves as the '
           'calculator) with its book. One fit rates them all with Stockfish 1320 fixed (Bradley-Terry); the intervals '
           'from 200 refits on resampled games. %s, %.0f min.' % (' '.join(sys.argv[1:]), a.games, sfname,
                                                                 time.strftime('%Y-%m-%d'), (time.time() - t0) / 60),
-          '', '**CHESS47 level 2: about %d** (95 %%: %d to %d), on Stockfish\'s UCI_Elo scale (engine blitz, '
-          'CCRL-like; not a FIDE rating).' % (round(r[c2]), round(ci[c2][0]), round(ci[c2][1])), '',
+          '', '**CHESS47 level 3: about %d** (95 %%: %d to %d), **level 2: about %d** (95 %%: %d to %d), on Stockfish\'s '
+          'UCI_Elo scale (engine blitz, CCRL-like; not a FIDE rating). Level 3 as searched to the end (on the C47 its '
+          'time budget can cut it short: then it plays its level-2 move).' % (
+              round(r[c3]), round(ci[c3][0]), round(ci[c3][1]), round(r[c2]), round(ci[c2][0]), round(ci[c2][1])), '',
           '| player | rating | 95 % |', '|---|---|---|']
     for p in order:
         md.append('| %s | %d | %d to %d |' % (LADDER[p][0], round(r[p]), round(ci[p][0]), round(ci[p][1])))
