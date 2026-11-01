@@ -8,72 +8,81 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :PCAP:     05  
 :GSTEP:    06  the knight (R80-R87) or the king (R88-R95): one step to an empty square or a piece of the
 :GSLIDE:   07  the bishop (R88-R91), the rook (R92-R95), the queen (R88-R95): along each direction while
-:GCAST:    08  castling from the king's square 61 - 35 c (e1 26, e8 96): short with the bit 1 - c of R22,
-:CSHORT:   09  f and g empty, the rook on h, e f g not attacked: the move e -> g
-:CLONG:    10  d c b empty, the rook on a, e d c not attacked: the move e -> c
-:ATTC:     11  X = a square: is it attacked by the other colour than R32? X = 1 / 0
-:ATT:      12  is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a kn
-:VAL:      13  ======== make and unmake ========
-:MAKE:     14  plays R40 at the ply R46: the undo data in the row R46 of UN (the move, the piece, the pie
-:NUPD:     15  the knight words of the move R41 -> R42 (piece R43 of the colour R45, R44 taken): a knight
-:NXOR:     16  X = a colour, Y = bits: XORed into its knight word (NW white, NB black; kept as reals: →RE
-:BIT:      17  X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZ
-:NINIT:    18  row 22 of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the 
-:ROOKS:    19  the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d)
-:CRSQ:     20  X = a square: a move from or to e1 a1 h1 e8 a8 h8 takes those castling rights away (AND)
-:UNMK:     21  takes back the move of the ply R46 (its row of UN, the castling word R56 + R46)
-:THINK:    22  ======== the search ========
-:CHKQ:     23  after the root move R41 -> R42 (flag R47): can it give check? X = 1 when the other king (R
-:ALIGN:    24  X = a square q, R49 the king's square: dr, dc the rows and columns between them; X = 1 whe
-:MATEQ:    25  level 2, after the root move: it checks the other king, does not leave its own attacked an
-:LEGAL1:   26  level 1: R65 = R60 x SC, or -30000 when the move leaves the king of R60 attacked
-:REPLY:    27  level 2: the replies of the other side (no castling), each valued as it is generated (mode
-:QEVAL:    28  the quiet reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :DELTA:, R65 the least, th
-:CEVAL:    29  the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, 
-:KSET:     30  the reply R30 -> R33 cut the root move: it is the killer, BD (11, 1), with its piece (11, 
-:KILLER:   31  the killer (the reply that cut the last root move) valued first (LBL :QEVAL: or :CEVAL:) w
-:RECAP:    32  the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the val
-:DELTA:    33  the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL 
-:ANYMV:    34  ======== the game ========
-:INCHK:    35  is the side to move in check? X = 1 / 0. LBL :INCHK2: after a move (the side that moved):
-:INCHK2:   36  
-:KATT:     37  X = the colour of the attackers: is the other king attacked? X = 1 / 0
-:HUMAN:    38  your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The 
-:NEWG:     39  7: a new game (the level and your side kept: CHN without plies; the start again)
-:PICK:     40  5: picks a piece of the side to move, drops it (the same square), or plays it to the curso
-:TRYMV:    41  the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
-:C47MV:    42  the C47's move: THINKING, the search, the move played (or the end of the game)
-:CRAZY:    43  level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
-:NOMOVE:   44  the side to move has no legal move: CHECKMATE or STALEMATE; the game is over
-:PLAYED:   45  the move of UN row 3 was played: into the game record (LBL :GHADD:: the move, the position
-:SUFFIX:   46  + appended to the move's text (R79) when the side to move is in check, # when it has no le
-:BOOK:     47  R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; on
-:BKM:      48  
-:GHADD:    49  the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
-:HASH:     50  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
-:CLOCK:    51  the time since the last call (TICKS, tenths of a second) off the time left of the side to 
-:TMAT:     52  X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by 
-:MMSS:     53  X = tenths of a second: m:ss appended to R48
-:TOMOVE:   54  ======== the screen ========
-:HUMQ:     55  X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0
-:STATUS:   56  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pi
-:PANEL:    57  the title, your side, the level, the keys (x 212)
-:FACE:     58  the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 c
-:HSHOW:    59  the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4"
-:HTEXT:    60  the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), 
-:SANDIS:   61  the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the f
-:SANC:     62  the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holdin
-:SQNAME:   63  X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (
-:SQR:      64  
-:SQF:      65  
-:BOARD:    66  the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen 
-:SETME:    67  X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board
-:STATE:    68  the status line of the position: CHECK or whose move it is
-:CURS:     69  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
-:SQXY:     70  X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
-:DRAWSQ:   71  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piec
-:INIT:     72  ======== the start ========
-:PSTALL:   73  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
-:PSQ:      74  the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a valu
-:PSTO:     75  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
-:GLYPHS:   76  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the
+:GCAST:    08  castling from the king's home square (BD (11, 4) for white, + 70 for black): short with th
+:CSHRT:    09  / LBL :CLONG: the rook R41, the king's target R42 (g / c), the rook's R43 (f / d)
+:CLONG:    10  
+:CROOK:    11  
+:CAST:     12  castling with the rook R41 (FIDE, Chess960 too): the rook there; every square between the 
+:ADDC:     13  the quiet move R30 -> R33 into the row R38 of ML (as LBL :ADD:: castling, onto its own roo
+:ATTC:     14  X = a square: is it attacked by the other colour than R32? X = 1 / 0
+:ATT:      15  is R50 attacked by the colour R51? R55 = 1 / 0. A pawn of R51 at R50 - 9 c or - 11 c; a kn
+:VAL:      16  ======== make and unmake ========
+:MAKE:     17  plays R40 at the ply R46: the undo data in the row R46 of UN (the move, the piece, the pie
+:NUPD:     18  the knight words of the move R41 -> R42 (piece R43 of the colour R45, R44 taken): a knight
+:NXOR:     19  X = a colour, Y = bits: XORed into its knight word (NW white, NB black; kept as reals: →RE
+:BIT:      20  X = a square of the board: X = its bit, 2^(8 (row - 2) + col - 1) as a short integer (WSIZ
+:NINIT:    21  row 22 of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the 
+:C960M:    22  (normal castling: the king two squares to an empty square, |t - f| + 10 |y| = 2; Chess960'
+:KT960:    23  Chess960's castling R41 (the king) -> R42 (its rook) of the colour R45: R48 the king's tar
+:ROOKS:    24  the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d)
+:CRSQ:     25  X = a square: a move from or to it keeps the castling rights of its mask (row 23 of BD, LB
+:UNMK:     26  takes back the move of the ply R46 (its row of UN, the castling word R56 + R46)
+:THINK:    27  ======== the search ========
+:CHKQ:     28  after the root move R41 -> R42 (flag R47): can it give check? X = 1 when the other king (R
+:ALIGN:    29  X = a square q, R49 the king's square: dr, dc the rows and columns between them; X = 1 whe
+:MATEQ:    30  level 2, after the root move: it checks the other king, does not leave its own attacked an
+:LEGAL1:   31  level 1: R65 = R60 x SC, or -30000 when the move leaves the king of R60 attacked
+:REPLY:    32  level 2: the replies of the other side (no castling), each valued as it is generated (mode
+:QEVAL:    33  the quiet reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :DELTA:, R65 the least, th
+:CEVAL:    34  the capture reply R30 -> R33 (from LBL :ADD:, mode 3): R71 by LBL :RECAP:, R65 the least, 
+:KSET:     35  the reply R30 -> R33 cut the root move: it is the killer, BD (11, 1), with its piece (11, 
+:KILLER:   36  the killer (the reply that cut the last root move) valued first (LBL :QEVAL: or :CEVAL:) w
+:RECAP:    37  the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the val
+:DELTA:    38  the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL 
+:ANYMV:    39  ======== the game ========
+:INCHK:    40  is the side to move in check? X = 1 / 0. LBL :INCHK2: after a move (the side that moved):
+:INCHK2:   41  
+:KATT:     42  X = the colour of the attackers: is the other king attacked? X = 1 / 0
+:HUMAN:    43  your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The 
+:NEWG:     44  7: a new game (the level and your side kept: CHN without plies; the start again)
+:ASK960:   45  ÷: a new Chess960 game. Its number, three digits (066 for 66: R63, R64 how many), shown in
+:PICK:     46  5: picks a piece of the side to move, drops it (the same square), or plays it to the curso
+:TRYMV:    47  the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
+:C47MV:    48  the C47's move: THINKING, the search, the move played (or the end of the game)
+:CRAZY:    49  level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
+:NOMOVE:   50  the side to move has no legal move: CHECKMATE or STALEMATE; the game is over
+:PLAYED:   51  the move of UN row 3 was played: into the game record (LBL :GHADD:: the move, the position
+:SUFFIX:   52  + appended to the move's text (R79) when the side to move is in check, # when it has no le
+:BOOK:     53  R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; on
+:BKM:      54  
+:GHADD:    55  the move R40 (by the colour R45) into the game record GH: ply p = 2 R96 - (1 + R45) / 2,
+:HASH:     56  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
+:CLOCK:    57  the time since the last call (TICKS, tenths of a second) off the time left of the side to 
+:TMAT:     58  X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by 
+:MMSS:     59  X = tenths of a second: m:ss appended to R48
+:TOMOVE:   60  ======== the screen ========
+:HUMQ:     61  X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0
+:STATUS:   62  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pi
+:PANEL:    63  the title, your side, the level, the keys (x 212)
+:FACE:     64  the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 c
+:HSHOW:    65  the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4"
+:HTEXT:    66  the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), 
+:SANDIS:   67  the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the f
+:SANC:     68  the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holdin
+:SQNAME:   69  X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (
+:SQR:      70  
+:SQF:      71  
+:BOARD:    72  the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen 
+:SETME:    73  X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board
+:STATE:    74  the status line of the position: CHECK or whose move it is
+:CURS:     75  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
+:SQXY:     76  X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
+:DRAWSQ:   77  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piec
+:INIT:     78  ======== the start ========
+:BACK9:    79  X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
+:NTH:      80  X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the sq
+:CSQ:      81  from white's back rank: the king's square (BD (11, 4), R24; black's + 70, R25), the rook o
+:PSTALL:   82  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
+:PSQ:      83  the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a valu
+:PSTO:     84  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
+:GLYPHS:   85  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the

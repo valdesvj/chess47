@@ -218,3 +218,26 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - The twin: opts 'killer' (in ENGINE), Pos.killer_ok(); with it 13 % fewer replies valued over 44 positions, the same
   moves and values, every killer it took was in GEN's list. The program over 15 positions: 1 407 376 steps -> 914 965
   (65 %), the same move and value each; the three of the profile 253 160 -> 202 617.
+
+## Nov 1, 2026 - v0.4.0: Chess960 (branch claude/chess47-960)
+
+- ÷ (KEY? 55, next to 7 8 9 = 52 53 54: not yet checked on the C47) asks the position's number, three digits (:ASK960:)
+  or ÷ again for RAN#; CHN = (n + 1) x 100000 + plies x 100 + level x 10 + side + 2 (an old CHN reads as normal chess);
+  BD (11, 7) = n + 1 for the game. INIT: :BACK9: the back ranks by Scharnagl's numbering (python/chess960.py start()),
+  :NTH: the k-th free square; :CSQ: the king and the castling rooks from white's back rank into BD (11, 4-6), R24 R25.
+- The castling rights: :CRSQ: is now a table (row 23 of BD, 23 x 120: each square's mask, 15 but the kings' and rooks'
+  first squares), one lookup and AND for both games (normal chess 1.5 % faster: 914 965 -> 901 370 steps on the 15
+  positions of v0.3.4, the same moves).
+- Castling: :GCAST: from the king's first square, :CSHRT: / :CLONG: the rook (BD (11, 5 / 6)) and the targets (g f /
+  c d), :CAST: the FIDE rule (every square between the king, the rook and their targets empty but those two; the
+  king's way and target not attacked, the rook lifted for the test). The move: normal chess the king two squares as
+  before (the same lists: the tests), Chess960 the king onto its rook, added as a quiet move (:ADDC:).
+- MAKE: a king onto its own rook is Chess960's castling (:C960M:, :KT960: the targets; flag 3); normal castling now
+  needs |t - f| + 10 |y| = 2: Chess960's e1-c1 (the rook on c1) moves the king two squares too, and MAKE took it for
+  normal castling and moved a1's piece to d1 (the twin's search disagreed in 2 of 24 positions: found and fixed).
+  UNMK takes the king and the rook off their targets first (they can stand on each other's squares: king f1, rook
+  g1). PLAYED redraws the targets, HTEXT writes O-O / O-O-O for flag 3, BOOK plays nothing in Chess960.
+- The twin: chess960.Pos960 makes its castling where GEN does (after the king's own moves, short first) and orders it
+  as a quiet move. tests/test_chess47.py: 8 start positions, GEN and THINK in 14 positions with 19 castlings, ÷ 1 2 3
+  and castling by the keys, C47 vs C47 (16 plies as the twin), 0 and back, ÷ 9 9 9 refused, ÷ ÷, 7.
+  tools/selfplay47.py ... 960: games from random positions checked by python-chess (chess960=True).

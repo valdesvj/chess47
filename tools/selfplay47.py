@@ -19,6 +19,9 @@ game of 100 plies is about 10 M steps here). Each game has its own seed (the boo
   python3 tools/selfplay47.py                     5 games at levels 0, 1 and 2  -> docs/SELFPLAY.md
   python3 tools/selfplay47.py 2 1                 2 games at level 1
   python3 tools/selfplay47.py 5 0,1,2 100         5 games a level, the first seed 100
+  python3 tools/selfplay47.py 5 0,1,2 1 960       Chess960: each game from a position of its seed (÷ and the number,
+                                                  as on the C47); python-chess with chess960=True (castling: the king
+                                                  onto its rook)
 The exit code is 1 when a game broke a rule (the error and the game are in the report)."""
 import os, sys, time
 from decimal import Decimal as D
@@ -75,13 +78,21 @@ def board_repetition(b):
     return n >= 3
 
 
-def game(level, seed):
-    b = chess.Board()
+def digit_keys(n):
+    """The keys of the three digits of n (0: 82; 1-9: the keypad's rows 7, 6, 5 and columns 2-4)."""
+    return [82 if d == 0 else 10 * (7 - (d - 1) // 3) + (d - 1) % 3 + 2 for d in map(int, '%03d' % n)]
+
+
+def game(level, seed, n960=None):
+    b = chess.Board() if n960 is None else chess.Board.from_chess960_pos(n960)
+    start = b.copy()
     c = c47sim.load([S.PROG])
     c.s = [D(0)] * 4; c.pix = []; c.keys = []; c.steps = 0; c.frames = []
     c.seed = seed
     presses = {2: [], 1: [S.LEVEL], 0: [S.LEVEL, S.LEVEL]}[level]
-    st = {'synced': 0, 'err': None, 'note': None, 'status': '', 'started': False, 'end': None, 'keys': presses + [S.AUTO]}
+    first = [] if n960 is None else [55] + digit_keys(n960)    # ÷ and the number: a Chess960 game
+    st = {'synced': 0, 'err': None, 'note': None, 'status': '', 'started': False, 'end': None,
+          'keys': first + presses + [S.AUTO]}
 
     def sync():
         """The moves of the game record GH not yet on b: each one legal, then pushed."""
@@ -174,8 +185,8 @@ def game(level, seed):
         st['note'] = 'no mating material (bishops on one colour): python-chess calls it a draw, the C47 plays on'
     res = st.get('result') or '-'
     return dict(level=level, seed=seed, result=res, plies=b.ply(), err=st['err'], note=st['note'],
-                tw=st.get('tw'), tb=st.get('tb'), secs=time.time() - t0, steps=c.steps,
-                san=chess.Board().variation_san(b.move_stack))
+                tw=st.get('tw'), tb=st.get('tb'), secs=time.time() - t0, steps=c.steps, n960=n960,
+                san=start.variation_san(b.move_stack))
 
 
 def mmss(t):
@@ -189,14 +200,17 @@ def main():
     games = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     levels = [int(v) for v in sys.argv[2].split(',')] if len(sys.argv) > 2 else [0, 1, 2]
     seed0 = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+    c960 = len(sys.argv) > 4 and sys.argv[4] == '960'
+    import random
     rows, bad = [], 0
     for level in levels:
         for g in range(games):
-            r = game(level, seed0 + 100 * level + g)
+            seed = seed0 + 100 * level + g
+            r = game(level, seed, random.Random(seed).randrange(960) if c960 else None)
             rows.append(r)
             bad += bool(r['err'])
-            print('level %d game %d (seed %d): %-24s %3d plies  W %s B %s  %s  (%.0f s here, %.1f M steps)' % (
-                level, g + 1, r['seed'], r['result'], r['plies'], mmss(r['tw']), mmss(r['tb']),
+            print('level %d game %d (seed %d%s): %-24s %3d plies  W %s B %s  %s  (%.0f s here, %.1f M steps)' % (
+                level, g + 1, r['seed'], '' if r['n960'] is None else ', No %d' % r['n960'], r['result'], r['plies'], mmss(r['tw']), mmss(r['tb']),
                 'ERROR: ' + r['err'] if r['err'] else 'rules kept' + (' (note: %s)' % r['note'] if r['note'] else ''),
                 r['secs'], r['steps'] / 1e6), flush=True)
     md = ['# Chess 47 against itself: the rules check', '',
@@ -209,10 +223,12 @@ def main():
                   mmss(r['tb']), 'ERROR: ' + r['err'] if r['err'] else 'rules kept' + ('; ' + r['note'] if r['note'] else '')))
     md += ['', '## The games', '']
     for r in rows:
-        md += ['**Level %d, seed %d: %s**' % (r['level'], r['seed'], r['result']), '', r['san'] or '-', '']
-    with open(os.path.join(ROOT, 'docs', 'SELFPLAY.md'), 'w', encoding='utf-8') as fh:
+        md += ['**Level %d, seed %d%s: %s**' % (r['level'], r['seed'], '' if r['n960'] is None else ', Chess960 No %d'
+                                                % r['n960'], r['result']), '', r['san'] or '-', '']
+    out = 'SELFPLAY960.md' if c960 else 'SELFPLAY.md'
+    with open(os.path.join(ROOT, 'docs', out), 'w', encoding='utf-8') as fh:
         fh.write('\n'.join(md) + '\n')
-    print('%d games, %s -> docs/SELFPLAY.md' % (len(rows), 'all kept the rules' if not bad else '%d broke a rule' % bad))
+    print('%d games, %s -> docs/%s' % (len(rows), 'all kept the rules' if not bad else '%d broke a rule' % bad, out))
     return 1 if bad else 0
 
 
