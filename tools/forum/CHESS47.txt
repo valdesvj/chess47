@@ -20,7 +20,7 @@ Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have 
             (random legal moves, with a crazy face by the title)
   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
-seven moves. The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
+seven moves, in standard algebraic notation as in a book (e4, Nf3, exd5, Nbd2, O-O, e8=Q, Qh7+, Ra8#). The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
 move played. Only a person's clock runs (the C47's stops while it thinks, so it never loses on time). A person
 whose time runs out loses (WHITE / BLACK LOST ON TIME), unless the opponent could not mate by any series of legal
 moves (a bare king, for example): then it is a draw (DRAW: TIME, NO MATE).

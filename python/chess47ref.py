@@ -325,6 +325,41 @@ def mname(m):
     return name(m // 1000) + name(m % 1000)
 
 
+def san(p, m):
+    """The move m of the position p (not played) in standard algebraic notation (FIDE, as CHESS47's move list):
+    the piece letter (none for a pawn), the file or the rank or both of the square it leaves when another piece of
+    the same kind could go there legally, x for a capture (a pawn: its file first), the target, =Q for a promotion,
+    + for check, # for mate; castling O-O / O-O-O (a Chess960 position's castle_move too)."""
+    f, t = m // 1000, m % 1000
+    x = p.bd[f]
+    k = abs(x)
+    castle = p.castle_move(m) if hasattr(p, 'castle_move') else k == 6 and abs(t - f) == 2
+    if castle:
+        s = 'O-O' if t > f else 'O-O-O'
+    elif k == 1:
+        take = p.bd[t] != 0 or (t == p.ep and (t - f) % 10 != 0)
+        s = ('abcdefgh'[file_of(f)] + 'x' if take else '') + name(t)
+        if row_of(t) in (2, 9):
+            s += '=Q'
+    else:
+        s = ' PNBRQK'[k]
+        if k != 6:
+            others = [o // 1000 for o in p.legal() if o % 1000 == t and o // 1000 != f and p.bd[o // 1000] == x]
+            if others:
+                if all(file_of(o) != file_of(f) for o in others):
+                    s += 'abcdefgh'[file_of(f)]
+                elif all(row_of(o) != row_of(f) for o in others):
+                    s += str(row_of(f) - 1)
+                else:
+                    s += name(f)
+        s += ('x' if p.bd[t] != 0 else '') + name(t)
+    p.make(m, 9)
+    if p.attacked(p.king(p.sd), -p.sd):
+        s += '+' if p.has_legal(p.sd) else '#'
+    p.unmake(9)
+    return s
+
+
 if __name__ == '__main__':
     import time
     for fen, want in (('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1', (20, 400, 8902, 197281)),

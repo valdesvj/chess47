@@ -1,4 +1,4 @@
-REM CHESS47 v0.3.2 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.3.3 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -2227,13 +2227,26 @@ IF
     STO+ "TB"
   ENDIF
 ENDIF
-XEQ :HIST:
+REM the move's text, then + (check) or # (mate) by LBL :ANYMV: (R63; it changes R65: the draw kept in R64)
+XEQ :HTEXT:
 RCL 65
+STO 64
+XEQ :ANYMV:
+STO 63
+XEQ :SUFFIX:
+XEQ :HSHOW:
+RCL 63
+X=0?
+IF
+  XEQ :NOMOVE:
+  RTN
+ENDIF
+RCL 64
 X≠0?
 IF
   1
   STO 97
-  RCL 65
+  RCL 64
   1
   X=Y?
   IF
@@ -2244,13 +2257,22 @@ IF
   XEQ :STATUS:
   RTN
 ENDIF
-XEQ :ANYMV:
+XEQ :STATE:
+RTN
+REM ---- LBL :SUFFIX: + appended to the move's text (R79) when the side to move is in check, # when it has no legal
+REM move either (R63 = 0) ----
+LBL :SUFFIX:
+XEQ :INCHK:
+X=0?
+RTN
+RCL 63
 X=0?
 IF
-  XEQ :NOMOVE:
-  RTN
+  "#"
+ELSE
+  "+"
 ENDIF
-XEQ :STATE:
+x→α 79
 RTN
 REM ---- LBL :BOOK: R62 = a move of the opening book that follows the game so far (n = R67 plies, under 10; one of
 REM the lines that fit, at random: RAN#), or 0; R61 = 0. LBL :BKM: X = the next move of the book row R63 (0: it does
@@ -2992,10 +3014,8 @@ ENDIF
 GRMOD
 WSIZE 64
 RTN
-REM ---- LBL :HIST: the move of UN row 3 (R41 -> R42) as text into the list R73-R79 (the oldest out), shown in
-REM GRFNT 10 at x 212, rows 136 down (17 rows a line): "12. e2e4" for white, "12... e7e5" for black ----
-LBL :HIST:
-XEQ :HTEXT:
+REM ---- LBL :HSHOW: the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4" for
+REM white, "12... Nxe5+" for black (LBL :HTEXT: writes them) ----
 LBL :HSHOW:
 1
 GRMOD
@@ -3032,7 +3052,8 @@ ENDDO
 0
 GRMOD
 RTN
-REM LBL :HTEXT: the text of the move into the list (the oldest out); the move number R96 + 1 after black's
+REM ---- LBL :HTEXT: the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), in
+REM standard algebraic notation; the move number R96 + 1 after black's ----
 LBL :HTEXT:
 RCL 74
 STO 73
@@ -3061,28 +3082,293 @@ ELSE
   1
   STO+ 96
 ENDIF
-RCL 41
-XEQ :SQNAME:
+REM the move in standard algebraic notation (FIDE): from the undo row of ply 3 (row 20 of BD): R43 the piece that
+REM moved, R44 not 0 for a capture (the piece taken, or 1 en passant), the flag 2 castling; R47 its kind
+INDEX "BD"
+20
+2
+STOIJ
+RCLEL
+STO 43
+20
+3
+STOIJ
+RCLEL
+STO 44
+20
+6
+STOIJ
+RCLEL
+STO 47
+1
+X=Y?
+STO 44
+RCL 47
+2
+X=Y?
+IF
+  "O-O"
+  x→α 79
+  RCL 41
+  RCL 42
+  X<Y?
+  IF
+    "-O"
+    x→α 79
+  ENDIF
+  RTN
+ENDIF
+RCL 43
+ABS
+STO 47
+1
+X=Y?
+IF
+  REM a pawn: its file and x for a capture, the target, =Q on the last row
+  RCL 44
+  X≠0?
+  IF
+    RCL 41
+    XEQ :SQF:
+    "x"
+    x→α 79
+  ENDIF
+  RCL 42
+  XEQ :SQNAME:
+  1
+  RCL 42
+  STOIJ
+  RCLEL
+  ABS
+  5
+  X=Y?
+  IF
+    "=Q"
+    x→α 79
+  ENDIF
+  RTN
+ENDIF
+REM a piece: its letter, the square it left as far as needed (LBL :SANDIS:; not for the king), x, the target
+RCL 47
+2
+X=Y?
+IF
+  "N"
+ELSE
+  RCL 47
+  3
+  X=Y?
+  IF
+    "B"
+  ELSE
+    RCL 47
+    4
+    X=Y?
+    IF
+      "R"
+    ELSE
+      RCL 47
+      5
+      X=Y?
+      IF
+        "Q"
+      ELSE
+        "K"
+      ENDIF
+    ENDIF
+  ENDIF
+ENDIF
+x→α 79
+RCL 47
+6
+X≠Y?
+XEQ :SANDIS:
+RCL 44
+X≠0?
+IF
+  "x"
+  x→α 79
+ENDIF
 RCL 42
 XEQ :SQNAME:
 RTN
-REM ---- LBL :SQNAME: X = a square: its name appended to R79 (the file a-h as the character 96 + file, the rank) ----
-LBL :SQNAME:
+REM ---- LBL :SANDIS: the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the file
+REM of R41, R35 on its rank; then the file of R41 (none on its file), its rank (none on its rank) or both. Found
+REM from R42 along the piece's directions (R31 to R32 - 1 of R80-R95, as LBL :GSTEP: and LBL :GSLIDE:): the first
+REM piece on each (a knight: one step), R41 counted as taken (the piece was there before the move) ----
+LBL :SANDIS:
+0
+STO 33
+STO 34
+STO 35
+88
+STO 31
+96
+STO 32
+RCL 47
+2
+X=Y?
+IF
+  80
+  STO 31
+  88
+  STO 32
+ENDIF
+RCL 47
+4
+X=Y?
+IF
+  92
+  STO 31
+ENDIF
+RCL 47
+3
+X=Y?
+IF
+  92
+  STO 32
+ENDIF
+DO
+  RCL IND 31
+  STO 38
+  RCL 42
+  STO 39
+  DO
+    RCL 38
+    STO+ 39
+    RCL 41
+    RCL 39
+    X=Y?
+    IF
+      0
+    ELSE
+      1
+      RCL 39
+      STOIJ
+      RCLEL
+      X=0?
+      IF
+        RCL 47
+        2
+        -
+      ELSE
+        RCL 43
+        X=Y?
+        XEQ :SANC:
+        0
+      ENDIF
+    ENDIF
+    X≠0?
+  WHILE
+  ENDDO
+  1
+  STO+ 31
+  RCL 32
+  RCL 31
+  X<Y?
+WHILE
+ENDDO
+RCL 33
+X=0?
+RTN
+RCL 34
+X=0?
+IF
+  RCL 41
+  XEQ :SQF:
+  RTN
+ENDIF
+RCL 35
+X=0?
+IF
+  RCL 41
+  XEQ :SQR:
+  RTN
+ENDIF
+RCL 41
+XEQ :SQNAME:
+RTN
+REM ---- LBL :SANC: the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holding the
+REM piece again and R39 empty for the time of the test); then counted (R33) and its file and rank (R34, R35) ----
+LBL :SANC:
 1
--
-STO 48
+RCL 41
+STOIJ
+RCL 43
+STOEL
+1
+RCL 39
+STOIJ
+0
+STOEL
+RCL 45
+CHS
+XEQ :KATT:
+STO 30
+1
+RCL 41
+STOIJ
+0
+STOEL
+1
+RCL 39
+STOIJ
+RCL 43
+STOEL
+RCL 30
+X≠0?
+RTN
+1
+STO+ 33
+RCL 39
 10
 MOD
-96
-+
-x→α 79
+RCL 41
+10
+MOD
+X=Y?
+IF
+  1
+  STO+ 34
+ENDIF
+RCL 39
+10
+÷
+IP
+RCL 41
+10
+÷
+IP
+X=Y?
+IF
+  1
+  STO+ 35
+ENDIF
+RTN
+REM ---- LBL :SQNAME: X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (the
+REM letter a-h as the character 96 + file) ----
+LBL :SQNAME:
+STO 48
+XEQ :SQF:
 RCL 48
+LBL :SQR:
+1
+-
 10
 ÷
 IP
 1
 -
 αIP 79
+RTN
+LBL :SQF:
+1
+-
+10
+MOD
+96
++
+x→α 79
 RTN
 REM ---- LBL :BOARD: the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen from
 REM your side (R27 -1: black at the bottom; R34 = 1 or -1 the step of the letters) ----
@@ -3655,6 +3941,17 @@ IF
     XEQ :MAKE:
     XEQ :GHADD:
     XEQ :HTEXT:
+    XEQ :INCHK:
+    X≠0?
+    IF
+      RCL 69
+      STO 62
+      XEQ :ANYMV:
+      STO 63
+      RCL 62
+      STO 69
+      XEQ :SUFFIX:
+    ENDIF
     1
     STO+ 69
     RCL 68
