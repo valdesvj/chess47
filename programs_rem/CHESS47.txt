@@ -1,4 +1,4 @@
-REM CHESS47 v0.5.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.5.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -60,6 +60,9 @@ SINT
 NOT
 →REAL
 STO R.09
+REM R99 0: INIT makes the matrices (7 and ÷ set it to 1: they keep the glyphs GL and the table PT of BD)
+0
+STO 99
 XEQ :INIT:
 REM ---- the game: your move (the keys) or the C47's, until 0 (R98 = 82) ----
 DO
@@ -2819,6 +2822,8 @@ RCL+ 27
 2
 +
 STO "CHN"
+1
+STO 99
 XEQ :INIT:
 RTN
 REM ---- LBL :ASK960: ÷: a new Chess960 game. Its number, three digits (066 for 66: R63, R64 how many), shown in the
@@ -2945,6 +2950,8 @@ RCL+ 27
 2
 +
 STO "CHN"
+1
+STO 99
 XEQ :INIT:
 RTN
 REM ---- LBL :PICK: 5: picks a piece of the side to move, drops it (the same square), or plays it to the cursor
@@ -4739,6 +4746,9 @@ REM panel); the cursor on e2 ----
 LBL :INIT:
 20.79
 R-CLR
+REM R57 1: a new game from the game (7, ÷): BD and GL kept, their tables not made again (7 s faster, no new matrix)
+RCL 99
+STO 57
 0
 STO 99
 REM the saved game CHN = (n + 1) x 100000 (Chess960's position n; 0 normal chess) + plies x 100 + level x 10 + your
@@ -4760,26 +4770,83 @@ GRFNT
 DROP
 "CHESS 47 - SETTING UP ..."
 156
-212
+106
 ATEXT Z
-23
-120
-NEWMAT
-STO "BD"
-INDEX "BD"
-REM ==== KNIGHTS
-32
-24
-NEWMAT
-STO "GL"
+REM the matrices: an old one is freed first (0 STO). A stop (an error, EXIT) leaves them; made again over them
+REM they needed twice the memory: "Not enough memory for such a matrix", and no restart until CLVall
+RCL 57
+X=0?
+IF
+  0
+  STO "BD"
+  STO "GL"
+  DROP
+  23
+  120
+  NEWMAT
+  STO "BD"
+  DROP
+  32
+  24
+  NEWMAT
+  STO "GL"
+  DROP
+ELSE
+  REM kept: the rows written while playing cleared (2-4 the move lists, 11 the state, 18-20), as a fresh BD (R58 the row)
+  2
+  STO 58
+  DO
+    INDEX "BD"
+    RCL 58
+    1
+    STOIJ
+    DROP
+    DROP
+    120
+    STO 33
+    DO
+      0
+      STOSEQ
+      DROP
+      DSE 33
+    WHILE
+    ENDDO
+    1
+    STO+ 58
+    RCL 58
+    5
+    X=Y?
+    IF
+      11
+      STO 58
+    ENDIF
+    RCL 58
+    12
+    X=Y?
+    IF
+      18
+      STO 58
+    ENDIF
+    21
+    RCL 58
+    X≠Y?
+  WHILE
+  ENDDO
+ENDIF
 RCL 68
 X=0?
 IF
+  0
+  STO "GH"
+  DROP
   2
   300
   NEWMAT
   STO "GH"
+  DROP
 ENDIF
+INDEX "BD"
+REM ==== KNIGHTS
 REM ==== BOOK
 REM the offsets: the knight R80-R87, the diagonals R88-R91, the lines R92-R95
 -21
@@ -5098,8 +5165,12 @@ STOIJ
 600
 STOEL
 REM R72-R79: no moves yet (0, not a text)
-XEQ :PSTALL:
-XEQ :GLYPHS:
+RCL 57
+X=0?
+IF
+  XEQ :PSTALL:
+  XEQ :GLYPHS:
+ENDIF
 REM the game record: the start's key at GH (2, 1); the clock (tenths of a second: TICKS)
 XEQ :HASH:
 INDEX "GH"
