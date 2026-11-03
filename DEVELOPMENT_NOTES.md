@@ -272,3 +272,16 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   caller each; a call after a test became test / IF / ... / ENDIF): 99 -> 89 local labels, 26 steps fewer.
 - Tried and not done: the board in local registers (RCL IND: one step a square instead of four). LocR is run already,
   but how local registers behave indirectly and inside subroutines is not checked on the C47: a test for Victor first.
+
+## Nov 3, 2026 - v0.5.1: 7 right after the start, "Not enough memory" (branch claude/chess47-newgame)
+
+- Reported on the forum: 7 (a new game) stopped CHESS47 with "Not enough memory for such a matrix" (on Victor's C47
+  "Out of range" at the STOIJ after it), and it would not start again until CLVall. INIT made BD (23 x 120) and GL
+  with NEWMAT while the old ones still existed: twice the memory for a moment. A stop (an error, EXIT) left them all,
+  so every start failed the same way. The simulator has no memory limit, so the tests never saw it.
+- Now: INIT frees an old matrix first (0 STO "BD", "GL", and "GH" for a new game) before NEWMAT. 7 and ÷ set R99 = 1
+  (R57 in INIT: R99 survives R-CLR 20.79; the start sets R99 = 0): BD and GL are kept, PSTALL and GLYPHS are not run
+  again, and the rows written while playing (2-4, 11, 18-20) are cleared. BD, GL, GH, the registers and the screen
+  are as a fresh start's (simulator); a game after 7 plays the same moves as v0.5.0. 7: 69 000 -> 41 000 steps
+  (about 12 s -> 7 s).
+- "CHESS 47 - SETTING UP ..." at x 106 (was 212): the last dot went to the next row.

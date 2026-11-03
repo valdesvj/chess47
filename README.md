@@ -34,7 +34,7 @@ see *Speed* below. v0.4.0 adds Chess960.
 | **+** | swap sides: the C47 plays the side to move and you take the other; at the start: you play black (the board turns, black at the bottom) |
 | **9** | C47 vs C47: it plays both sides until checkmate or a draw; any key stops it and you take the side to move (0 ends) |
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
-| **7** | a new game of normal chess (the level and your side kept) |
+| **7** | a new game of normal chess (the level and your side kept; about 7 s, the glyphs and the tables kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
 | **1** | the level, in turn: 2 (2 plies, about 6-11 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **3** (level 2 first, then 3 plies for at most 60 s more: the deeper move when it is found in time, else the best found so far or level 2's) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |

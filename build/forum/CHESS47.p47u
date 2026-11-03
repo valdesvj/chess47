@@ -1,6 +1,6 @@
 @ Index:   Chess against the C47: legal moves, check, mate, draws, a 2-ply search, a book, a clock
 @ Author:  Victor Valdes
-@ Version: 0.5.0
+@ Version: 0.5.1
 @ Source:  https://github.com/valdesvj/chess47
 @ Tested:  C47 simulator only (python/c47sim.py): tests/test_chess47.py, the moves, the scores and the choices of
 @ Tested:  the search against python/chess47ref.py (the same algorithm), whose move generator gives the published
@@ -53,7 +53,7 @@
 @ ENDDO) of the C47 / R47 firmware, ATEXT and GRFNT, AGRAPH and the bitwise commands AND OR XOR NOT BS?.
 @
 @ ---- Technical notes (from the commented source) ----
-@ CHESS47 v0.5.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+@ CHESS47 v0.5.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 @ You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 @ The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 @ queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -117,6 +117,9 @@ SINT
 NOT
 →REAL
 STO R.09
+@ R99 0: INIT makes the matrices (7 and ÷ set it to 1: they keep the glyphs GL and the table PT of BD)
+0
+STO 99
 XEQ 83                          ; -> :INIT:
 @
 @ ---- the game: your move (the keys) or the C47's, until 0 (R98 = 82) ----
@@ -2922,6 +2925,8 @@ RCL+ 27
 2
 +
 STO "CHN"
+1
+STO 99
 XEQ 83                          ; -> :INIT:
 RTN
 @
@@ -3049,6 +3054,8 @@ RCL+ 27
 2
 +
 STO "CHN"
+1
+STO 99
 XEQ 83                          ; -> :INIT:
 RTN
 @
@@ -5032,6 +5039,9 @@ RTN
 LBL 83                          ; :INIT:
 20.79
 R-CLR
+@ R57 1: a new game from the game (7, ÷): BD and GL kept, their tables not made again (7 s faster, no new matrix)
+RCL 99
+STO 57
 0
 STO 99
 @ the saved game CHN = (n + 1) x 100000 (Chess960's position n; 0 normal chess) + plies x 100 + level x 10 + your
@@ -5053,12 +5063,81 @@ GRFNT
 DROP
 "CHESS 47 - SETTING UP ..."
 156
-212
+106
 ATEXT Z
-23
-120
-NEWMAT
-STO "BD"
+@ the matrices: an old one is freed first (0 STO). A stop (an error, EXIT) leaves them; made again over them
+@ they needed twice the memory: "Not enough memory for such a matrix", and no restart until CLVall
+RCL 57
+X=0?
+IF 224
+  0
+  STO "BD"
+  STO "GL"
+  DROP
+  23
+  120
+  NEWMAT
+  STO "BD"
+  DROP
+  32
+  24
+  NEWMAT
+  STO "GL"
+  DROP
+ELSE 224
+@   kept: the rows written while playing cleared (2-4 the move lists, 11 the state, 18-20), as a fresh BD (R58 the row)
+  2
+  STO 58
+  DO 40
+    INDEX "BD"
+    RCL 58
+    1
+    STOIJ
+    DROP
+    DROP
+    120
+    STO 33
+    DO 41
+      0
+      STOSEQ
+      DROP
+      DSE 33
+    WHILE 41
+    ENDDO 41
+    1
+    STO+ 58
+    RCL 58
+    5
+    X=Y?
+    IF 225
+      11
+      STO 58
+    ENDIF 225
+    RCL 58
+    12
+    X=Y?
+    IF 226
+      18
+      STO 58
+    ENDIF 226
+    21
+    RCL 58
+    X≠Y?
+  WHILE 40
+  ENDDO 40
+ENDIF 224
+RCL 68
+X=0?
+IF 227
+  0
+  STO "GH"
+  DROP
+  2
+  300
+  NEWMAT
+  STO "GH"
+  DROP
+ENDIF 227
 INDEX "BD"
 @ the knights' masks of python/layout.py into row 21 of BD (written by the build)
 21
@@ -5573,18 +5652,6 @@ DROP
 9077567998918656
 STOEL
 DROP
-32
-24
-NEWMAT
-STO "GL"
-RCL 68
-X=0?
-IF 224
-  2
-  300
-  NEWMAT
-  STO "GH"
-ENDIF 224
 @ the opening book of python/book.py: the matrix OB (written by the build)
 14
 11
@@ -6120,17 +6187,17 @@ INDEX "BD"
 120
 STO 33
 @ the whole row 1 of BD set to 8 (the border)
-DO 40
+DO 42
   8
   STOSEQ
   DROP
   DSE 33
-WHILE 40
-ENDDO 40
+WHILE 42
+ENDDO 42
 22
 STO 30
 @ the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
-DO 41
+DO 43
   1
   RCL 30
   STOIJ
@@ -6144,18 +6211,18 @@ DO 41
   MOD
   8
   X≤Y?
-  IF 225
+  IF 228
     3
     STO+ 30
-  ELSE 225
+  ELSE 228
     1
     STO+ 30
-  ENDIF 225
+  ENDIF 228
   99
   RCL 30
   X≤Y?
-WHILE 41
-ENDDO 41
+WHILE 43
+ENDDO 43
 1
 22
 STOIJ
@@ -6200,26 +6267,26 @@ STO 33
 32
 STOIJ
 @ the eight white pawns on 32-39
-DO 42
+DO 44
   1
   STOSEQ
   DROP
   DSE 33
-WHILE 42
-ENDDO 42
+WHILE 44
+ENDDO 44
 8
 STO 33
 1
 82
 STOIJ
 @ the eight black pawns on 82-89
-DO 43
+DO 45
   -1
   STOSEQ
   DROP
   DSE 33
-WHILE 43
-ENDDO 43
+WHILE 45
+ENDDO 45
 @ the state: white to move, no en passant square, all four castling rights, SC 0 (the start is symmetric)
 1
 STO 20
@@ -6248,7 +6315,7 @@ STO 97
 @ the level and your side of the saved game (CHN 0: level 2, white)
 RCL "CHN"
 X≠0?
-IF 226
+IF 229
   10
   MOD
   2
@@ -6261,7 +6328,7 @@ IF 226
   10
   MOD
   STO 26
-ENDIF 226
+ENDIF 229
 @ Chess960: BD (11, 7) = n + 1 (0: normal chess), the back ranks of the position n (LBL :BACK9:); the kings, the
 @ castling rooks and the castling rights' masks (LBL :CSQ:)
 INDEX "BD"
@@ -6284,7 +6351,7 @@ STO 34
 22
 STO 33
 @ white's back rank 22-29: the king's square, the rook on its left (before it) and on its right (after it)
-DO 44
+DO 46
   1
   RCL 33
   STOIJ
@@ -6292,7 +6359,7 @@ DO 44
   STO 35
   6
   X=Y?
-  IF 227
+  IF 230
     11
     4
     STOIJ
@@ -6300,44 +6367,44 @@ DO 44
     STOEL
     1
     STO 34
-  ENDIF 227
+  ENDIF 230
   RCL 35
   4
   X=Y?
-  IF 228
+  IF 231
     RCL 34
     X=0?
-    IF 229
+    IF 232
       6
-    ELSE 229
+    ELSE 232
       5
-    ENDIF 229
+    ENDIF 232
     11
     X<>Y
     STOIJ
     RCL 33
     STOEL
-  ENDIF 228
+  ENDIF 231
   1
   STO+ 33
   29
   RCL 33
   X≤Y?
-WHILE 44
-ENDDO 44
+WHILE 46
+ENDDO 46
 23
 22
 STOIJ
 78
 STO 33
 @ the masks of the castling rights: 15 into row 23 for the squares 22-99
-DO 45
+DO 47
   15
   STOSEQ
   DROP
   DSE 33
-WHILE 45
-ENDDO 45
+WHILE 47
+ENDDO 47
 11
 4
 STOIJ
@@ -6400,8 +6467,12 @@ STOIJ
 600
 STOEL
 @ R72-R79: no moves yet (0, not a text)
-XEQ 86                          ; -> :PSTALL:
-XEQ 88                          ; -> :GLYPHS:
+RCL 57
+X=0?
+IF 233
+  XEQ 86                        ; -> :PSTALL:
+  XEQ 88                        ; -> :GLYPHS:
+ENDIF 233
 @ the game record: the start's key at GH (2, 1); the clock (tenths of a second: TICKS)
 XEQ 63                          ; -> :HASH:
 INDEX "GH"
@@ -6415,21 +6486,21 @@ TICKS
 STO "TK"
 RCL 68
 X=0?
-IF 230
+IF 234
   3000
   STO "TW"
   STO "TB"
-ENDIF 230
+ENDIF 234
 @ the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
 WSIZE 64
 XEQ 17                          ; -> :NINIT:
 RCL 68
 X≠0?
-IF 231
+IF 235
   1
   STO 69
 @   the saved game's moves played again (R69 the ply, 1 to R68): MAKE, the record, the move list (+ or # in check)
-  DO 46
+  DO 48
     INDEX "GH"
     1
     RCL 69
@@ -6444,7 +6515,7 @@ IF 231
     XEQ 72                      ; -> :HTEXT:
     XEQ 47                      ; -> :INCHK:
     X≠0?
-    IF 232
+    IF 236
       RCL 69
       STO 62
       XEQ 46                    ; -> :ANYMV:
@@ -6452,15 +6523,15 @@ IF 231
       RCL 62
       STO 69
       XEQ 59                    ; -> :SUFFIX:
-    ENDIF 232
+    ENDIF 236
     1
     STO+ 69
     RCL 68
     RCL 69
     X≤Y?
-  WHILE 46
-  ENDDO 46
-ENDIF 231
+  WHILE 48
+  ENDDO 48
+ENDIF 235
 @ the screen: the board, the panel, the moves, the state
 CLLCD
 XEQ 78                          ; -> :BOARD:
@@ -6490,13 +6561,13 @@ STO 33
 22
 STOIJ
 @ white's back rank 22-29 emptied
-DO 47
+DO 49
   0
   STOSEQ
   DROP
   DSE 33
-WHILE 47
-ENDDO 47
+WHILE 49
+ENDDO 49
 RCL 30
 4
 MOD
@@ -6546,24 +6617,24 @@ STO 30
 0
 STO 34
 @ the pair of free squares of the knights: R34 the first (0-3), R30 what is left over
-DO 48
+DO 50
   4
   RCL- 34
   STO 35
   RCL 30
   X≥Y?
-  IF 233
+  IF 237
     RCL 35
     STO- 30
     1
     STO+ 34
     1
-  ELSE 233
+  ELSE 237
     0
-  ENDIF 233
+  ENDIF 237
   X≠0?
-WHILE 48
-ENDDO 48
+WHILE 50
+ENDDO 50
 RCL 34
 1
 +
@@ -6605,7 +6676,7 @@ STOEL
 22
 STO 33
 @ black's back rank: each piece of white's (22-29), the other colour, 70 squares up
-DO 49
+DO 51
   1
   RCL 33
   STOIJ
@@ -6624,8 +6695,8 @@ DO 49
   29
   RCL 33
   X≤Y?
-WHILE 49
-ENDDO 49
+WHILE 51
+ENDDO 51
 RTN
 @
 @ ---- LBL :NTH: X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the square) ----
@@ -6634,7 +6705,7 @@ STO 31
 21
 STO 32
 @ the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
-DO 50
+DO 52
   1
   STO+ 32
   1
@@ -6642,15 +6713,15 @@ DO 50
   STOIJ
   RCLEL
   X=0?
-  IF 234
+  IF 238
     -1
     STO+ 31
-  ENDIF 234
+  ENDIF 238
   RCL 31
   0
   X≤Y?
-WHILE 50
-ENDDO 50
+WHILE 52
+ENDDO 52
 RCL 32
 RTN
 @
@@ -6663,7 +6734,7 @@ LBL 86                          ; :PSTALL:
 22
 STO 42
 @ the squares 22-99 (R42): the six pieces' values there (LBL :PSQ:), white's and black's
-DO 51
+DO 53
   RCL 42
   1
   -
@@ -6674,7 +6745,7 @@ DO 51
   ABS
   3.5
   X≥Y?
-  IF 235
+  IF 239
 @
 @     ---- (was LBL :PSQ:) the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a value) ----
     RCL 42
@@ -6737,18 +6808,18 @@ DO 51
     ABS
     0.5
     X=Y?
-    IF 236
+    IF 240
       RCL 48
       3
       -
       ABS
       1
       X≥Y?
-      IF 237
+      IF 241
         8
         STO+ 43
-      ENDIF 237
-    ENDIF 236
+      ENDIF 241
+    ENDIF 240
     1
     XEQ 87                      ; -> :PSTO:
     RCL 49
@@ -6772,10 +6843,10 @@ DO 51
     RCL 48
     6
     X=Y?
-    IF 238
+    IF 242
       10
       STO+ 43
-    ENDIF 238
+    ENDIF 242
     4
     XEQ 87                      ; -> :PSTO:
     RCL 49
@@ -6794,20 +6865,20 @@ DO 51
     STO 43
     RCL 48
     X=0?
-    IF 239
+    IF 243
       10
       STO+ 43
-    ENDIF 239
+    ENDIF 243
     6
     XEQ 87                      ; -> :PSTO:
-  ENDIF 235
+  ENDIF 239
   1
   STO+ 42
   99
   RCL 42
   X≤Y?
-WHILE 51
-ENDDO 51
+WHILE 53
+ENDDO 53
 INDEX "BD"
 RTN
 @
@@ -7900,11 +7971,11 @@ DROP
 -6
 STO 41
 @ each piece R41 (-6 to 6)
-DO 52
+DO 54
   1
   STO 33
 @   its 24 columns R33: the dither AND NOT the mask OR the glyph, into its dark square's row of GL
-  DO 53
+  DO 55
     RCL 41
     7
     +
@@ -7920,7 +7991,7 @@ DO 52
     DROP
     RCL 41
     X≠0?
-    IF 240
+    IF 244
       RCL 41
       ABS
       26
@@ -7931,20 +8002,20 @@ DO 52
       SINT
       STO 49
       DROP
-    ENDIF 240
+    ENDIF 244
     5592405
     SINT
     RCL 33
     2
     MOD
     X=0?
-    IF 241
+    IF 245
       DROP
       11184810
       SINT
-    ELSE 241
+    ELSE 245
       DROP
-    ENDIF 241
+    ENDIF 245
     RCL 49
     NOT
     AND
@@ -7964,15 +8035,15 @@ DO 52
     24
     RCL 33
     X≤Y?
-  WHILE 53
-  ENDDO 53
+  WHILE 55
+  ENDDO 55
   1
   STO+ 41
   6
   RCL 41
   X≤Y?
-WHILE 52
-ENDDO 52
+WHILE 54
+ENDDO 54
 INDEX "BD"
 RTN
 END
