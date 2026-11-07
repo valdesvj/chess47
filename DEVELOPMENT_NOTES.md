@@ -285,3 +285,13 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   are as a fresh start's (simulator); a game after 7 plays the same moves as v0.5.0. 7: 69 000 -> 41 000 steps
   (about 12 s -> 7 s).
 - "CHESS 47 - SETTING UP ..." at x 106 (was 212): the last dot went to the next row.
+
+## Nov 8, 2026 - v0.5.2: ÷ in a Chess960 game goes back to normal chess (branch claude/chess47-960toggle)
+
+- In a Chess960 game (BD (11, 7) not 0) ÷ starts a new game of normal chess, as 7 (LBL :NEWG:), as the DM42n
+  version's 960 key. In a normal game ÷ asks for the number as before (÷ again: a random one). Simulator: after a
+  Chess960 game, ÷ gives the fresh start's board, BD and screen; ÷ ÷ then a random Chess960 game again.
+- 7 after a Chess960 game was already normal chess (CHN without the number; BD as a fresh start's).
+- Easter egg: ÷ 1701 (NCC-1701, the Kobayashi Maru) starts a new game of normal chess with "KIRK RULES!" in the
+  status line, for the forum's "beat the machine under the James T Kirk rules".
+- The number's entry takes a fourth digit after 170 only (1701; 1704 and the like: "960: 000 TO 959").
