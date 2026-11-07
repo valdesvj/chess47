@@ -1,4 +1,4 @@
-REM CHESS47 v0.5.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.5.2 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -2826,10 +2826,23 @@ STO "CHN"
 STO 99
 XEQ :INIT:
 RTN
-REM ---- LBL :ASK960: ÷: a new Chess960 game. Its number, three digits (066 for 66: R63, R64 how many), shown in the
+REM ---- LBL :ASK960: ÷: a new Chess960 game (in a Chess960 game: normal chess again, as 7). Its number, three digits (066 for 66: R63, R64 how many), shown in the
 REM status line; ÷ again: a random one (RAN#); another key: back. 0-959 (518 is normal chess): CHN with it, then
 REM INIT (the level and your side kept). R65 the digit of the key (the keypad: rows 5-7 7-9 4-6 1-3, 82 the 0) ----
 LBL :ASK960:
+REM in a Chess960 game (BD (11, 7) not 0) ÷ goes back to normal chess: a new game, as 7 (LBL :NEWG:)
+INDEX "BD"
+11
+7
+STOIJ
+DROP
+DROP
+RCLEL
+X≠0?
+IF
+  XEQ :NEWG:
+  RTN
+ENDIF
 0
 STO 63
 0
@@ -2924,11 +2937,43 @@ DO
     1
     STO+ 64
   ENDIF
-  3
+  REM three digits; after 170 a fourth (1701, the Easter egg below): R66 1 = one more
+  0
+  STO 66
   RCL 64
-  X<Y?
+  3
+  X>Y?
+  IF
+    1
+    STO 66
+  ENDIF
+  RCL 63
+  170
+  X=Y?
+  IF
+    RCL 64
+    3
+    X=Y?
+    IF
+      1
+      STO 66
+    ENDIF
+  ENDIF
+  RCL 66
+  X≠0?
 WHILE
 ENDDO
+REM Easter egg, 1701 (NCC-1701): Kirk's Kobayashi Maru, the no-win scenario reprogrammed (the C47 forum, who beat
+REM CHESS47 "under the James T Kirk rules"): a new game of normal chess, as 7, and the message
+RCL 63
+1701
+X=Y?
+IF
+  XEQ :NEWG:
+  "KIRK RULES!"
+  XEQ :STATUS:
+  RTN
+ENDIF
 RCL 63
 959
 X<Y?

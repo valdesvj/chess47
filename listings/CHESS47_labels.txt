@@ -52,7 +52,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :KATT:     49  X = the colour of the attackers: is the other king attacked? X = 1 / 0
 :HUMAN:    50  your move: the cursor, 5 picks and plays, + hands over, 1 the level, 0 the end (R98). The 
 :NEWG:     51  7: a new game (the level and your side kept: CHN without plies; the start again)
-:ASK960:   52  ÷: a new Chess960 game. Its number, three digits (066 for 66: R63, R64 how many), shown in
+:ASK960:   52  ÷: a new Chess960 game (in a Chess960 game: normal chess again, as 7). Its number, three d
 :PICK:     53  5: picks a piece of the side to move, drops it (the same square), or plays it to the curso
 :TRYMV:    54  the move R29 -> R28: in the generated list and legal, it is played (LBL :PLAYED:); else
 :C47MV:    55  the C47's move: THINKING, the search, the move played (or the end of the game)
