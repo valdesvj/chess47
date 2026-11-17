@@ -114,7 +114,7 @@ STOS R.00
 LASTx
 STO R.08
 @
-@ ---- the memory: before anything, the free RAM (MEM?, bytes) against what the game needs (R33): BD 23 x 120,
+@ ---- the memory: before anything, the free RAM (MEM#, bytes) against what the game needs (R33): BD 23 x 120,
 @ GL 32 x 24, OB 14 x 11 (16 bytes a number: 58 912) + 3 000 to spare = 62 000, + GH 2 x 300 (9 600) when there
 @ is no saved game (the plies of CHN 0: SIGN). Old BD GL OB (a stop leaves them) freed first (0 STO): INIT makes them
 @ again. Too little: a message, a key, BD GL OB deleted, your stack back, the end ("RAM is full" avoided) ----
@@ -138,7 +138,7 @@ X<>Y
 62000
 +
 STO 33
-MEM?
+MEM#
 X<Y?
 IF 01
   CLLCD
@@ -154,7 +154,7 @@ IF 01
   DROP
   "FREE "
   STO 48
-  MEM?
+  MEM#
   1000
   ÷
   αIP 48
