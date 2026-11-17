@@ -286,6 +286,23 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   (about 12 s -> 7 s).
 - "CHESS 47 - SETTING UP ..." at x 106 (was 212): the last dot went to the next row.
 
+## Nov 17, 2026 - v0.6.0: the pieces as letters of the firmware's font (branch claude/chess47-letters)
+
+- Asked by Victor, in view of the merge request that adds chess pieces to the C47's fonts: a mode that draws the
+  pieces with ATEXT, so that the program is ready for them. The key × (65): the variable CHF 1 - CHF, the board again.
+- LBL :DRAWSQ: with CHF 1 takes the empty square's row of GL (piece x (1 - CHF)), draws it as before (the frame, the
+  inversion), then the letter: GRFNT 20, its 20-row box at x + 7, row + 2 (inside the cursor's frame). The character
+  from 75818266788000 divided by 100 |piece| times (IP, 100 MOD: 80 78 66 82 81 75, P N B R Q K), + 32 for a black
+  piece (16 - 16 piece / |piece|). GRMOD 1 clears the box (seen on a dark square); the piece picked GRMOD 3 (the
+  letter flipped: white on the black square). No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
+  (R48 R49 are not free: the Chess960 castling by the keys keeps values in them across DRAWSQ).
+- CHF is made by INIT (0 STO+), kept over 7 and ÷ and at the end when it is 1 (deleted when 0).
+- The panel's last line: "1 LEVEL  ÷ 960  × ABC  0 END". IF 253 of 255, DO 56.
+- python/layout.py mock_letters, tests/test_chess47.py letters_tests (pixel for pixel, picked, a move, 7, × ×, 0).
+- With the firmware's chess font: the same branch of DRAWSQ with the pieces' characters (one code a piece and
+  colour), then GL's glyph rows and LBL :GLYPHS: can go (smaller, a faster start). Not tested on the calculator yet:
+  ATEXT's GRMOD 1 and 3 are as the simulator has them from screen.c.
+
 ## Nov 8, 2026 - v0.5.2: ÷ in a Chess960 game goes back to normal chess (branch claude/chess47-960toggle)
 
 - In a Chess960 game (BD (11, 7) not 0) ÷ starts a new game of normal chess, as 7 (LBL :NEWG:), as the DM42n

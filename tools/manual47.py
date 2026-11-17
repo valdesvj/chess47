@@ -29,6 +29,7 @@ def main():
                     L, L, L, U, U, U, U, P, R, R, R, R, D, D, D, D, P], 'two players: the fool\'s mate, CHECKMATE')
     shot('6_crazy', [S.LEVEL, S.LEVEL, P, U, U, P], 'level CRAZY (1 1): the face by the title')
     shot('7_ask960', [DIV, 72, 73], '÷ 1 2: the number of the Chess960 position asked')
+    shot('9_letters', [65, P, U, U, P], '×: the pieces as letters of the firmware\'s font; e2-e4 and the C47\'s reply')
     shot('8_960', [DIV, 72, 73, 74, D, R, P, R, P], '÷ 1 2 3: Chess960 No 123; 2 6 5 6 5: castling O-O, the king onto its rook')
 
 

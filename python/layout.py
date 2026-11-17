@@ -248,6 +248,37 @@ def mock(board):
     return pix
 
 
+LETTERS = ' PNBRQK'                     # the pieces as letters (the key ×, CHF 1): white capitals, black lower case
+LX, LY = 7, 2                           # the letter's 20-row box in the square: its first column and bottom row
+
+
+def mock_letters(board, picked=0):
+    """The pixels of the board with the pieces as letters of the firmware's standard font (stdfont.py), as LBL :DRAWSQ:
+    draws them with CHF 1: the empty square, then the letter's box cleared (GRMOD 1) and the letter in it. The square
+    picked: all black, the letter flipped onto it (GRMOD 3: white on black)."""
+    from stdfont import STD
+    pix = mock([0 if 22 <= s <= 99 and v != 8 else v for s, v in enumerate(board)])
+    for r in range(8):
+        for f in range(8):
+            s = 10 * (r + 2) + f + 2
+            p = board[s]
+            x0, y0 = BX + SQ * f, BY + SQ * r
+            if s == picked:
+                pix |= {(x0 + j, y0 + i) for j in range(SQ) for i in range(SQ)}
+            if not p:
+                continue
+            ch = LETTERS[abs(p)] if p > 0 else LETTERS[abs(p)].lower()
+            cb, cg, ca, ra, rg, rb, rows = STD[ord(ch)]
+            on = {(x0 + LX + cb + c, y0 + LY + rb + rg - 1 - i) for i, v in enumerate(rows) for c in range(cg)
+                  if v >> (cg - 1 - c) & 1}
+            if s == picked:
+                pix ^= on
+            else:
+                pix -= {(x0 + LX + j, y0 + LY + i) for j in range(cb + cg + ca) for i in range(ra + rg + rb)}
+                pix |= on
+    return pix
+
+
 if __name__ == '__main__':
     for t in range(1, 7):
         O, S, M = shapes(t)

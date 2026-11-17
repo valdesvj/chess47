@@ -23,6 +23,8 @@ Load CHESS47 and press XEQ CHESS47. Setting up takes about 10 seconds. You have 
   1         the level, in turn: 2 (two moves ahead, about 6-11 s a move), 1 (one move ahead, a few seconds),
             0 CRAZY (random legal moves, with a crazy face by the title), 3 (three moves ahead: level 2
             first, then up to 60 s more for the deeper move)
+  ×         the pieces as letters of the calculator's own font (K Q R B N P white, k q r b n p black) or drawn
+            again; kept for the next games and the next start
   0         the end. A game that is not over is kept: the next XEQ CHESS47 goes on where you left it.
 The right side shows your side and level, whose move it is (CHECK, CHECKMATE ... when it happens) and the last
 seven moves, in standard algebraic notation as in a book (e4, Nf3, exd5, Nbd2, O-O, e8=Q, Qh7+, Ra8#). The clock at the top left shows each side's time left: 5 minutes each and 10 seconds more for every
@@ -35,7 +37,7 @@ Promotion is always to a queen. There is no 50-move rule.
 Your stack and LASTx are given back at the end. Registers R00-R19 are not touched; R20-R99 are used and cleared
 at the end. While it runs it makes the matrices BD, GL, GH, OB and the variables TK, TW, TB (the time left), NW, NB; at the end
 it deletes them, except the saved game: the variable CHN with GH, TW and TB (they stay until the game is over or
-you start a new one). It works with short integers in UNSIGN mode and gives you back your own integer mode, then
+you start a new one), and the variable CHF while the letters are chosen. It works with short integers in UNSIGN mode and gives you back your own integer mode, then
 sets WSIZE 64, GRMOD 0 and GRFNT 20.
 
 ---- Programs and labels ----

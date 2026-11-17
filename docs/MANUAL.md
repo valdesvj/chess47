@@ -2,7 +2,7 @@
 
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
 the number keys, all the rules of chess, a 5-minute clock, two players or the C47 against itself, and Chess960.
-Version 0.5.2. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+Version 0.6.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
 
 ## Starting
 
@@ -46,11 +46,25 @@ The moves are listed in standard algebraic notation, as in a book: `e4`, `Nf3`, 
 | **1** | the level, in turn: 2 (two moves ahead), 1 (one move ahead), CRAZY (random legal moves), 3 (three moves ahead, at most about a minute more a move) |
 | **7** | a new game of normal chess (the level and your side kept; about 7 seconds) |
 | **÷** | a new Chess960 game (below); in a Chess960 game: back to normal chess (a new game, as 7) |
+| **×** | the pieces as letters, or drawn again (below) |
 | **0** | the end: an unfinished game is kept and goes on at the next XEQ CHESS47 |
 
 ![you play black](manual/4_black.png) ![CRAZY](manual/6_crazy.png)
 
 *Left: + at the start, you play black (the board turned). Right: the CRAZY level, its face by the title.*
+
+## The pieces as letters
+
+**×** shows the pieces as letters of the calculator's own font instead of the drawings: **K Q R B N P** are the white
+pieces, **k q r b n p** the black ones (as in a FEN). **×** again brings the drawings back. The piece picked is
+white on black. The choice is kept for the next games and the next start.
+
+![the pieces as letters](manual/9_letters.png)
+
+*× then e2-e4: the board in letters, the C47's reply played.*
+
+This mode is ready for the chess font proposed for the C47 firmware: when the firmware has the chess pieces as
+characters, the same mode can show them instead of the letters, and the drawings stored in the program can go.
 
 ## The end of the game
 
@@ -90,6 +104,7 @@ The squares between them must be empty and the king may not be in check, pass th
 
 Your stack and LASTx come back at the end. R00-R19 are not touched; R20-R99 are used and cleared at the end. WSIZE is
 64 and your integer mode is given back. The game is kept in the variables CHN, GH, TW and TB (delete them to forget it);
-the matrices it uses while running are deleted at the end. One program, CHESS47, with one global label.
+the matrices it uses while running are deleted at the end. The variable CHF (1) stays only while you have
+chosen the letters. One program, CHESS47, with one global label.
 
 On the computer, `tools/play47.py` is the same game with the same screen and keys (`pip install pygame`).

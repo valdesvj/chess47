@@ -112,6 +112,29 @@ def flipped(bd):
     return out
 
 
+def letters_tests():
+    print('== the pieces as letters (the key ×, the variable CHF)')
+    X = 65
+    let = lambda bd, picked=0: {(x, 239 - y) for x, y in L.mock_letters(bd, picked)}
+    mock0 = {(x, 239 - y) for x, y in L.mock(R.Pos().bd)}
+    shots, c = S.run([X])
+    check(c.reg.get('CHF') == 1 and onboard(shots[-1]) == let(R.Pos().bd) | frame(4, 1),
+          '×: K Q R B N P white, k q r b n p black, in the firmware\'s font, pixel for pixel layout.mock_letters')
+    shots, c = S.run([X, S.LEFT, S.PICK])
+    check(onboard(shots[-1]) == let(R.Pos().bd, 35) - frame(3, 1), '× 4 5: d2 picked, its letter white on black (the frame white too)')
+    shots, c = S.run([X, S.PICK, S.UP, S.UP, S.PICK])
+    check(onboard(shots[-1]) == let(S.board(c)) | frame(4, 3) and S.board(c)[56] == 1 and c.reg.get('CHF') == 1,
+          '× e2-e4 and the C47\'s reply: the board in letters as the position')
+    shots, c = S.run([X, S.NEW])
+    check(c.reg.get('CHF') == 1 and onboard(shots[-1]) == let(R.Pos().bd) | frame(4, 1), '× 7: a new game, the letters kept')
+    shots, c = S.run([X, X])
+    check(c.reg.get('CHF') == 0 and onboard(shots[-1]) == mock0 | frame(4, 1), '× ×: the pieces drawn again, as the start')
+    shots, c = S.run([X, 82])
+    check(c.reg.get('CHF') == 1, '× 0: CHF kept at the end (the letters at the next start)')
+    shots, c = S.run([82])
+    check('CHF' not in c.reg, '0: CHF deleted at the end when the pieces are drawn')
+
+
 def play_tests():
     print('== the cursor and the piece picked on a dark square, black, the C47 against itself, the game kept')
     mock0 = {(x, 239 - y) for x, y in L.mock(R.Pos().bd)}
@@ -351,6 +374,7 @@ def main():
               % (mode, cc.signmode))
 
     play_tests()
+    letters_tests()
 
     print('== CRAZY (level 0): random legal moves')
     import chess

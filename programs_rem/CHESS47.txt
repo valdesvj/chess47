@@ -1,4 +1,4 @@
-REM CHESS47 v0.5.2 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.6.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -22,7 +22,8 @@ REM square to play it (5 on the same square drops it); + swaps sides (the C47 pl
 REM turns); 9 C47 vs C47 until the end (a key: you take the side to move); 3 two players (the C47 only checks the
 REM moves and the end); 7 a new game of normal chess; ÷ a Chess960 game (its number, three digits, or ÷ again for a
 REM random one; castling: the king onto its own rook); 1 the level 2 -> 1 -> 0 -> 3 (level 3: LBL :THINK3:, 60 s at most) -> 2
-REM (CRAZY: random legal moves, a crazy face by the title);
+REM (CRAZY: random legal moves, a crazy face by the title); × the pieces as letters of the firmware's font (K Q R B N P
+REM white, k q r b n p black: the variable CHF 1; LBL :DRAWSQ:) or drawn again: ready for a chess font in the firmware;
 REM 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
 REM for each move played, for the sides a person plays (the C47's clock stops while it thinks); a person whose time
 REM runs out loses (LOST ON TIME), or draws when the opponent cannot mate (FIDE 6.9). The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
@@ -161,6 +162,11 @@ DELITM "OB"
 DELITM "TK"
 DELITM "NW"
 DELITM "NB"
+RCL "CHF"
+X=0?
+IF
+  DELITM "CHF"
+ENDIF
 WSIZE 64
 RCL R.09
 -2
@@ -2699,6 +2705,18 @@ IF
   XEQ :ASK960:
   RTN
 ENDIF
+REM × (65): the pieces as letters or drawn (CHF 1 or 0), the board again
+RCL 98
+65
+X=Y?
+IF
+  1
+  RCL "CHF"
+  -
+  STO "CHF"
+  XEQ :BOARD:
+  RTN
+ENDIF
 RCL 97
 X≠0?
 RTN
@@ -4056,7 +4074,7 @@ ATEXT Z
 23
 212
 ATEXT Z
-"1 LEVEL  ÷ CHESS960  0 END"
+"1 LEVEL  ÷ 960  × ABC  0 END"
 12
 212
 ATEXT Z
@@ -4679,6 +4697,12 @@ RCL 34
 X<>Y
 STOIJ
 RCLEL
+REM letters (CHF 1): the empty square's row (piece x (1 - CHF) = 0); the letter after the columns
+RCL "CHF"
+1
+X<>Y
+-
+×
 7
 +
 STO 36
@@ -4780,6 +4804,64 @@ ELSE
   WHILE
   ENDDO
 ENDIF
+REM the piece as a letter of the standard font (GRFNT 20, its 20-row box at x + 7, row + 2: inside the cursor's
+REM frame): the character from 75 81 82 66 78 80 (K Q R B N P; two digits a piece, divided by 100 |piece| times),
+REM + 32 for a black piece (lower case). GRMOD 1: the letter's box cleared (seen on a dark square); the square
+REM picked (black): GRMOD 3, the letter flipped (white on black). R34 the piece x CHF (0: no letter), R36 the text
+INDEX "BD"
+1
+RCL 34
+STOIJ
+RCLEL
+RCL "CHF"
+×
+STO 34
+X≠0?
+IF
+  ABS
+  STO 33
+  75818266788000
+  DO
+    100
+    ÷
+    DSE 33
+  WHILE
+  ENDDO
+  IP
+  100
+  MOD
+  16
+  +
+  RCL 34
+  RCL 34
+  ABS
+  ÷
+  16
+  ×
+  -
+  ""
+  STO 36
+  DROP
+  x→α 36
+  RCL 35
+  2
+  ×
+  1
+  +
+  GRMOD
+  DROP
+  20
+  GRFNT
+  DROP
+  RCL 36
+  RCL 31
+  2
+  +
+  RCL 30
+  17
+  -
+  ATEXT Z
+ENDIF
 0
 GRMOD
 INDEX "BD"
@@ -4800,6 +4882,8 @@ REM the saved game CHN = (n + 1) x 100000 (Chess960's position n; 0 normal chess
 REM side + 2 (0 STO+ creates it when missing, as MOON47's TZ): R68 the plies to play again (0: a new game)
 0
 STO+ "CHN"
+REM CHF: 1 the pieces as letters (the key ×), 0 drawn; kept between games (deleted at the end when 0)
+STO+ "CHF"
 RCL "CHN"
 100000
 MOD

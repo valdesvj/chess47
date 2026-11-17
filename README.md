@@ -12,14 +12,14 @@ biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, 
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
 see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
-that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess.
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font.
 
 | | |
 |---|---|
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
-| Size | 7 581 steps, about 23 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 300 numbers) and the variables NW NB |
-| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
+| Size | 7 652 steps, about 23 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 300 numbers) and the variables NW NB |
+| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; CHF kept only when the letters are chosen; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 **The manual, with pictures: [docs/MANUAL.md](docs/MANUAL.md).**
 
@@ -37,6 +37,7 @@ that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to no
 | **3** | two players: two people play on the calculator; the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **7** | a new game of normal chess (the level and your side kept; about 7 s, the glyphs and the tables kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. **In a Chess960 game, ÷ goes back to normal chess** (a new game, as 7). The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
+| **×** | the pieces as **letters** of the firmware's font (K Q R B N P white, k q r b n p black; the piece picked white on black), or drawn again. Kept for the next games and the next start (the variable CHF). Ready for the chess font proposed for the C47 firmware |
 | **1** | the level, in turn: 2 (2 plies, about 6-11 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **3** (level 2 first, then 3 plies for at most 60 s more: the deeper move when it is found in time, else the best found so far or level 2's) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
