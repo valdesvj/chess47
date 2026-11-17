@@ -4806,8 +4806,10 @@ ELSE
 ENDIF
 REM the piece as a letter of the standard font (GRFNT 20, its 20-row box at x + 7, row + 2: inside the cursor's
 REM frame): the character from 75 81 82 66 78 80 (K Q R B N P; two digits a piece, divided by 100 |piece| times),
-REM + 32 for a black piece (lower case). GRMOD 1: the letter's box cleared (seen on a dark square); the square
-REM picked (black): GRMOD 3, the letter flipped (white on black). R34 the piece x CHF (0: no letter), R36 the text
+REM + 32 for a black piece (lower case). On a dark square the letter gets a halo of 1 pixel: GRMOD 2 clears the
+REM letter's pixels moved 1 pixel in the 8 directions (R33 8-1: m = k + IP(k/4), dx = m MOD 3 - 1, dy = IP(m/3) - 1),
+REM then GRMOD 0 draws it. The square picked (black): the halo with GRMOD 0 (nothing changes), the letter GRMOD 3
+REM (flipped: white on black). R34 the piece x CHF (0: no letter), then m; R36 the text
 INDEX "BD"
 1
 RCL 34
@@ -4843,15 +4845,53 @@ IF
   STO 36
   DROP
   x→α 36
+  20
+  GRFNT
+  DROP
+  2
   RCL 35
   2
   ×
-  1
-  +
+  -
   GRMOD
   DROP
-  20
-  GRFNT
+  8
+  STO 33
+  DO
+    RCL 33
+    1
+    -
+    STO 34
+    4
+    ÷
+    IP
+    STO+ 34
+    RCL 36
+    RCL 34
+    3
+    ÷
+    IP
+    1
+    -
+    RCL+ 31
+    2
+    +
+    RCL 34
+    3
+    MOD
+    1
+    -
+    RCL+ 30
+    17
+    -
+    ATEXT Z
+    DSE 33
+  WHILE
+  ENDDO
+  RCL 35
+  3
+  ×
+  GRMOD
   DROP
   RCL 36
   RCL 31

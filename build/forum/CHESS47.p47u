@@ -5102,8 +5102,10 @@ ELSE 227
 ENDIF 227
 @ the piece as a letter of the standard font (GRFNT 20, its 20-row box at x + 7, row + 2: inside the cursor's
 @ frame): the character from 75 81 82 66 78 80 (K Q R B N P; two digits a piece, divided by 100 |piece| times),
-@ + 32 for a black piece (lower case). GRMOD 1: the letter's box cleared (seen on a dark square); the square
-@ picked (black): GRMOD 3, the letter flipped (white on black). R34 the piece x CHF (0: no letter), R36 the text
+@ + 32 for a black piece (lower case). On a dark square the letter gets a halo of 1 pixel: GRMOD 2 clears the
+@ letter's pixels moved 1 pixel in the 8 directions (R33 8-1: m = k + IP(k/4), dx = m MOD 3 - 1, dy = IP(m/3) - 1),
+@ then GRMOD 0 draws it. The square picked (black): the halo with GRMOD 0 (nothing changes), the letter GRMOD 3
+@ (flipped: white on black). R34 the piece x CHF (0: no letter), then m; R36 the text
 INDEX "BD"
 1
 RCL 34
@@ -5139,15 +5141,53 @@ IF 231
   STO 36
   DROP
   x→α 36
+  20
+  GRFNT
+  DROP
+  2
   RCL 35
   2
   ×
-  1
-  +
+  -
   GRMOD
   DROP
-  20
-  GRFNT
+  8
+  STO 33
+  DO 41
+    RCL 33
+    1
+    -
+    STO 34
+    4
+    ÷
+    IP
+    STO+ 34
+    RCL 36
+    RCL 34
+    3
+    ÷
+    IP
+    1
+    -
+    RCL+ 31
+    2
+    +
+    RCL 34
+    3
+    MOD
+    1
+    -
+    RCL+ 30
+    17
+    -
+    ATEXT Z
+    DSE 33
+  WHILE 41
+  ENDDO 41
+  RCL 35
+  3
+  ×
+  GRMOD
   DROP
   RCL 36
   RCL 31
@@ -5220,7 +5260,7 @@ ELSE 232
 @   kept: the rows written while playing cleared (2-4 the move lists, 11 the state, 18-20), as a fresh BD (R58 the row)
   2
   STO 58
-  DO 41
+  DO 42
     INDEX "BD"
     RCL 58
     1
@@ -5229,13 +5269,13 @@ ELSE 232
     DROP
     120
     STO 33
-    DO 42
+    DO 43
       0
       STOSEQ
       DROP
       DSE 33
-    WHILE 42
-    ENDDO 42
+    WHILE 43
+    ENDDO 43
     1
     STO+ 58
     RCL 58
@@ -5255,8 +5295,8 @@ ELSE 232
     21
     RCL 58
     X≠Y?
-  WHILE 41
-  ENDDO 41
+  WHILE 42
+  ENDDO 42
 ENDIF 232
 RCL 68
 X=0?
@@ -6324,17 +6364,17 @@ INDEX "BD"
 120
 STO 33
 @ the whole row 1 of BD set to 8 (the border)
-DO 43
+DO 44
   8
   STOSEQ
   DROP
   DSE 33
-WHILE 43
-ENDDO 43
+WHILE 44
+ENDDO 44
 22
 STO 30
 @ the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
-DO 44
+DO 45
   1
   RCL 30
   STOIJ
@@ -6358,8 +6398,8 @@ DO 44
   99
   RCL 30
   X≤Y?
-WHILE 44
-ENDDO 44
+WHILE 45
+ENDDO 45
 1
 22
 STOIJ
@@ -6404,26 +6444,26 @@ STO 33
 32
 STOIJ
 @ the eight white pawns on 32-39
-DO 45
+DO 46
   1
   STOSEQ
   DROP
   DSE 33
-WHILE 45
-ENDDO 45
+WHILE 46
+ENDDO 46
 8
 STO 33
 1
 82
 STOIJ
 @ the eight black pawns on 82-89
-DO 46
+DO 47
   -1
   STOSEQ
   DROP
   DSE 33
-WHILE 46
-ENDDO 46
+WHILE 47
+ENDDO 47
 @ the state: white to move, no en passant square, all four castling rights, SC 0 (the start is symmetric)
 1
 STO 20
@@ -6488,7 +6528,7 @@ STO 34
 22
 STO 33
 @ white's back rank 22-29: the king's square, the rook on its left (before it) and on its right (after it)
-DO 47
+DO 48
   1
   RCL 33
   STOIJ
@@ -6527,21 +6567,21 @@ DO 47
   29
   RCL 33
   X≤Y?
-WHILE 47
-ENDDO 47
+WHILE 48
+ENDDO 48
 23
 22
 STOIJ
 78
 STO 33
 @ the masks of the castling rights: 15 into row 23 for the squares 22-99
-DO 48
+DO 49
   15
   STOSEQ
   DROP
   DSE 33
-WHILE 48
-ENDDO 48
+WHILE 49
+ENDDO 49
 11
 4
 STOIJ
@@ -6637,7 +6677,7 @@ IF 243
   1
   STO 69
 @   the saved game's moves played again (R69 the ply, 1 to R68): MAKE, the record, the move list (+ or # in check)
-  DO 49
+  DO 50
     INDEX "GH"
     1
     RCL 69
@@ -6666,8 +6706,8 @@ IF 243
     RCL 68
     RCL 69
     X≤Y?
-  WHILE 49
-  ENDDO 49
+  WHILE 50
+  ENDDO 50
 ENDIF 243
 @ the screen: the board, the panel, the moves, the state
 CLLCD
@@ -6698,13 +6738,13 @@ STO 33
 22
 STOIJ
 @ white's back rank 22-29 emptied
-DO 50
+DO 51
   0
   STOSEQ
   DROP
   DSE 33
-WHILE 50
-ENDDO 50
+WHILE 51
+ENDDO 51
 RCL 30
 4
 MOD
@@ -6754,7 +6794,7 @@ STO 30
 0
 STO 34
 @ the pair of free squares of the knights: R34 the first (0-3), R30 what is left over
-DO 51
+DO 52
   4
   RCL- 34
   STO 35
@@ -6770,8 +6810,8 @@ DO 51
     0
   ENDIF 245
   X≠0?
-WHILE 51
-ENDDO 51
+WHILE 52
+ENDDO 52
 RCL 34
 1
 +
@@ -6813,7 +6853,7 @@ STOEL
 22
 STO 33
 @ black's back rank: each piece of white's (22-29), the other colour, 70 squares up
-DO 52
+DO 53
   1
   RCL 33
   STOIJ
@@ -6832,8 +6872,8 @@ DO 52
   29
   RCL 33
   X≤Y?
-WHILE 52
-ENDDO 52
+WHILE 53
+ENDDO 53
 RTN
 @
 @ ---- LBL :NTH: X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the square) ----
@@ -6842,7 +6882,7 @@ STO 31
 21
 STO 32
 @ the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
-DO 53
+DO 54
   1
   STO+ 32
   1
@@ -6857,8 +6897,8 @@ DO 53
   RCL 31
   0
   X≤Y?
-WHILE 53
-ENDDO 53
+WHILE 54
+ENDDO 54
 RCL 32
 RTN
 @
@@ -6871,7 +6911,7 @@ LBL 86                          ; :PSTALL:
 22
 STO 42
 @ the squares 22-99 (R42): the six pieces' values there (LBL :PSQ:), white's and black's
-DO 54
+DO 55
   RCL 42
   1
   -
@@ -7014,8 +7054,8 @@ DO 54
   99
   RCL 42
   X≤Y?
-WHILE 54
-ENDDO 54
+WHILE 55
+ENDDO 55
 INDEX "BD"
 RTN
 @
@@ -8108,11 +8148,11 @@ DROP
 -6
 STO 41
 @ each piece R41 (-6 to 6)
-DO 55
+DO 56
   1
   STO 33
 @   its 24 columns R33: the dither AND NOT the mask OR the glyph, into its dark square's row of GL
-  DO 56
+  DO 57
     RCL 41
     7
     +
@@ -8172,15 +8212,15 @@ DO 55
     24
     RCL 33
     X≤Y?
-  WHILE 56
-  ENDDO 56
+  WHILE 57
+  ENDDO 57
   1
   STO+ 41
   6
   RCL 41
   X≤Y?
-WHILE 55
-ENDDO 55
+WHILE 56
+ENDDO 56
 INDEX "BD"
 RTN
 END

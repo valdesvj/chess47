@@ -254,8 +254,9 @@ LX, LY = 7, 2                           # the letter's 20-row box in the square:
 
 def mock_letters(board, picked=0):
     """The pixels of the board with the pieces as letters of the firmware's standard font (stdfont.py), as LBL :DRAWSQ:
-    draws them with CHF 1: the empty square, then the letter's box cleared (GRMOD 1) and the letter in it. The square
-    picked: all black, the letter flipped onto it (GRMOD 3: white on black)."""
+    draws them with CHF 1: the empty square, the letter's pixels moved 1 pixel in the 8 directions cleared (GRMOD 2: a
+    halo on a dark square), then the letter (GRMOD 0). The square picked: all black, the letter flipped onto it
+    (GRMOD 3: white on black)."""
     from stdfont import STD
     pix = mock([0 if 22 <= s <= 99 and v != 8 else v for s, v in enumerate(board)])
     for r in range(8):
@@ -274,7 +275,7 @@ def mock_letters(board, picked=0):
             if s == picked:
                 pix ^= on
             else:
-                pix -= {(x0 + LX + j, y0 + LY + i) for j in range(cb + cg + ca) for i in range(ra + rg + rb)}
+                pix -= {(x + dx, y + dy) for x, y in on for dx in (-1, 0, 1) for dy in (-1, 0, 1)}
                 pix |= on
     return pix
 

@@ -293,8 +293,11 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - LBL :DRAWSQ: with CHF 1 takes the empty square's row of GL (piece x (1 - CHF)), draws it as before (the frame, the
   inversion), then the letter: GRFNT 20, its 20-row box at x + 7, row + 2 (inside the cursor's frame). The character
   from 75818266788000 divided by 100 |piece| times (IP, 100 MOD: 80 78 66 82 81 75, P N B R Q K), + 32 for a black
-  piece (16 - 16 piece / |piece|). GRMOD 1 clears the box (seen on a dark square); the piece picked GRMOD 3 (the
-  letter flipped: white on the black square). No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
+  piece (16 - 16 piece / |piece|). The piece picked GRMOD 3 (the letter flipped: white on the black square).
+- On the calculator GRMOD 1 (the letter's box cleared) left a light rectangle off the centre of each dark square, "not
+  looking good" (Victor). Now a halo of 1 pixel: GRMOD 2 clears the letter's pixels moved by 1 in the 8 directions
+  (8 ATEXT, R33 8-1, m = k + IP(k/4) skips the centre), then GRMOD 0 draws it; on the picked square the halo is drawn
+  with GRMOD 0 (no change) and the letter with GRMOD 3, so no IF is needed (253 of 255 used). No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
   (R48 R49 are not free: the Chess960 castling by the keys keeps values in them across DRAWSQ).
 - CHF is made by INIT (0 STO+), kept over 7 and ÷ and at the end when it is 1 (deleted when 0).
 - The panel's last line: "1 LEVEL  ÷ 960  × ABC  0 END". IF 253 of 255, DO 56.
