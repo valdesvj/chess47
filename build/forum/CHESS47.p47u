@@ -29,6 +29,7 @@
 @   ÷         a new Chess960 game (Fischer random chess): type the position's number with three digits (066 for
 @             66; 518 is the normal start) or press ÷ again for a random one. To castle, pick the king and then its
 @             own rook: the king goes to g or c and the rook to f or d. The opening book is not used.
+@             In a Chess960 game, ÷ goes back to normal chess (a new game, as 7).
 @   1         the level, in turn: 2 (two moves ahead, about 6-11 s a move), 1 (one move ahead, a few seconds),
 @             0 CRAZY (random legal moves, with a crazy face by the title), 3 (three moves ahead: level 2
 @             first, then up to 60 s more for the deeper move)

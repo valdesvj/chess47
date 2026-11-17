@@ -11,13 +11,14 @@ with a score kept up to date by every move. v0.2 adds mate detection, the recapt
 biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, a chess clock, draws by
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
-see *Speed* below. v0.4.0 adds Chess960.
+see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess.
 
 | | |
 |---|---|
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
-| Size | 6 969 steps, about 21 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 300 numbers) and the variables NW NB |
+| Size | 7 581 steps, about 23 KB (.p47, estimated); while it runs the matrices BD, GL, GH, OB (about 4 300 numbers) and the variables NW NB |
 | At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 **The manual, with pictures: [docs/MANUAL.md](docs/MANUAL.md).**

@@ -2,7 +2,7 @@
 
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
 the number keys, all the rules of chess, a 5-minute clock, two players or the C47 against itself, and Chess960.
-Version 0.4.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+Version 0.5.2. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
 
 ## Starting
 
@@ -27,7 +27,7 @@ Castling: the king two squares (e1-g1 or e1-c1); the rook follows. En passant: t
 the pawn it takes. Promotion is always to a queen.
 
 The C47 answers: from its opening book in the first moves (14 known lines, chosen at random among those that fit),
-then it thinks: about 7-12 seconds a move at level 2, a few seconds at level 1.
+then it thinks: about 6-11 seconds a move at level 2, a few seconds at level 1.
 
 ![the C47's reply, the knight picked](manual/3_reply.png)
 
@@ -44,8 +44,8 @@ The moves are listed in standard algebraic notation, as in a book: `e4`, `Nf3`, 
 | **9** | C47 vs C47: it plays both sides to the end; any key stops it and you take the side to move |
 | **3** | two players: the C47 only checks the moves and calls check, mate and the draws (+ or 9 give it a side again) |
 | **1** | the level, in turn: 2 (two moves ahead), 1 (one move ahead), CRAZY (random legal moves), 3 (three moves ahead, at most about a minute more a move) |
-| **7** | a new game of normal chess (the level and your side kept) |
-| **÷** | a new Chess960 game (below) |
+| **7** | a new game of normal chess (the level and your side kept; about 7 seconds) |
+| **÷** | a new Chess960 game (below); in a Chess960 game: back to normal chess (a new game, as 7) |
 | **0** | the end: an unfinished game is kept and goes on at the next XEQ CHESS47 |
 
 ![you play black](manual/4_black.png) ![CRAZY](manual/6_crazy.png)
@@ -84,7 +84,7 @@ The squares between them must be empty and the king may not be in check, pass th
 
 *Chess960 No 123 (NQRNBKRB): 2 6 5 6 5, the king f1 onto its rook g1: O-O, the king on g1, the rook on f1.*
 
-0 keeps a Chess960 game with its number; 7 goes back to normal chess.
+0 keeps a Chess960 game with its number; **÷** or **7** goes back to normal chess (a new game).
 
 ## What it changes on your calculator
 
