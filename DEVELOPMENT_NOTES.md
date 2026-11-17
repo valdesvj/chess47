@@ -298,6 +298,9 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   (R48 R49 are not free: the Chess960 castling by the keys keeps values in them across DRAWSQ).
 - CHF is made by INIT (0 STO+), kept over 7 and ÷ and at the end when it is 1 (deleted when 0).
 - The panel's last line: "1 LEVEL  ÷ 960  × ABC  0 END". IF 253 of 255, DO 56.
+- INIT frees the opening book OB (0 STO) before it is made again, as BD and GL since v0.5.1: OB was made over the
+  old one at each start, 7 and ÷, and over the one a stopped run left (BD GL GH OB TK NW NB stay after an error or
+  EXIT). A memory error at the start was reported on the calculator (Victor, Nov 17).
 - python/layout.py mock_letters, tests/test_chess47.py letters_tests (pixel for pixel, picked, a move, 7, × ×, 0).
 - With the firmware's chess font: the same branch of DRAWSQ with the pieces' characters (one code a piece and
   colour), then GL's glyph rows and LBL :GLYPHS: can go (smaller, a faster start). Not tested on the calculator yet:

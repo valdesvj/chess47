@@ -5784,6 +5784,11 @@ DROP
 9077567998918656
 STOEL
 DROP
+@ the old book freed first (0 STO), as BD and GL: made again over a matrix left by a stop (an error, EXIT) or by
+@ 7 and ÷, NEWMAT needed the memory of both
+0
+STO "OB"
+DROP
 @ the opening book of python/book.py: the matrix OB (written by the build)
 14
 11

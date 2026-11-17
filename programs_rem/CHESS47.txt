@@ -4976,6 +4976,11 @@ IF
 ENDIF
 INDEX "BD"
 REM ==== KNIGHTS
+REM the old book freed first (0 STO), as BD and GL: made again over a matrix left by a stop (an error, EXIT) or by
+REM 7 and ÷, NEWMAT needed the memory of both
+0
+STO "OB"
+DROP
 REM ==== BOOK
 REM the offsets: the knight R80-R87, the diagonals R88-R91, the lines R92-R95
 -21
