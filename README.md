@@ -166,7 +166,8 @@ the local register R.09. The simulator now refuses SINT out of range as the C47 
 
 `AND`, `OR`, `NOT`, `XOR`, `BS?` ran on the calculator in Logic 47, `UNSIGN` / `2COMPL` on Victor's C47; `→REAL`,
 `1COMPL` and `SIGNMT` are still to be confirmed there. `0 STO+ "CHN"` (it creates the variable the first time) ran in
-Almanac 47's MOON47.
+Almanac 47's MOON47. New in v0.6.0, still to be confirmed on the C47: `MEM#` (the free RAM, checked at
+the start) and `ATEXT` with `GRMOD 2` (the halo of the letters on the dark squares, the key ×).
 
 ## Files
 
