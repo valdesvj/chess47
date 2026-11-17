@@ -299,7 +299,7 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
   (8 ATEXT, R33 8-1, m = k + IP(k/4) skips the centre), then GRMOD 0 draws it; on the picked square the halo is drawn
   with GRMOD 0 (no change) and the letter with GRMOD 3, so no IF is needed (253 of 255 used).
 - The start checks the memory first (Victor: avoid "RAM is full" when the game sets up). Old BD GL OB freed (0 STO),
-  then MEM against 62 000 bytes (BD, GL, OB at 16 bytes a number, 3 000 to spare) + 9 600 for GH when there is no
+  then MEM? against 62 000 bytes (BD, GL, OB at 16 bytes a number, 3 000 to spare) + 9 600 for GH when there is no
   saved game. Too little: "CHESS 47: NOT ENOUGH MEMORY", the free and the needed KB, a key, the end with nothing
   changed. The 16 bytes a number and the margin are estimates: to be checked with MEM on the calculator. IF 254. No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
   (R48 R49 are not free: the Chess960 castling by the keys keeps values in them across DRAWSQ).

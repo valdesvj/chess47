@@ -23,7 +23,7 @@ X<>Y
 62000
 +
 STO 33
-MEM
+MEM?
 X<Y?
 IF 01
 CLLCD
@@ -39,7 +39,7 @@ GRFNT
 DROP
 "FREE "
 STO 48
-MEM
+MEM?
 1000
 ÷
 αIP 48
