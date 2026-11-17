@@ -135,6 +135,17 @@ def letters_tests():
     check('CHF' not in c.reg, '0: CHF deleted at the end when the pieces are drawn')
 
 
+def memory_tests():
+    print('== the memory check at the start (MEM)')
+    shots, c = S.run([], mem=50000)
+    check(not c.ended and 'BD' not in c.mats, 'MEM 50 000: "NOT ENOUGH MEMORY", no matrix made, a key awaited')
+    shots, c = S.run([S.PICK], mem=50000)
+    check(c.ended and not [k for k in ('BD', 'GL', 'OB') if k in c.mats or k in c.reg],
+          'a key: the end, BD GL OB deleted')
+    shots, c = S.run([], mem=71700)
+    check('BD' in c.mats, 'MEM 71 700: the game starts (62 000 + 9 600 for GH needed)')
+
+
 def play_tests():
     print('== the cursor and the piece picked on a dark square, black, the C47 against itself, the game kept')
     mock0 = {(x, 239 - y) for x, y in L.mock(R.Pos().bd)}
@@ -375,6 +386,7 @@ def main():
 
     play_tests()
     letters_tests()
+    memory_tests()
 
     print('== CRAZY (level 0): random legal moves')
     import chess

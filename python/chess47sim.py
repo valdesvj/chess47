@@ -19,9 +19,12 @@ UP, DOWN, LEFT, RIGHT, PICK, HAND, LEVEL, END, NEW, AUTO = 53, 73, 62, 64, 63, 8
 STEP_MS = 0.17                                   # ms a step on the C47 (Almanac 47's measure)
 
 
-def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None):
-    """ks: the keys (None: no key at that KEY?); regs, mats: variables kept from an earlier run (the saved game)"""
+def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None, mem=None):
+    """ks: the keys (None: no key at that KEY?); regs, mats: variables kept from an earlier run (the saved game);
+    mem: the free RAM MEM gives (bytes; default a lot)"""
     c = c47sim.load([prog])
+    if mem is not None:
+        c.mem = mem
     c.s = [D(v) for v in (stack or (0, 0, 0, 0))]; c.pix = []; c.keys = list(ks); c.steps = 0
     c.at_steps = []
     if regs:

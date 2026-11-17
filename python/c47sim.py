@@ -362,6 +362,7 @@ class Calc:
                 ok = {'x=?': x == v, 'x≠?': x != v, 'x<?': x < v, 'x≤?': x <= v, 'x>?': x > v, 'x≥?': x >= v}[cmp]
                 pc = self.test(ok, pc); continue
             if op == 'CLLCD': self.pix=[]; self.txt=[]; continue
+            if op == 'MEM': self.push(D(getattr(self, 'mem', 10 ** 6))); continue   # free RAM in bytes (c.mem; a lot by default)
             if op == 'TICKS': self.push(D(int(self.steps * 0.0017))); continue   # 1/10 s, model: 0.17 ms per step
             if op == 'PIXEL':
                 x,y=int(self.s[0]),int(self.s[1])
