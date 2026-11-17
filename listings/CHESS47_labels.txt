@@ -70,8 +70,8 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :TOMOVE:   67  ======== the screen ========
 :HUMQ:     68  X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0
 :STATUS:   69  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pi
-:PANEL:    70  the title, your side, the level, the keys (x 212)
-:HSHOW:    71  the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4"
+:PANEL:    70  the title, your side, the level, the keys (x 212), all in GRFNT 21 (v0.6.0: the big font)
+:HSHOW:    71  the last three moves of the list R73-R79 (R77-R79) shown in GRFNT 21 at x 212, rows 128 do
 :HTEXT:    72  the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), 
 :SANDIS:   73  the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the f
 :SANC:     74  the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holdin

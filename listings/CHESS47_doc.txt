@@ -4089,7 +4089,7 @@
 3809  0
 3810  GRMOD
 3811  RTN
-      ; ---- LBL :PANEL: the title, your side, the level, the keys (x 212) ----
+      ; ---- LBL :PANEL: the title, your side, the level, the keys (x 212), all in GRFNT 21 (v0.6.0: the big font) ----
 3812  LBL :PANEL:    (70)
 3813  1
 3814  GRMOD
@@ -4101,2933 +4101,2933 @@
 3820  218
 3821  212
 3822  ATEXT Z
-3823  10
-3824  GRFNT
-3825  DROP
-3826  "                                      "
-3827  200
-3828  212
-3829  ATEXT Z
-3830  "YOU: "
-3831  STO 48
-3832  RCL 27
-3833  X>0?
-3834  IF    (194)
-3835    "WHITE"
-3836  ELSE    (194)
-3837    "BLACK"
-3838  ENDIF    (194)
-3839  x→α 48
-3840  RCL 27
-3841  X=0?
-3842  IF    (195)
-3843    "C47 VS C47"
-3844    STO 48
-3845  ENDIF    (195)
-3846  RCL 27
-3847  2
-3848  X=Y?
-3849  IF    (196)
-3850    "2 PLAYERS"
-3851    STO 48
-3852  ENDIF    (196)
-3853  "   LEVEL "
-3854  x→α 48
-3855  RCL 26
-3856  X=0?
-3857  IF    (197)
-3858    "CRAZY"
-3859    x→α 48
-3860  ELSE    (197)
-3861    RCL 26
-3862    αIP 48
-3863  ENDIF    (197)
-3864  RCL 48
-3865  200
-3866  212
-3867  ATEXT Z
-3868  "8 2 4 6 CURSOR  5 PICK / PLAY"
-3869  45
-3870  212
-3871  ATEXT Z
-3872  "+ SWAP SIDES  9 C47 VS C47"
-3873  34
-3874  212
-3875  ATEXT Z
-3876  "3 TWO PLAYERS  7 NEW GAME"
-3877  23
-3878  212
-3879  ATEXT Z
-3880  "1 LEVEL  ÷ 960  × ABC  0 END"
-3881  12
-3882  212
-3883  ATEXT Z
-3884  INDEX "BD"
-3885  11
-3886  7
-3887  STOIJ
-3888  RCLEL
-3889  X≠0?
-3890  IF    (198)
-3891    "CHESS960 No "
-3892    STO 48
-3893    DROP
-3894    1
-3895    -
-3896    αIP 48
-3897    RCL 48
-3898    186
-3899    212
-3900    ATEXT Z
-3901  ENDIF    (198)
+3823  "                           "
+3824  196
+3825  212
+3826  ATEXT Z
+3827  "YOU: "
+3828  STO 48
+3829  RCL 27
+3830  X>0?
+3831  IF    (194)
+3832    "WHITE"
+3833  ELSE    (194)
+3834    "BLACK"
+3835  ENDIF    (194)
+3836  x→α 48
+3837  RCL 27
+3838  X=0?
+3839  IF    (195)
+3840    "C47 VS C47"
+3841    STO 48
+3842  ENDIF    (195)
+3843  RCL 27
+3844  2
+3845  X=Y?
+3846  IF    (196)
+3847    "2 PLAYERS"
+3848    STO 48
+3849  ENDIF    (196)
+3850  RCL 26
+3851  X=0?
+3852  IF    (197)
+3853    "  CRAZY"
+3854    x→α 48
+3855  ELSE    (197)
+3856    "  LEVEL "
+3857    x→α 48
+3858    RCL 26
+3859    αIP 48
+3860  ENDIF    (197)
+3861  RCL 48
+3862  196
+3863  212
+3864  ATEXT Z
+3865  "8 2 4 6 MOVE 5 PLAY"
+3866  64
+3867  212
+3868  ATEXT Z
+3869  "+ SIDES  3 2 PLAYERS"
+3870  44
+3871  212
+3872  ATEXT Z
+3873  "9 C47-C47 7 NEW 0 END"
+3874  24
+3875  212
+3876  ATEXT Z
+3877  "1 LEVEL ÷ 960 × ABC"
+3878  4
+3879  212
+3880  ATEXT Z
+3881  INDEX "BD"
+3882  11
+3883  7
+3884  STOIJ
+3885  RCLEL
+3886  X≠0?
+3887  IF    (198)
+3888    "CHESS960 No "
+3889    STO 48
+3890    DROP
+3891    1
+3892    -
+3893    αIP 48
+3894    RCL 48
+3895    176
+3896    212
+3897    ATEXT Z
+3898  ENDIF    (198)
       ; ---- (was LBL :FACE:) the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 columns
       ; of 0, GRMOD 1) at the levels 1 and 2 ----
-3902  WSIZE 24
-3903  1
-3904  GRMOD
-3905  DROP
-3906  330
-3907  STO 30
-3908  214
-3909  STO 31
-3910  RCL 26
-3911  X=0?
-3912  IF    (199)
+3899  WSIZE 24
+3900  1
+3901  GRMOD
+3902  DROP
+3903  330
+3904  STO 30
+3905  214
+3906  STO 31
+3907  RCL 26
+3908  X=0?
+3909  IF    (199)
         ; the face of python/layout.py, one column a word (written by the build)
-3913    16320
-3914    SINT
-3915    STO 99
-3916    DROP
-3917    RCL 31
-3918    RCL 30
-3919    AGRAPH 99
-3920    STO 30
-3921    49200
-3922    SINT
-3923    STO 99
-3924    DROP
-3925    RCL 31
-3926    RCL 30
-3927    AGRAPH 99
-3928    STO 30
-3929    65544
-3930    SINT
-3931    STO 99
-3932    DROP
-3933    RCL 31
-3934    RCL 30
-3935    AGRAPH 99
-3936    STO 30
-3937    131076
-3938    SINT
-3939    STO 99
-3940    DROP
-3941    RCL 31
-3942    RCL 30
-3943    AGRAPH 99
-3944    STO 30
-3945    292994
-3946    SINT
-3947    STO 99
-3948    DROP
-3949    RCL 31
-3950    RCL 30
-3951    AGRAPH 99
-3952    STO 30
-3953    296130
-3954    SINT
-3955    STO 99
-3956    DROP
-3957    RCL 31
-3958    RCL 30
-3959    AGRAPH 99
-3960    STO 30
-3961    570529
-3962    SINT
-3963    STO 99
-3964    DROP
-3965    RCL 31
-3966    RCL 30
-3967    AGRAPH 99
-3968    STO 30
-3969    562321
-3970    SINT
-3971    STO 99
-3972    DROP
-3973    RCL 31
-3974    RCL 30
-3975    AGRAPH 99
-3976    STO 30
-3977    554129
-3978    SINT
-3979    STO 99
-3980    DROP
-3981    RCL 31
-3982    RCL 30
-3983    AGRAPH 99
-3984    STO 30
-3985    524465
-3986    SINT
-3987    STO 99
-3988    DROP
-3989    RCL 31
-3990    RCL 30
-3991    AGRAPH 99
-3992    STO 30
-3993    524457
-3994    SINT
-3995    STO 99
-3996    DROP
-3997    RCL 31
-3998    RCL 30
-3999    AGRAPH 99
-4000    STO 30
-4001    555145
-4002    SINT
-4003    STO 99
-4004    DROP
-4005    RCL 31
-4006    RCL 30
-4007    AGRAPH 99
-4008    STO 30
-4009    558225
-4010    SINT
-4011    STO 99
-4012    DROP
-4013    RCL 31
-4014    RCL 30
-4015    AGRAPH 99
-4016    STO 30
-4017    570545
-4018    SINT
-4019    STO 99
-4020    DROP
-4021    RCL 31
-4022    RCL 30
-4023    AGRAPH 99
-4024    STO 30
-4025    300226
-4026    SINT
-4027    STO 99
-4028    DROP
-4029    RCL 31
-4030    RCL 30
-4031    AGRAPH 99
-4032    STO 30
-4033    291970
-4034    SINT
-4035    STO 99
-4036    DROP
-4037    RCL 31
-4038    RCL 30
-4039    AGRAPH 99
-4040    STO 30
-4041    131076
-4042    SINT
-4043    STO 99
-4044    DROP
-4045    RCL 31
-4046    RCL 30
-4047    AGRAPH 99
-4048    STO 30
-4049    65544
-4050    SINT
-4051    STO 99
-4052    DROP
-4053    RCL 31
-4054    RCL 30
-4055    AGRAPH 99
-4056    STO 30
-4057    49200
-4058    SINT
-4059    STO 99
-4060    DROP
-4061    RCL 31
-4062    RCL 30
-4063    AGRAPH 99
-4064    STO 30
-4065    16320
-4066    SINT
-4067    STO 99
-4068    DROP
-4069    RCL 31
-4070    RCL 30
-4071    AGRAPH 99
-4072    STO 30
-4073  ELSE    (199)
-4074    0
-4075    SINT
-4076    STO 99
-4077    DROP
-4078    20
-4079    STO 33
+3910    16320
+3911    SINT
+3912    STO 99
+3913    DROP
+3914    RCL 31
+3915    RCL 30
+3916    AGRAPH 99
+3917    STO 30
+3918    49200
+3919    SINT
+3920    STO 99
+3921    DROP
+3922    RCL 31
+3923    RCL 30
+3924    AGRAPH 99
+3925    STO 30
+3926    65544
+3927    SINT
+3928    STO 99
+3929    DROP
+3930    RCL 31
+3931    RCL 30
+3932    AGRAPH 99
+3933    STO 30
+3934    131076
+3935    SINT
+3936    STO 99
+3937    DROP
+3938    RCL 31
+3939    RCL 30
+3940    AGRAPH 99
+3941    STO 30
+3942    292994
+3943    SINT
+3944    STO 99
+3945    DROP
+3946    RCL 31
+3947    RCL 30
+3948    AGRAPH 99
+3949    STO 30
+3950    296130
+3951    SINT
+3952    STO 99
+3953    DROP
+3954    RCL 31
+3955    RCL 30
+3956    AGRAPH 99
+3957    STO 30
+3958    570529
+3959    SINT
+3960    STO 99
+3961    DROP
+3962    RCL 31
+3963    RCL 30
+3964    AGRAPH 99
+3965    STO 30
+3966    562321
+3967    SINT
+3968    STO 99
+3969    DROP
+3970    RCL 31
+3971    RCL 30
+3972    AGRAPH 99
+3973    STO 30
+3974    554129
+3975    SINT
+3976    STO 99
+3977    DROP
+3978    RCL 31
+3979    RCL 30
+3980    AGRAPH 99
+3981    STO 30
+3982    524465
+3983    SINT
+3984    STO 99
+3985    DROP
+3986    RCL 31
+3987    RCL 30
+3988    AGRAPH 99
+3989    STO 30
+3990    524457
+3991    SINT
+3992    STO 99
+3993    DROP
+3994    RCL 31
+3995    RCL 30
+3996    AGRAPH 99
+3997    STO 30
+3998    555145
+3999    SINT
+4000    STO 99
+4001    DROP
+4002    RCL 31
+4003    RCL 30
+4004    AGRAPH 99
+4005    STO 30
+4006    558225
+4007    SINT
+4008    STO 99
+4009    DROP
+4010    RCL 31
+4011    RCL 30
+4012    AGRAPH 99
+4013    STO 30
+4014    570545
+4015    SINT
+4016    STO 99
+4017    DROP
+4018    RCL 31
+4019    RCL 30
+4020    AGRAPH 99
+4021    STO 30
+4022    300226
+4023    SINT
+4024    STO 99
+4025    DROP
+4026    RCL 31
+4027    RCL 30
+4028    AGRAPH 99
+4029    STO 30
+4030    291970
+4031    SINT
+4032    STO 99
+4033    DROP
+4034    RCL 31
+4035    RCL 30
+4036    AGRAPH 99
+4037    STO 30
+4038    131076
+4039    SINT
+4040    STO 99
+4041    DROP
+4042    RCL 31
+4043    RCL 30
+4044    AGRAPH 99
+4045    STO 30
+4046    65544
+4047    SINT
+4048    STO 99
+4049    DROP
+4050    RCL 31
+4051    RCL 30
+4052    AGRAPH 99
+4053    STO 30
+4054    49200
+4055    SINT
+4056    STO 99
+4057    DROP
+4058    RCL 31
+4059    RCL 30
+4060    AGRAPH 99
+4061    STO 30
+4062    16320
+4063    SINT
+4064    STO 99
+4065    DROP
+4066    RCL 31
+4067    RCL 30
+4068    AGRAPH 99
+4069    STO 30
+4070  ELSE    (199)
+4071    0
+4072    SINT
+4073    STO 99
+4074    DROP
+4075    20
+4076    STO 33
         ; the 20 columns of the face cleared (AGRAPH of a 0 word, R33 counts down)
-4080    DO    (32)
-4081      RCL 31
-4082      RCL 30
-4083      AGRAPH 99
-4084      STO 30
-4085      DSE 33
-4086    WHILE    (32)
-4087    ENDDO    (32)
-4088  ENDIF    (199)
+4077    DO    (32)
+4078      RCL 31
+4079      RCL 30
+4080      AGRAPH 99
+4081      STO 30
+4082      DSE 33
+4083    WHILE    (32)
+4084    ENDDO    (32)
+4085  ENDIF    (199)
+4086  0
+4087  GRMOD
+4088  WSIZE 64
 4089  0
 4090  GRMOD
-4091  WSIZE 64
-4092  0
-4093  GRMOD
-4094  RTN
-      ; ---- LBL :HSHOW: the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4" for
+4091  RTN
+      ; ---- LBL :HSHOW: the last three moves of the list R73-R79 (R77-R79) shown in GRFNT 21 at x 212, rows 128 down (20 rows a line, as the panel since v0.6.0): "12. e4" for
       ; white, "12... Nxe5+" for black (LBL :HTEXT: writes them) ----
-4095  LBL :HSHOW:    (71)
-4096  1
-4097  GRMOD
+4092  LBL :HSHOW:    (71)
+4093  1
+4094  GRMOD
+4095  DROP
+4096  21
+4097  GRFNT
 4098  DROP
-4099  10
-4100  GRFNT
-4101  DROP
-4102  73
-4103  STO 48
-4104  136
-4105  STO 49
-      ; the seven lines R73-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
-4106  DO    (33)
-4107    "                    "
-4108    RCL 49
-4109    212
-4110    ATEXT Z
-4111    RCL IND 48
-4112    STRI?
-4113    IF    (200)
-4114      RCL IND 48
-4115      RCL 49
-4116      212
-4117      ATEXT Z
-4118    ENDIF    (200)
-4119    -12
-4120    STO+ 49
-4121    1
-4122    STO+ 48
-4123    79
-4124    RCL 48
-4125    X≤Y?
-4126  WHILE    (33)
-4127  ENDDO    (33)
-4128  0
-4129  GRMOD
-4130  RTN
+4099  77
+4100  STO 48
+4101  128
+4102  STO 49
+      ; the three lines R77-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
+4103  DO    (33)
+4104    "               "
+4105    RCL 49
+4106    212
+4107    ATEXT Z
+4108    RCL IND 48
+4109    STRI?
+4110    IF    (200)
+4111      RCL IND 48
+4112      RCL 49
+4113      212
+4114      ATEXT Z
+4115    ENDIF    (200)
+4116    -20
+4117    STO+ 49
+4118    1
+4119    STO+ 48
+4120    79
+4121    RCL 48
+4122    X≤Y?
+4123  WHILE    (33)
+4124  ENDDO    (33)
+4125  0
+4126  GRMOD
+4127  RTN
       ; ---- LBL :HTEXT: the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), in
       ; standard algebraic notation; the move number R96 + 1 after black's ----
-4131  LBL :HTEXT:    (72)
-4132  RCL 74
-4133  STO 73
-4134  RCL 75
-4135  STO 74
-4136  RCL 76
-4137  STO 75
-4138  RCL 77
-4139  STO 76
-4140  RCL 78
-4141  STO 77
-4142  RCL 79
-4143  STO 78
-4144  ""
-4145  STO 79
-4146  RCL 96
-4147  αIP 79
-4148  RCL 45
-4149  X>0?
-4150  IF    (201)
-4151    ". "
+4128  LBL :HTEXT:    (72)
+4129  RCL 74
+4130  STO 73
+4131  RCL 75
+4132  STO 74
+4133  RCL 76
+4134  STO 75
+4135  RCL 77
+4136  STO 76
+4137  RCL 78
+4138  STO 77
+4139  RCL 79
+4140  STO 78
+4141  ""
+4142  STO 79
+4143  RCL 96
+4144  αIP 79
+4145  RCL 45
+4146  X>0?
+4147  IF    (201)
+4148    ". "
+4149    x→α 79
+4150  ELSE    (201)
+4151    "... "
 4152    x→α 79
-4153  ELSE    (201)
-4154    "... "
-4155    x→α 79
-4156    1
-4157    STO+ 96
-4158  ENDIF    (201)
+4153    1
+4154    STO+ 96
+4155  ENDIF    (201)
       ; the move in standard algebraic notation (FIDE): from the undo row of ply 3 (row 20 of BD): R43 the piece that
       ; moved, R44 not 0 for a capture (the piece taken, or 1 en passant), the flag 2 castling; R47 its kind
-4159  INDEX "BD"
-4160  20
-4161  2
-4162  STOIJ
-4163  RCLEL
-4164  STO 43
-4165  20
-4166  3
-4167  STOIJ
-4168  RCLEL
-4169  STO 44
-4170  20
-4171  6
-4172  STOIJ
-4173  RCLEL
-4174  STO 47
-4175  1
-4176  X=Y?
-4177  STO 44
-4178  RCL 47
-4179  2
-4180  X≤Y?
-4181  IF    (202)
-4182    "O-O"
-4183    x→α 79
-4184    RCL 41
-4185    RCL 42
-4186    X<Y?
-4187    IF    (203)
-4188      "-O"
-4189      x→α 79
-4190    ENDIF    (203)
-4191    RTN
-4192  ENDIF    (202)
-4193  RCL 43
-4194  ABS
-4195  STO 47
-4196  1
-4197  X=Y?
-4198  IF    (204)
+4156  INDEX "BD"
+4157  20
+4158  2
+4159  STOIJ
+4160  RCLEL
+4161  STO 43
+4162  20
+4163  3
+4164  STOIJ
+4165  RCLEL
+4166  STO 44
+4167  20
+4168  6
+4169  STOIJ
+4170  RCLEL
+4171  STO 47
+4172  1
+4173  X=Y?
+4174  STO 44
+4175  RCL 47
+4176  2
+4177  X≤Y?
+4178  IF    (202)
+4179    "O-O"
+4180    x→α 79
+4181    RCL 41
+4182    RCL 42
+4183    X<Y?
+4184    IF    (203)
+4185      "-O"
+4186      x→α 79
+4187    ENDIF    (203)
+4188    RTN
+4189  ENDIF    (202)
+4190  RCL 43
+4191  ABS
+4192  STO 47
+4193  1
+4194  X=Y?
+4195  IF    (204)
         ; a pawn: its file and x for a capture, the target, =Q on the last row
-4199    RCL 44
-4200    X≠0?
-4201    IF    (205)
-4202      RCL 41
-4203      XEQ :SQF:    (77)
-4204      "x"
-4205      x→α 79
-4206    ENDIF    (205)
+4196    RCL 44
+4197    X≠0?
+4198    IF    (205)
+4199      RCL 41
+4200      XEQ :SQF:    (77)
+4201      "x"
+4202      x→α 79
+4203    ENDIF    (205)
+4204    RCL 42
+4205    XEQ :SQNAME:    (75)
+4206    1
 4207    RCL 42
-4208    XEQ :SQNAME:    (75)
-4209    1
-4210    RCL 42
-4211    STOIJ
-4212    RCLEL
-4213    ABS
-4214    5
-4215    X=Y?
-4216    IF    (206)
-4217      "=Q"
-4218      x→α 79
-4219    ENDIF    (206)
-4220    RTN
-4221  ENDIF    (204)
+4208    STOIJ
+4209    RCLEL
+4210    ABS
+4211    5
+4212    X=Y?
+4213    IF    (206)
+4214      "=Q"
+4215      x→α 79
+4216    ENDIF    (206)
+4217    RTN
+4218  ENDIF    (204)
       ; a piece: its letter, the square it left as far as needed (LBL :SANDIS:; not for the king), x, the target
-4222  RCL 47
-4223  2
-4224  X=Y?
-4225  IF    (207)
-4226    "N"
-4227  ELSE    (207)
-4228    RCL 47
-4229    3
-4230    X=Y?
-4231    IF    (208)
-4232      "B"
-4233    ELSE    (208)
-4234      RCL 47
-4235      4
-4236      X=Y?
-4237      IF    (209)
-4238        "R"
-4239      ELSE    (209)
-4240        RCL 47
-4241        5
-4242        X=Y?
-4243        IF    (210)
-4244          "Q"
-4245        ELSE    (210)
-4246          "K"
-4247        ENDIF    (210)
-4248      ENDIF    (209)
-4249    ENDIF    (208)
-4250  ENDIF    (207)
-4251  x→α 79
-4252  RCL 47
-4253  6
-4254  X≠Y?
-4255  XEQ :SANDIS:    (73)
-4256  RCL 44
-4257  X≠0?
-4258  IF    (211)
-4259    "x"
-4260    x→α 79
-4261  ENDIF    (211)
-4262  RCL 42
-4263  XEQ :SQNAME:    (75)
-4264  RTN
+4219  RCL 47
+4220  2
+4221  X=Y?
+4222  IF    (207)
+4223    "N"
+4224  ELSE    (207)
+4225    RCL 47
+4226    3
+4227    X=Y?
+4228    IF    (208)
+4229      "B"
+4230    ELSE    (208)
+4231      RCL 47
+4232      4
+4233      X=Y?
+4234      IF    (209)
+4235        "R"
+4236      ELSE    (209)
+4237        RCL 47
+4238        5
+4239        X=Y?
+4240        IF    (210)
+4241          "Q"
+4242        ELSE    (210)
+4243          "K"
+4244        ENDIF    (210)
+4245      ENDIF    (209)
+4246    ENDIF    (208)
+4247  ENDIF    (207)
+4248  x→α 79
+4249  RCL 47
+4250  6
+4251  X≠Y?
+4252  XEQ :SANDIS:    (73)
+4253  RCL 44
+4254  X≠0?
+4255  IF    (211)
+4256    "x"
+4257    x→α 79
+4258  ENDIF    (211)
+4259  RCL 42
+4260  XEQ :SQNAME:    (75)
+4261  RTN
       ; ---- LBL :SANDIS: the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the file
       ; of R41, R35 on its rank; then the file of R41 (none on its file), its rank (none on its rank) or both. Found
       ; from R42 along the piece's directions (R31 to R32 - 1 of R80-R95, as LBL :GSTEP: and LBL :GSLIDE:): the first
       ; piece on each (a knight: one step), R41 counted as taken (the piece was there before the move) ----
-4265  LBL :SANDIS:    (73)
-4266  0
-4267  STO 33
-4268  STO 34
-4269  STO 35
-4270  88
-4271  STO 31
-4272  96
-4273  STO 32
-4274  RCL 47
-4275  2
-4276  X=Y?
-4277  IF    (212)
-4278    80
-4279    STO 31
-4280    88
-4281    STO 32
-4282  ENDIF    (212)
-4283  RCL 47
-4284  4
-4285  X=Y?
-4286  IF    (213)
-4287    92
-4288    STO 31
-4289  ENDIF    (213)
-4290  RCL 47
-4291  3
-4292  X=Y?
-4293  IF    (214)
-4294    92
-4295    STO 32
-4296  ENDIF    (214)
+4262  LBL :SANDIS:    (73)
+4263  0
+4264  STO 33
+4265  STO 34
+4266  STO 35
+4267  88
+4268  STO 31
+4269  96
+4270  STO 32
+4271  RCL 47
+4272  2
+4273  X=Y?
+4274  IF    (212)
+4275    80
+4276    STO 31
+4277    88
+4278    STO 32
+4279  ENDIF    (212)
+4280  RCL 47
+4281  4
+4282  X=Y?
+4283  IF    (213)
+4284    92
+4285    STO 31
+4286  ENDIF    (213)
+4287  RCL 47
+4288  3
+4289  X=Y?
+4290  IF    (214)
+4291    92
+4292    STO 32
+4293  ENDIF    (214)
       ; each direction or offset R31 of the moving piece's kind (to R32 - 1)
-4297  DO    (34)
-4298    RCL IND 31
-4299    STO 38
-4300    RCL 42
-4301    STO 39
+4294  DO    (34)
+4295    RCL IND 31
+4296    STO 38
+4297    RCL 42
+4298    STO 39
         ; from the target R42 along it (R39): an empty square goes on (not for a knight), a piece like R43 is counted
         ; (LBL :SANC:), anything else stops
-4302    DO    (35)
-4303      RCL 38
-4304      STO+ 39
-4305      RCL 41
-4306      RCL 39
-4307      X=Y?
-4308      IF    (215)
-4309        0
-4310      ELSE    (215)
-4311        1
-4312        RCL 39
-4313        STOIJ
-4314        RCLEL
-4315        X=0?
-4316        IF    (216)
-4317          RCL 47
-4318          2
-4319          -
-4320        ELSE    (216)
-4321          RCL 43
-4322          X=Y?
-4323          XEQ :SANC:    (74)
-4324          0
-4325        ENDIF    (216)
-4326      ENDIF    (215)
-4327      X≠0?
-4328    WHILE    (35)
-4329    ENDDO    (35)
-4330    1
-4331    STO+ 31
-4332    RCL 32
-4333    RCL 31
-4334    X<Y?
-4335  WHILE    (34)
-4336  ENDDO    (34)
-4337  RCL 33
+4299    DO    (35)
+4300      RCL 38
+4301      STO+ 39
+4302      RCL 41
+4303      RCL 39
+4304      X=Y?
+4305      IF    (215)
+4306        0
+4307      ELSE    (215)
+4308        1
+4309        RCL 39
+4310        STOIJ
+4311        RCLEL
+4312        X=0?
+4313        IF    (216)
+4314          RCL 47
+4315          2
+4316          -
+4317        ELSE    (216)
+4318          RCL 43
+4319          X=Y?
+4320          XEQ :SANC:    (74)
+4321          0
+4322        ENDIF    (216)
+4323      ENDIF    (215)
+4324      X≠0?
+4325    WHILE    (35)
+4326    ENDDO    (35)
+4327    1
+4328    STO+ 31
+4329    RCL 32
+4330    RCL 31
+4331    X<Y?
+4332  WHILE    (34)
+4333  ENDDO    (34)
+4334  RCL 33
+4335  X=0?
+4336  RTN
+4337  RCL 34
 4338  X=0?
-4339  RTN
-4340  RCL 34
-4341  X=0?
-4342  IF    (217)
-4343    RCL 41
-4344    XEQ :SQF:    (77)
-4345    RTN
-4346  ENDIF    (217)
-4347  RCL 35
-4348  X=0?
-4349  IF    (218)
-4350    RCL 41
-4351    XEQ :SQR:    (76)
-4352    RTN
-4353  ENDIF    (218)
-4354  RCL 41
-4355  XEQ :SQNAME:    (75)
-4356  RTN
+4339  IF    (217)
+4340    RCL 41
+4341    XEQ :SQF:    (77)
+4342    RTN
+4343  ENDIF    (217)
+4344  RCL 35
+4345  X=0?
+4346  IF    (218)
+4347    RCL 41
+4348    XEQ :SQR:    (76)
+4349    RTN
+4350  ENDIF    (218)
+4351  RCL 41
+4352  XEQ :SQNAME:    (75)
+4353  RTN
       ; ---- LBL :SANC: the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holding the
       ; piece again and R39 empty for the time of the test); then counted (R33) and its file and rank (R34, R35) ----
-4357  LBL :SANC:    (74)
-4358  1
-4359  RCL 41
-4360  STOIJ
-4361  RCL 43
-4362  STOEL
-4363  1
-4364  RCL 39
-4365  STOIJ
-4366  0
-4367  STOEL
-4368  RCL 45
-4369  CHS
-4370  XEQ :KATT:    (49)
-4371  STO 30
-4372  1
-4373  RCL 41
-4374  STOIJ
-4375  0
-4376  STOEL
-4377  1
-4378  RCL 39
-4379  STOIJ
-4380  RCL 43
-4381  STOEL
-4382  RCL 30
-4383  X≠0?
-4384  RTN
-4385  1
-4386  STO+ 33
-4387  RCL 39
+4354  LBL :SANC:    (74)
+4355  1
+4356  RCL 41
+4357  STOIJ
+4358  RCL 43
+4359  STOEL
+4360  1
+4361  RCL 39
+4362  STOIJ
+4363  0
+4364  STOEL
+4365  RCL 45
+4366  CHS
+4367  XEQ :KATT:    (49)
+4368  STO 30
+4369  1
+4370  RCL 41
+4371  STOIJ
+4372  0
+4373  STOEL
+4374  1
+4375  RCL 39
+4376  STOIJ
+4377  RCL 43
+4378  STOEL
+4379  RCL 30
+4380  X≠0?
+4381  RTN
+4382  1
+4383  STO+ 33
+4384  RCL 39
+4385  10
+4386  MOD
+4387  RCL 41
 4388  10
 4389  MOD
-4390  RCL 41
-4391  10
-4392  MOD
-4393  X=Y?
-4394  IF    (219)
-4395    1
-4396    STO+ 34
-4397  ENDIF    (219)
-4398  RCL 39
-4399  10
-4400  ÷
-4401  IP
-4402  RCL 41
-4403  10
-4404  ÷
-4405  IP
-4406  X=Y?
-4407  IF    (220)
-4408    1
-4409    STO+ 35
-4410  ENDIF    (220)
-4411  RTN
+4390  X=Y?
+4391  IF    (219)
+4392    1
+4393    STO+ 34
+4394  ENDIF    (219)
+4395  RCL 39
+4396  10
+4397  ÷
+4398  IP
+4399  RCL 41
+4400  10
+4401  ÷
+4402  IP
+4403  X=Y?
+4404  IF    (220)
+4405    1
+4406    STO+ 35
+4407  ENDIF    (220)
+4408  RTN
       ; ---- LBL :SQNAME: X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (the
       ; letter a-h as the character 96 + file) ----
-4412  LBL :SQNAME:    (75)
-4413  STO 48
-4414  XEQ :SQF:    (77)
-4415  RCL 48
-4416  LBL :SQR:    (76)
-4417  1
-4418  -
-4419  10
-4420  ÷
-4421  IP
-4422  1
-4423  -
-4424  αIP 79
-4425  RTN
-4426  LBL :SQF:    (77)
-4427  1
-4428  -
-4429  10
-4430  MOD
-4431  96
-4432  +
-4433  x→α 79
-4434  RTN
+4409  LBL :SQNAME:    (75)
+4410  STO 48
+4411  XEQ :SQF:    (77)
+4412  RCL 48
+4413  LBL :SQR:    (76)
+4414  1
+4415  -
+4416  10
+4417  ÷
+4418  IP
+4419  1
+4420  -
+4421  αIP 79
+4422  RTN
+4423  LBL :SQF:    (77)
+4424  1
+4425  -
+4426  10
+4427  MOD
+4428  96
+4429  +
+4430  x→α 79
+4431  RTN
       ; ---- LBL :BOARD: the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen from
       ; your side (R27 -1: black at the bottom; R34 = 1 or -1 the step of the letters) ----
-4435  LBL :BOARD:    (78)
-4436  22
-4437  STO 41
+4432  LBL :BOARD:    (78)
+4433  22
+4434  STO 41
       ; the squares 22-99 (R41), each drawn (LBL :DRAWSQ:); the border is skipped
-4438  DO    (36)
-4439    1
-4440    RCL 41
-4441    STOIJ
-4442    RCLEL
-4443    8
-4444    X≠Y?
-4445    IF    (221)
-4446      RCL 41
-4447      XEQ :DRAWSQ:    (82)
-4448    ENDIF    (221)
-4449    1
-4450    STO+ 41
-4451    99
-4452    RCL 41
-4453    X≤Y?
-4454  WHILE    (36)
-4455  ENDDO    (36)
-4456  1
-4457  GRMOD
+4435  DO    (36)
+4436    1
+4437    RCL 41
+4438    STOIJ
+4439    RCLEL
+4440    8
+4441    X≠Y?
+4442    IF    (221)
+4443      RCL 41
+4444      XEQ :DRAWSQ:    (82)
+4445    ENDIF    (221)
+4446    1
+4447    STO+ 41
+4448    99
+4449    RCL 41
+4450    X≤Y?
+4451  WHILE    (36)
+4452  ENDDO    (36)
+4453  1
+4454  GRMOD
+4455  DROP
+4456  10
+4457  GRFNT
 4458  DROP
-4459  10
-4460  GRFNT
-4461  DROP
-4462  RCL 27
-4463  ABS
-4464  RCL- 27
-4465  1
-4466  X<>Y
-4467  -
-4468  STO 34
-4469  3.5
-4470  ×
-4471  100.5
-4472  X<>Y
-4473  -
-4474  STO 30
-4475  21
-4476  STO 33
+4459  RCL 27
+4460  ABS
+4461  RCL- 27
+4462  1
+4463  X<>Y
+4464  -
+4465  STO 34
+4466  3.5
+4467  ×
+4468  100.5
+4469  X<>Y
+4470  -
+4471  STO 30
+4472  21
+4473  STO 33
       ; the letters a-h under the board (R30 the character, R33 its x; h-a when you play black)
-4477  DO    (37)
-4478    ""
-4479    STO 48
-4480    RCL 30
-4481    x→α 48
-4482    RCL 48
-4483    10
-4484    RCL 33
-4485    ATEXT Z
-4486    24
-4487    STO+ 33
-4488    RCL 34
-4489    STO+ 30
-4490    189
-4491    RCL 33
-4492    X≤Y?
-4493  WHILE    (37)
-4494  ENDDO    (37)
-4495  RCL 34
-4496  3.5
-4497  ×
-4498  4.5
-4499  X<>Y
-4500  -
-4501  STO 30
-4502  28
-4503  STO 33
+4474  DO    (37)
+4475    ""
+4476    STO 48
+4477    RCL 30
+4478    x→α 48
+4479    RCL 48
+4480    10
+4481    RCL 33
+4482    ATEXT Z
+4483    24
+4484    STO+ 33
+4485    RCL 34
+4486    STO+ 30
+4487    189
+4488    RCL 33
+4489    X≤Y?
+4490  WHILE    (37)
+4491  ENDDO    (37)
+4492  RCL 34
+4493  3.5
+4494  ×
+4495  4.5
+4496  X<>Y
+4497  -
+4498  STO 30
+4499  28
+4500  STO 33
       ; the numbers 1-8 left of the board (R30 the number, R33 its row; 8-1 when you play black)
-4504  DO    (38)
-4505    ""
-4506    STO 48
-4507    RCL 30
-4508    αIP 48
-4509    RCL 48
-4510    RCL 33
-4511    3
-4512    ATEXT Z
-4513    24
-4514    STO+ 33
-4515    RCL 34
-4516    STO+ 30
-4517    196
-4518    RCL 33
-4519    X≤Y?
-4520  WHILE    (38)
-4521  ENDDO    (38)
-4522  0
-4523  GRMOD
-4524  DROP
-4525  INDEX "BD"
-4526  RTN
+4501  DO    (38)
+4502    ""
+4503    STO 48
+4504    RCL 30
+4505    αIP 48
+4506    RCL 48
+4507    RCL 33
+4508    3
+4509    ATEXT Z
+4510    24
+4511    STO+ 33
+4512    RCL 34
+4513    STO+ 30
+4514    196
+4515    RCL 33
+4516    X≤Y?
+4517  WHILE    (38)
+4518  ENDDO    (38)
+4519  0
+4520  GRMOD
+4521  DROP
+4522  INDEX "BD"
+4523  RTN
       ; ---- LBL :SETME: X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board's side changes
       ; (black at the bottom or not) it is drawn again and the cursor goes to e2 / e7; the panel ----
-4527  LBL :SETME:    (79)
-4528  STO 68
-4529  RCL 27
+4524  LBL :SETME:    (79)
+4525  STO 68
+4526  RCL 27
+4527  ABS
+4528  RCL- 27
+4529  RCL 68
 4530  ABS
-4531  RCL- 27
+4531  RCL- 68
 4532  RCL 68
-4533  ABS
-4534  RCL- 68
-4535  RCL 68
-4536  STO 27
-4537  DROP
-4538  X≠Y?
-4539  IF    (222)
-4540    RCL 27
-4541    ABS
-4542    RCL- 27
-4543    25
-4544    ×
-4545    36
-4546    +
-4547    STO 28
-4548    XEQ :BOARD:    (78)
-4549  ENDIF    (222)
-4550  XEQ :PANEL:    (70)
-4551  RTN
+4533  STO 27
+4534  DROP
+4535  X≠Y?
+4536  IF    (222)
+4537    RCL 27
+4538    ABS
+4539    RCL- 27
+4540    25
+4541    ×
+4542    36
+4543    +
+4544    STO 28
+4545    XEQ :BOARD:    (78)
+4546  ENDIF    (222)
+4547  XEQ :PANEL:    (70)
+4548  RTN
       ; ---- LBL :STATE: the status line of the position: CHECK or whose move it is ----
-4552  LBL :STATE:    (80)
-4553  XEQ :INCHK:    (47)
-4554  X≠0?
-4555  IF    (223)
-4556    "CHECK"
-4557    XEQ :STATUS:    (69)
-4558    RTN
-4559  ENDIF    (223)
-4560  XEQ :TOMOVE:    (67)
-4561  RTN
+4549  LBL :STATE:    (80)
+4550  XEQ :INCHK:    (47)
+4551  X≠0?
+4552  IF    (223)
+4553    "CHECK"
+4554    XEQ :STATUS:    (69)
+4555    RTN
+4556  ENDIF    (223)
+4557  XEQ :TOMOVE:    (67)
+4558  RTN
       ; ---- LBL :CURS: the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame) ----
-4562  LBL :CURS:    (81)
-4563  RCL 28
-4564  XEQ :DRAWSQ:    (82)
-4565  RTN
+4559  LBL :CURS:    (81)
+4560  RCL 28
+4561  XEQ :DRAWSQ:    (82)
+4562  RTN
       ; ---- LBL :DRAWSQ: X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piece
       ; (light: piece + 7, dark: piece + 20). The square picked (R29): the light square's row, inverted (NOT): seen on
       ; a dark square too. The cursor (R28): a frame of 2 pixels (OR: the 2 columns at each side whole, 12582915 the
       ; 2 rows at the top and bottom), inside the inversion. R35 1 picked, R32 1 the cursor ----
-4566  LBL :DRAWSQ:    (82)
-4567  WSIZE 24
+4563  LBL :DRAWSQ:    (82)
+4564  WSIZE 24
       ; ---- (was LBL :SQXY:) X = a square: R30 its x (12 + 24 file), R31 its row (20 + 24 rank), R32 1 when it is dark
       ; ((file + rank) even); X = the square ----
-4568  STO 34
-4569  1
-4570  -
-4571  10
-4572  MOD
-4573  1
-4574  -
-4575  STO 35
-4576  RCL 27
-4577  X<0?
-4578  IF    (224)
-4579    7
-4580    RCL- 35
-4581    STO 35
-4582  ENDIF    (224)
-4583  RCL 35
-4584  24
-4585  ×
-4586  12
-4587  +
-4588  STO 30
-4589  RCL 34
-4590  1
-4591  -
-4592  10
-4593  ÷
-4594  IP
-4595  2
-4596  -
-4597  STO 36
-4598  RCL 27
-4599  X<0?
-4600  IF    (225)
-4601    7
-4602    RCL- 36
-4603    STO 36
-4604  ENDIF    (225)
-4605  RCL 36
-4606  24
-4607  ×
-4608  20
-4609  +
-4610  STO 31
-4611  RCL 35
-4612  RCL+ 36
-4613  2
-4614  MOD
-4615  1
-4616  X<>Y
-4617  -
-4618  STO 32
-4619  RCL 34
-4620  1
-4621  X<>Y
-4622  STOIJ
-4623  RCLEL
+4565  STO 34
+4566  1
+4567  -
+4568  10
+4569  MOD
+4570  1
+4571  -
+4572  STO 35
+4573  RCL 27
+4574  X<0?
+4575  IF    (224)
+4576    7
+4577    RCL- 35
+4578    STO 35
+4579  ENDIF    (224)
+4580  RCL 35
+4581  24
+4582  ×
+4583  12
+4584  +
+4585  STO 30
+4586  RCL 34
+4587  1
+4588  -
+4589  10
+4590  ÷
+4591  IP
+4592  2
+4593  -
+4594  STO 36
+4595  RCL 27
+4596  X<0?
+4597  IF    (225)
+4598    7
+4599    RCL- 36
+4600    STO 36
+4601  ENDIF    (225)
+4602  RCL 36
+4603  24
+4604  ×
+4605  20
+4606  +
+4607  STO 31
+4608  RCL 35
+4609  RCL+ 36
+4610  2
+4611  MOD
+4612  1
+4613  X<>Y
+4614  -
+4615  STO 32
+4616  RCL 34
+4617  1
+4618  X<>Y
+4619  STOIJ
+4620  RCLEL
       ; letters (CHF 1): the empty square's row (piece x (1 - CHF) = 0); the letter after the columns
-4624  RCL "CHF"
-4625  1
-4626  X<>Y
-4627  -
-4628  ×
-4629  7
-4630  +
-4631  STO 36
-4632  0
-4633  STO 35
-4634  RCL 29
-4635  RCL 34
-4636  X=Y?
-4637  IF    (226)
-4638    1
-4639    STO 35
-4640  ELSE    (226)
-4641    RCL 32
-4642    13
-4643    ×
-4644    STO+ 36
-4645  ENDIF    (226)
-4646  0
-4647  STO 32
-4648  RCL 28
-4649  RCL 34
-4650  X=Y?
-4651  IF    (227)
-4652    1
-4653    STO 32
-4654  ENDIF    (227)
-4655  INDEX "GL"
-4656  RCL 36
-4657  1
-4658  STOIJ
-4659  1
-4660  GRMOD
-4661  DROP
+4621  RCL "CHF"
+4622  1
+4623  X<>Y
+4624  -
+4625  ×
+4626  7
+4627  +
+4628  STO 36
+4629  0
+4630  STO 35
+4631  RCL 29
+4632  RCL 34
+4633  X=Y?
+4634  IF    (226)
+4635    1
+4636    STO 35
+4637  ELSE    (226)
+4638    RCL 32
+4639    13
+4640    ×
+4641    STO+ 36
+4642  ENDIF    (226)
+4643  0
+4644  STO 32
+4645  RCL 28
+4646  RCL 34
+4647  X=Y?
+4648  IF    (227)
+4649    1
+4650    STO 32
+4651  ENDIF    (227)
+4652  INDEX "GL"
+4653  RCL 36
+4654  1
+4655  STOIJ
+4656  1
+4657  GRMOD
+4658  DROP
       ; no cursor and not picked (most squares): each column as it is
-4662  24
-4663  STO 33
-4664  RCL 32
-4665  RCL+ 35
-4666  X=0?
-4667  IF    (228)
+4659  24
+4660  STO 33
+4661  RCL 32
+4662  RCL+ 35
+4663  X=0?
+4664  IF    (228)
         ; a plain square: its 24 columns from the row of GL (RCLSEQ), each an AGRAPH word (R33 counts down)
-4668    DO    (39)
-4669      RCLSEQ
-4670      SINT
-4671      STO 99
-4672      DROP
-4673      RCL 31
-4674      RCL 30
-4675      AGRAPH 99
-4676      STO 30
-4677      DSE 33
-4678    WHILE    (39)
-4679    ENDDO    (39)
-4680  ELSE    (228)
+4665    DO    (39)
+4666      RCLSEQ
+4667      SINT
+4668      STO 99
+4669      DROP
+4670      RCL 31
+4671      RCL 30
+4672      AGRAPH 99
+4673      STO 30
+4674      DSE 33
+4675    WHILE    (39)
+4676    ENDDO    (39)
+4677  ELSE    (228)
         ; the cursor or the piece picked: its 24 columns, inverted (NOT) for the piece picked, the frame ORed for the
         ; cursor
-4681    DO    (40)
-4682      RCLSEQ
-4683      SINT
-4684      RCL 32
-4685      X≠0?
-4686      IF    (229)
-4687        DROP
-4688        RCL 33
-4689        12.5
-4690        -
-4691        ABS
-4692        10
-4693        X<Y?
-4694        IF    (230)
-4695          DROP
+4678    DO    (40)
+4679      RCLSEQ
+4680      SINT
+4681      RCL 32
+4682      X≠0?
+4683      IF    (229)
+4684        DROP
+4685        RCL 33
+4686        12.5
+4687        -
+4688        ABS
+4689        10
+4690        X<Y?
+4691        IF    (230)
+4692          DROP
+4693          DROP
+4694          16777215
+4695        ELSE    (230)
 4696          DROP
-4697          16777215
-4698        ELSE    (230)
-4699          DROP
-4700          DROP
-4701          12582915
-4702        ENDIF    (230)
-4703        SINT
-4704        OR
-4705      ELSE    (229)
-4706        DROP
-4707      ENDIF    (229)
-4708      RCL 35
-4709      X≠0?
-4710      IF    (231)
+4697          DROP
+4698          12582915
+4699        ENDIF    (230)
+4700        SINT
+4701        OR
+4702      ELSE    (229)
+4703        DROP
+4704      ENDIF    (229)
+4705      RCL 35
+4706      X≠0?
+4707      IF    (231)
+4708        DROP
+4709        NOT
+4710      ELSE    (231)
 4711        DROP
-4712        NOT
-4713      ELSE    (231)
-4714        DROP
-4715      ENDIF    (231)
-4716      STO 99
-4717      DROP
-4718      RCL 31
-4719      RCL 30
-4720      AGRAPH 99
-4721      STO 30
-4722      DSE 33
-4723    WHILE    (40)
-4724    ENDDO    (40)
-4725  ENDIF    (228)
+4712      ENDIF    (231)
+4713      STO 99
+4714      DROP
+4715      RCL 31
+4716      RCL 30
+4717      AGRAPH 99
+4718      STO 30
+4719      DSE 33
+4720    WHILE    (40)
+4721    ENDDO    (40)
+4722  ENDIF    (228)
       ; the piece as a letter of the standard font (GRFNT 20, its 20-row box at x + 7, row + 2: inside the cursor's
       ; frame): the character from 75 81 82 66 78 80 (K Q R B N P; two digits a piece, divided by 100 |piece| times),
       ; + 32 for a black piece (lower case). On a dark square the letter gets a halo of 1 pixel: GRMOD 2 clears the
       ; letter's pixels moved 1 pixel in the 8 directions (R33 8-1: m = k + IP(k/4), dx = m MOD 3 - 1, dy = IP(m/3) - 1),
       ; then GRMOD 0 draws it. The square picked (black): the halo with GRMOD 0 (nothing changes), the letter GRMOD 3
       ; (flipped: white on black). R34 the piece x CHF (0: no letter), then m; R36 the text
-4726  INDEX "BD"
-4727  1
-4728  RCL 34
-4729  STOIJ
-4730  RCLEL
-4731  RCL "CHF"
-4732  ×
-4733  STO 34
-4734  X≠0?
-4735  IF    (232)
-4736    ABS
-4737    STO 33
-4738    75818266788000
-4739    DO    (41)
-4740      100
-4741      ÷
-4742      DSE 33
-4743    WHILE    (41)
-4744    ENDDO    (41)
-4745    IP
-4746    100
-4747    MOD
-4748    16
-4749    +
-4750    RCL 34
-4751    RCL 34
-4752    ABS
-4753    ÷
-4754    16
-4755    ×
-4756    -
-4757    ""
-4758    STO 36
-4759    DROP
-4760    x→α 36
-4761    20
-4762    GRFNT
-4763    DROP
-4764    2
-4765    RCL 35
-4766    2
-4767    ×
-4768    -
-4769    GRMOD
-4770    DROP
-4771    8
-4772    STO 33
-4773    DO    (42)
-4774      RCL 33
-4775      1
-4776      -
-4777      STO 34
-4778      4
-4779      ÷
-4780      IP
-4781      STO+ 34
-4782      RCL 36
-4783      RCL 34
-4784      3
-4785      ÷
-4786      IP
-4787      1
-4788      -
-4789      RCL+ 31
-4790      2
-4791      +
-4792      RCL 34
-4793      3
-4794      MOD
-4795      1
+4723  INDEX "BD"
+4724  1
+4725  RCL 34
+4726  STOIJ
+4727  RCLEL
+4728  RCL "CHF"
+4729  ×
+4730  STO 34
+4731  X≠0?
+4732  IF    (232)
+4733    ABS
+4734    STO 33
+4735    75818266788000
+4736    DO    (41)
+4737      100
+4738      ÷
+4739      DSE 33
+4740    WHILE    (41)
+4741    ENDDO    (41)
+4742    IP
+4743    100
+4744    MOD
+4745    16
+4746    +
+4747    RCL 34
+4748    RCL 34
+4749    ABS
+4750    ÷
+4751    16
+4752    ×
+4753    -
+4754    ""
+4755    STO 36
+4756    DROP
+4757    x→α 36
+4758    20
+4759    GRFNT
+4760    DROP
+4761    2
+4762    RCL 35
+4763    2
+4764    ×
+4765    -
+4766    GRMOD
+4767    DROP
+4768    8
+4769    STO 33
+4770    DO    (42)
+4771      RCL 33
+4772      1
+4773      -
+4774      STO 34
+4775      4
+4776      ÷
+4777      IP
+4778      STO+ 34
+4779      RCL 36
+4780      RCL 34
+4781      3
+4782      ÷
+4783      IP
+4784      1
+4785      -
+4786      RCL+ 31
+4787      2
+4788      +
+4789      RCL 34
+4790      3
+4791      MOD
+4792      1
+4793      -
+4794      RCL+ 30
+4795      17
 4796      -
-4797      RCL+ 30
-4798      17
-4799      -
-4800      ATEXT Z
-4801      DSE 33
-4802    WHILE    (42)
-4803    ENDDO    (42)
-4804    RCL 35
-4805    3
-4806    ×
-4807    GRMOD
-4808    DROP
-4809    RCL 36
-4810    RCL 31
-4811    2
-4812    +
-4813    RCL 30
-4814    17
-4815    -
-4816    ATEXT Z
-4817  ENDIF    (232)
-4818  0
-4819  GRMOD
-4820  INDEX "BD"
-4821  WSIZE 64
-4822  RTN
+4797      ATEXT Z
+4798      DSE 33
+4799    WHILE    (42)
+4800    ENDDO    (42)
+4801    RCL 35
+4802    3
+4803    ×
+4804    GRMOD
+4805    DROP
+4806    RCL 36
+4807    RCL 31
+4808    2
+4809    +
+4810    RCL 30
+4811    17
+4812    -
+4813    ATEXT Z
+4814  ENDIF    (232)
+4815  0
+4816  GRMOD
+4817  INDEX "BD"
+4818  WSIZE 64
+4819  RTN
       ; ======== the start ========
       ; ---- LBL :INIT: the matrices, the offsets, the pieces, the state; the screen (the board, the letters, the
       ; panel); the cursor on e2 ----
-4823  LBL :INIT:    (83)
-4824  20.79
-4825  R-CLR
+4820  LBL :INIT:    (83)
+4821  20.79
+4822  R-CLR
       ; R57 1: a new game from the game (7, ÷): BD and GL kept, their tables not made again (7 s faster, no new matrix)
-4826  RCL 99
-4827  STO 57
-4828  0
-4829  STO 99
+4823  RCL 99
+4824  STO 57
+4825  0
+4826  STO 99
       ; the saved game CHN = (n + 1) x 100000 (Chess960's position n; 0 normal chess) + plies x 100 + level x 10 + your
       ; side + 2 (0 STO+ creates it when missing, as MOON47's TZ): R68 the plies to play again (0: a new game)
-4830  0
-4831  STO+ "CHN"
+4827  0
+4828  STO+ "CHN"
       ; CHF: 1 the pieces as letters (the key ×), 0 drawn; kept between games (deleted at the end when 0)
-4832  STO+ "CHF"
-4833  RCL "CHN"
-4834  100000
-4835  MOD
-4836  100
-4837  ÷
-4838  IP
-4839  STO 68
-4840  UNSIGN
-4841  WSIZE 24
-4842  CLLCD
-4843  21
-4844  GRFNT
-4845  DROP
-4846  "CHESS 47 - SETTING UP ..."
-4847  156
-4848  106
-4849  ATEXT Z
+4829  STO+ "CHF"
+4830  RCL "CHN"
+4831  100000
+4832  MOD
+4833  100
+4834  ÷
+4835  IP
+4836  STO 68
+4837  UNSIGN
+4838  WSIZE 24
+4839  CLLCD
+4840  21
+4841  GRFNT
+4842  DROP
+4843  "CHESS 47 - SETTING UP ..."
+4844  156
+4845  106
+4846  ATEXT Z
       ; the matrices: an old one is freed first (0 STO). A stop (an error, EXIT) leaves them; made again over them
       ; they needed twice the memory: "Not enough memory for such a matrix", and no restart until CLVall
-4850  RCL 57
-4851  X=0?
-4852  IF    (233)
-4853    0
-4854    STO "BD"
-4855    STO "GL"
-4856    DROP
-4857    23
-4858    120
-4859    NEWMAT
-4860    STO "BD"
-4861    DROP
-4862    32
-4863    24
-4864    NEWMAT
-4865    STO "GL"
-4866    DROP
-4867  ELSE    (233)
+4847  RCL 57
+4848  X=0?
+4849  IF    (233)
+4850    0
+4851    STO "BD"
+4852    STO "GL"
+4853    DROP
+4854    23
+4855    120
+4856    NEWMAT
+4857    STO "BD"
+4858    DROP
+4859    32
+4860    24
+4861    NEWMAT
+4862    STO "GL"
+4863    DROP
+4864  ELSE    (233)
         ; kept: the rows written while playing cleared (2-4 the move lists, 11 the state, 18-20), as a fresh BD (R58 the row)
-4868    2
-4869    STO 58
-4870    DO    (43)
-4871      INDEX "BD"
-4872      RCL 58
-4873      1
-4874      STOIJ
-4875      DROP
-4876      DROP
-4877      120
-4878      STO 33
-4879      DO    (44)
-4880        0
-4881        STOSEQ
-4882        DROP
-4883        DSE 33
-4884      WHILE    (44)
-4885      ENDDO    (44)
-4886      1
-4887      STO+ 58
-4888      RCL 58
-4889      5
-4890      X=Y?
-4891      IF    (234)
-4892        11
-4893        STO 58
-4894      ENDIF    (234)
-4895      RCL 58
-4896      12
-4897      X=Y?
-4898      IF    (235)
-4899        18
-4900        STO 58
-4901      ENDIF    (235)
-4902      21
-4903      RCL 58
-4904      X≠Y?
-4905    WHILE    (43)
-4906    ENDDO    (43)
-4907  ENDIF    (233)
-4908  RCL 68
-4909  X=0?
-4910  IF    (236)
-4911    0
-4912    STO "GH"
-4913    DROP
-4914    2
-4915    300
-4916    NEWMAT
-4917    STO "GH"
-4918    DROP
-4919  ENDIF    (236)
-4920  INDEX "BD"
+4865    2
+4866    STO 58
+4867    DO    (43)
+4868      INDEX "BD"
+4869      RCL 58
+4870      1
+4871      STOIJ
+4872      DROP
+4873      DROP
+4874      120
+4875      STO 33
+4876      DO    (44)
+4877        0
+4878        STOSEQ
+4879        DROP
+4880        DSE 33
+4881      WHILE    (44)
+4882      ENDDO    (44)
+4883      1
+4884      STO+ 58
+4885      RCL 58
+4886      5
+4887      X=Y?
+4888      IF    (234)
+4889        11
+4890        STO 58
+4891      ENDIF    (234)
+4892      RCL 58
+4893      12
+4894      X=Y?
+4895      IF    (235)
+4896        18
+4897        STO 58
+4898      ENDIF    (235)
+4899      21
+4900      RCL 58
+4901      X≠Y?
+4902    WHILE    (43)
+4903    ENDDO    (43)
+4904  ENDIF    (233)
+4905  RCL 68
+4906  X=0?
+4907  IF    (236)
+4908    0
+4909    STO "GH"
+4910    DROP
+4911    2
+4912    300
+4913    NEWMAT
+4914    STO "GH"
+4915    DROP
+4916  ENDIF    (236)
+4917  INDEX "BD"
       ; the knights' masks of python/layout.py into row 21 of BD (written by the build)
-4921  21
-4922  22
-4923  STOIJ
-4924  DROP
+4918  21
+4919  22
+4920  STOIJ
+4921  DROP
+4922  DROP
+4923  132096
+4924  STOEL
 4925  DROP
-4926  132096
-4927  STOEL
-4928  DROP
-4929  21
-4930  23
-4931  STOIJ
-4932  DROP
+4926  21
+4927  23
+4928  STOIJ
+4929  DROP
+4930  DROP
+4931  329728
+4932  STOEL
 4933  DROP
-4934  329728
-4935  STOEL
-4936  DROP
-4937  21
-4938  24
-4939  STOIJ
-4940  DROP
+4934  21
+4935  24
+4936  STOIJ
+4937  DROP
+4938  DROP
+4939  659712
+4940  STOEL
 4941  DROP
-4942  659712
-4943  STOEL
-4944  DROP
-4945  21
-4946  25
-4947  STOIJ
-4948  DROP
+4942  21
+4943  25
+4944  STOIJ
+4945  DROP
+4946  DROP
+4947  1319424
+4948  STOEL
 4949  DROP
-4950  1319424
-4951  STOEL
-4952  DROP
-4953  21
-4954  26
-4955  STOIJ
-4956  DROP
+4950  21
+4951  26
+4952  STOIJ
+4953  DROP
+4954  DROP
+4955  2638848
+4956  STOEL
 4957  DROP
-4958  2638848
-4959  STOEL
-4960  DROP
-4961  21
-4962  27
-4963  STOIJ
-4964  DROP
+4958  21
+4959  27
+4960  STOIJ
+4961  DROP
+4962  DROP
+4963  5277696
+4964  STOEL
 4965  DROP
-4966  5277696
-4967  STOEL
-4968  DROP
-4969  21
-4970  28
-4971  STOIJ
-4972  DROP
+4966  21
+4967  28
+4968  STOIJ
+4969  DROP
+4970  DROP
+4971  10489856
+4972  STOEL
 4973  DROP
-4974  10489856
-4975  STOEL
-4976  DROP
-4977  21
-4978  29
-4979  STOIJ
-4980  DROP
+4974  21
+4975  29
+4976  STOIJ
+4977  DROP
+4978  DROP
+4979  4202496
+4980  STOEL
 4981  DROP
-4982  4202496
-4983  STOEL
-4984  DROP
-4985  21
-4986  32
-4987  STOIJ
-4988  DROP
+4982  21
+4983  32
+4984  STOIJ
+4985  DROP
+4986  DROP
+4987  33816580
+4988  STOEL
 4989  DROP
-4990  33816580
-4991  STOEL
-4992  DROP
-4993  21
-4994  33
-4995  STOIJ
-4996  DROP
+4990  21
+4991  33
+4992  STOIJ
+4993  DROP
+4994  DROP
+4995  84410376
+4996  STOEL
 4997  DROP
-4998  84410376
-4999  STOEL
-5000  DROP
-5001  21
-5002  34
-5003  STOIJ
-5004  DROP
+4998  21
+4999  34
+5000  STOIJ
+5001  DROP
+5002  DROP
+5003  168886289
+5004  STOEL
 5005  DROP
-5006  168886289
-5007  STOEL
-5008  DROP
-5009  21
-5010  35
-5011  STOIJ
-5012  DROP
+5006  21
+5007  35
+5008  STOIJ
+5009  DROP
+5010  DROP
+5011  337772578
+5012  STOEL
 5013  DROP
-5014  337772578
-5015  STOEL
-5016  DROP
-5017  21
-5018  36
-5019  STOIJ
-5020  DROP
+5014  21
+5015  36
+5016  STOIJ
+5017  DROP
+5018  DROP
+5019  675545156
+5020  STOEL
 5021  DROP
-5022  675545156
-5023  STOEL
-5024  DROP
-5025  21
-5026  37
-5027  STOIJ
-5028  DROP
+5022  21
+5023  37
+5024  STOIJ
+5025  DROP
+5026  DROP
+5027  1351090312
+5028  STOEL
 5029  DROP
-5030  1351090312
-5031  STOEL
-5032  DROP
-5033  21
-5034  38
-5035  STOIJ
-5036  DROP
+5030  21
+5031  38
+5032  STOIJ
+5033  DROP
+5034  DROP
+5035  2685403152
+5036  STOEL
 5037  DROP
-5038  2685403152
-5039  STOEL
-5040  DROP
-5041  21
-5042  39
-5043  STOIJ
-5044  DROP
+5038  21
+5039  39
+5040  STOIJ
+5041  DROP
+5042  DROP
+5043  1075839008
+5044  STOEL
 5045  DROP
-5046  1075839008
-5047  STOEL
-5048  DROP
-5049  21
-5050  42
-5051  STOIJ
-5052  DROP
+5046  21
+5047  42
+5048  STOIJ
+5049  DROP
+5050  DROP
+5051  8657044482
+5052  STOEL
 5053  DROP
-5054  8657044482
-5055  STOEL
-5056  DROP
-5057  21
-5058  43
-5059  STOIJ
-5060  DROP
+5054  21
+5055  43
+5056  STOIJ
+5057  DROP
+5058  DROP
+5059  21609056261
+5060  STOEL
 5061  DROP
-5062  21609056261
-5063  STOEL
-5064  DROP
-5065  21
-5066  44
-5067  STOIJ
-5068  DROP
+5062  21
+5063  44
+5064  STOIJ
+5065  DROP
+5066  DROP
+5067  43234889994
+5068  STOEL
 5069  DROP
-5070  43234889994
-5071  STOEL
-5072  DROP
-5073  21
-5074  45
-5075  STOIJ
-5076  DROP
+5070  21
+5071  45
+5072  STOIJ
+5073  DROP
+5074  DROP
+5075  86469779988
+5076  STOEL
 5077  DROP
-5078  86469779988
-5079  STOEL
-5080  DROP
-5081  21
-5082  46
-5083  STOIJ
-5084  DROP
+5078  21
+5079  46
+5080  STOIJ
+5081  DROP
+5082  DROP
+5083  172939559976
+5084  STOEL
 5085  DROP
-5086  172939559976
-5087  STOEL
-5088  DROP
-5089  21
-5090  47
-5091  STOIJ
-5092  DROP
+5086  21
+5087  47
+5088  STOIJ
+5089  DROP
+5090  DROP
+5091  345879119952
+5092  STOEL
 5093  DROP
-5094  345879119952
-5095  STOEL
-5096  DROP
-5097  21
-5098  48
-5099  STOIJ
-5100  DROP
+5094  21
+5095  48
+5096  STOIJ
+5097  DROP
+5098  DROP
+5099  687463207072
+5100  STOEL
 5101  DROP
-5102  687463207072
-5103  STOEL
-5104  DROP
-5105  21
-5106  49
-5107  STOIJ
-5108  DROP
+5102  21
+5103  49
+5104  STOIJ
+5105  DROP
+5106  DROP
+5107  275414786112
+5108  STOEL
 5109  DROP
-5110  275414786112
-5111  STOEL
-5112  DROP
-5113  21
-5114  52
-5115  STOIJ
-5116  DROP
+5110  21
+5111  52
+5112  STOIJ
+5113  DROP
+5114  DROP
+5115  2216203387392
+5116  STOEL
 5117  DROP
-5118  2216203387392
-5119  STOEL
-5120  DROP
-5121  21
-5122  53
-5123  STOIJ
-5124  DROP
+5118  21
+5119  53
+5120  STOIJ
+5121  DROP
+5122  DROP
+5123  5531918402816
+5124  STOEL
 5125  DROP
-5126  5531918402816
-5127  STOEL
-5128  DROP
-5129  21
-5130  54
-5131  STOIJ
-5132  DROP
+5126  21
+5127  54
+5128  STOIJ
+5129  DROP
+5130  DROP
+5131  11068131838464
+5132  STOEL
 5133  DROP
-5134  11068131838464
-5135  STOEL
-5136  DROP
-5137  21
-5138  55
-5139  STOIJ
-5140  DROP
+5134  21
+5135  55
+5136  STOIJ
+5137  DROP
+5138  DROP
+5139  22136263676928
+5140  STOEL
 5141  DROP
-5142  22136263676928
-5143  STOEL
-5144  DROP
-5145  21
-5146  56
-5147  STOIJ
-5148  DROP
+5142  21
+5143  56
+5144  STOIJ
+5145  DROP
+5146  DROP
+5147  44272527353856
+5148  STOEL
 5149  DROP
-5150  44272527353856
-5151  STOEL
-5152  DROP
-5153  21
-5154  57
-5155  STOIJ
-5156  DROP
+5150  21
+5151  57
+5152  STOIJ
+5153  DROP
+5154  DROP
+5155  88545054707712
+5156  STOEL
 5157  DROP
-5158  88545054707712
-5159  STOEL
-5160  DROP
-5161  21
-5162  58
-5163  STOIJ
-5164  DROP
+5158  21
+5159  58
+5160  STOIJ
+5161  DROP
+5162  DROP
+5163  175990581010432
+5164  STOEL
 5165  DROP
-5166  175990581010432
-5167  STOEL
-5168  DROP
-5169  21
-5170  59
-5171  STOIJ
-5172  DROP
+5166  21
+5167  59
+5168  STOIJ
+5169  DROP
+5170  DROP
+5171  70506185244672
+5172  STOEL
 5173  DROP
-5174  70506185244672
-5175  STOEL
-5176  DROP
-5177  21
-5178  62
-5179  STOIJ
-5180  DROP
+5174  21
+5175  62
+5176  STOIJ
+5177  DROP
+5178  DROP
+5179  567348067172352
+5180  STOEL
 5181  DROP
-5182  567348067172352
-5183  STOEL
-5184  DROP
-5185  21
-5186  63
-5187  STOIJ
-5188  DROP
+5182  21
+5183  63
+5184  STOIJ
+5185  DROP
+5186  DROP
+5187  1416171111120896
+5188  STOEL
 5189  DROP
-5190  1416171111120896
-5191  STOEL
-5192  DROP
-5193  21
-5194  64
-5195  STOIJ
-5196  DROP
+5190  21
+5191  64
+5192  STOIJ
+5193  DROP
+5194  DROP
+5195  2833441750646784
+5196  STOEL
 5197  DROP
-5198  2833441750646784
-5199  STOEL
-5200  DROP
-5201  21
-5202  65
-5203  STOIJ
-5204  DROP
+5198  21
+5199  65
+5200  STOIJ
+5201  DROP
+5202  DROP
+5203  5666883501293568
+5204  STOEL
 5205  DROP
-5206  5666883501293568
-5207  STOEL
-5208  DROP
-5209  21
-5210  66
-5211  STOIJ
-5212  DROP
+5206  21
+5207  66
+5208  STOIJ
+5209  DROP
+5210  DROP
+5211  11333767002587136
+5212  STOEL
 5213  DROP
-5214  11333767002587136
-5215  STOEL
-5216  DROP
-5217  21
-5218  67
-5219  STOIJ
-5220  DROP
+5214  21
+5215  67
+5216  STOIJ
+5217  DROP
+5218  DROP
+5219  22667534005174272
+5220  STOEL
 5221  DROP
-5222  22667534005174272
-5223  STOEL
-5224  DROP
-5225  21
-5226  68
-5227  STOIJ
-5228  DROP
+5222  21
+5223  68
+5224  STOIJ
+5225  DROP
+5226  DROP
+5227  45053588738670592
+5228  STOEL
 5229  DROP
-5230  45053588738670592
-5231  STOEL
-5232  DROP
-5233  21
-5234  69
-5235  STOIJ
-5236  DROP
+5230  21
+5231  69
+5232  STOIJ
+5233  DROP
+5234  DROP
+5235  18049583422636032
+5236  STOEL
 5237  DROP
-5238  18049583422636032
-5239  STOEL
-5240  DROP
-5241  21
-5242  72
-5243  STOIJ
-5244  DROP
+5238  21
+5239  72
+5240  STOIJ
+5241  DROP
+5242  DROP
+5243  145241105196122112
+5244  STOEL
 5245  DROP
-5246  145241105196122112
-5247  STOEL
-5248  DROP
-5249  21
-5250  73
-5251  STOIJ
-5252  DROP
+5246  21
+5247  73
+5248  STOIJ
+5249  DROP
+5250  DROP
+5251  362539804446949376
+5252  STOEL
 5253  DROP
-5254  362539804446949376
-5255  STOEL
-5256  DROP
-5257  21
-5258  74
-5259  STOIJ
-5260  DROP
+5254  21
+5255  74
+5256  STOIJ
+5257  DROP
+5258  DROP
+5259  725361088165576704
+5260  STOEL
 5261  DROP
-5262  725361088165576704
-5263  STOEL
-5264  DROP
-5265  21
-5266  75
-5267  STOIJ
-5268  DROP
+5262  21
+5263  75
+5264  STOIJ
+5265  DROP
+5266  DROP
+5267  1450722176331153408
+5268  STOEL
 5269  DROP
-5270  1450722176331153408
-5271  STOEL
-5272  DROP
-5273  21
-5274  76
-5275  STOIJ
-5276  DROP
+5270  21
+5271  76
+5272  STOIJ
+5273  DROP
+5274  DROP
+5275  2901444352662306816
+5276  STOEL
 5277  DROP
-5278  2901444352662306816
-5279  STOEL
-5280  DROP
-5281  21
-5282  77
-5283  STOIJ
-5284  DROP
+5278  21
+5279  77
+5280  STOIJ
+5281  DROP
+5282  DROP
+5283  5802888705324613632
+5284  STOEL
 5285  DROP
-5286  5802888705324613632
-5287  STOEL
-5288  DROP
-5289  21
-5290  78
-5291  STOIJ
-5292  DROP
+5286  21
+5287  78
+5288  STOIJ
+5289  DROP
+5290  DROP
+5291  11533718717099671552
+5292  STOEL
 5293  DROP
-5294  11533718717099671552
-5295  STOEL
-5296  DROP
-5297  21
-5298  79
-5299  STOIJ
-5300  DROP
+5294  21
+5295  79
+5296  STOIJ
+5297  DROP
+5298  DROP
+5299  4620693356194824192
+5300  STOEL
 5301  DROP
-5302  4620693356194824192
-5303  STOEL
-5304  DROP
-5305  21
-5306  82
-5307  STOIJ
-5308  DROP
+5302  21
+5303  82
+5304  STOIJ
+5305  DROP
+5306  DROP
+5307  288234782788157440
+5308  STOEL
 5309  DROP
-5310  288234782788157440
-5311  STOEL
-5312  DROP
-5313  21
-5314  83
-5315  STOIJ
-5316  DROP
+5310  21
+5311  83
+5312  STOIJ
+5313  DROP
+5314  DROP
+5315  576469569871282176
+5316  STOEL
 5317  DROP
-5318  576469569871282176
-5319  STOEL
-5320  DROP
-5321  21
-5322  84
-5323  STOIJ
-5324  DROP
+5318  21
+5319  84
+5320  STOIJ
+5321  DROP
+5322  DROP
+5323  1224997833292120064
+5324  STOEL
 5325  DROP
-5326  1224997833292120064
-5327  STOEL
-5328  DROP
-5329  21
-5330  85
-5331  STOIJ
-5332  DROP
+5326  21
+5327  85
+5328  STOIJ
+5329  DROP
+5330  DROP
+5331  2449995666584240128
+5332  STOEL
 5333  DROP
-5334  2449995666584240128
-5335  STOEL
-5336  DROP
-5337  21
-5338  86
-5339  STOIJ
-5340  DROP
+5334  21
+5335  86
+5336  STOIJ
+5337  DROP
+5338  DROP
+5339  4899991333168480256
+5340  STOEL
 5341  DROP
-5342  4899991333168480256
-5343  STOEL
-5344  DROP
-5345  21
-5346  87
-5347  STOIJ
-5348  DROP
+5342  21
+5343  87
+5344  STOIJ
+5345  DROP
+5346  DROP
+5347  9799982666336960512
+5348  STOEL
 5349  DROP
-5350  9799982666336960512
-5351  STOEL
-5352  DROP
-5353  21
-5354  88
-5355  STOIJ
-5356  DROP
+5350  21
+5351  88
+5352  STOIJ
+5353  DROP
+5354  DROP
+5355  1152939783987658752
+5356  STOEL
 5357  DROP
-5358  1152939783987658752
-5359  STOEL
-5360  DROP
-5361  21
-5362  89
-5363  STOIJ
-5364  DROP
+5358  21
+5359  89
+5360  STOIJ
+5361  DROP
+5362  DROP
+5363  2305878468463689728
+5364  STOEL
 5365  DROP
-5366  2305878468463689728
-5367  STOEL
-5368  DROP
-5369  21
-5370  92
-5371  STOIJ
-5372  DROP
+5366  21
+5367  92
+5368  STOIJ
+5369  DROP
+5370  DROP
+5371  1128098930098176
+5372  STOEL
 5373  DROP
-5374  1128098930098176
-5375  STOEL
-5376  DROP
-5377  21
-5378  93
-5379  STOIJ
-5380  DROP
+5374  21
+5375  93
+5376  STOIJ
+5377  DROP
+5378  DROP
+5379  2257297371824128
+5380  STOEL
 5381  DROP
-5382  2257297371824128
-5383  STOEL
-5384  DROP
-5385  21
-5386  94
-5387  STOIJ
-5388  DROP
+5382  21
+5383  94
+5384  STOIJ
+5385  DROP
+5386  DROP
+5387  4796069720358912
+5388  STOEL
 5389  DROP
-5390  4796069720358912
-5391  STOEL
-5392  DROP
-5393  21
-5394  95
-5395  STOIJ
-5396  DROP
+5390  21
+5391  95
+5392  STOIJ
+5393  DROP
+5394  DROP
+5395  9592139440717824
+5396  STOEL
 5397  DROP
-5398  9592139440717824
-5399  STOEL
-5400  DROP
-5401  21
-5402  96
-5403  STOIJ
-5404  DROP
+5398  21
+5399  96
+5400  STOIJ
+5401  DROP
+5402  DROP
+5403  19184278881435648
+5404  STOEL
 5405  DROP
-5406  19184278881435648
-5407  STOEL
-5408  DROP
-5409  21
-5410  97
-5411  STOIJ
-5412  DROP
+5406  21
+5407  97
+5408  STOIJ
+5409  DROP
+5410  DROP
+5411  38368557762871296
+5412  STOEL
 5413  DROP
-5414  38368557762871296
-5415  STOEL
-5416  DROP
-5417  21
-5418  98
-5419  STOIJ
-5420  DROP
+5414  21
+5415  98
+5416  STOIJ
+5417  DROP
+5418  DROP
+5419  4679521487814656
+5420  STOEL
 5421  DROP
-5422  4679521487814656
-5423  STOEL
-5424  DROP
-5425  21
-5426  99
-5427  STOIJ
-5428  DROP
+5422  21
+5423  99
+5424  STOIJ
+5425  DROP
+5426  DROP
+5427  9077567998918656
+5428  STOEL
 5429  DROP
-5430  9077567998918656
-5431  STOEL
-5432  DROP
       ; the old book freed first (0 STO), as BD and GL: made again over a matrix left by a stop (an error, EXIT) or by
       ; 7 and ÷, NEWMAT needed the memory of both
-5433  0
-5434  STO "OB"
-5435  DROP
+5430  0
+5431  STO "OB"
+5432  DROP
       ; the opening book of python/book.py: the matrix OB (written by the build)
-5436  14
-5437  11
-5438  NEWMAT
-5439  STO "OB"
-5440  DROP
-5441  INDEX "OB"
-5442  1
-5443  1
-5444  STOIJ
-5445  DROP
+5433  14
+5434  11
+5435  NEWMAT
+5436  STO "OB"
+5437  DROP
+5438  INDEX "OB"
+5439  1
+5440  1
+5441  STOIJ
+5442  DROP
+5443  DROP
+5444  36056
+5445  STOSEQ
 5446  DROP
-5447  36056
+5447  86066
 5448  STOSEQ
 5449  DROP
-5450  86066
+5450  28047
 5451  STOSEQ
 5452  DROP
-5453  28047
+5453  93074
 5454  STOSEQ
 5455  DROP
-5456  93074
+5456  27063
 5457  STOSEQ
 5458  DROP
-5459  27063
+5459  82072
 5460  STOSEQ
 5461  DROP
-5462  82072
+5462  63052
 5463  STOSEQ
 5464  DROP
-5465  63052
+5465  98077
 5466  STOSEQ
 5467  DROP
-5468  98077
+5468  26028
 5469  STOSEQ
 5470  DROP
-5471  26028
+5471  97086
 5472  STOSEQ
 5473  DROP
-5474  97086
-5475  STOSEQ
-5476  DROP
-5477  2
-5478  1
-5479  STOIJ
-5480  DROP
+5474  2
+5475  1
+5476  STOIJ
+5477  DROP
+5478  DROP
+5479  36056
+5480  STOSEQ
 5481  DROP
-5482  36056
+5482  86066
 5483  STOSEQ
 5484  DROP
-5485  86066
+5485  28047
 5486  STOSEQ
 5487  DROP
-5488  28047
+5488  93074
 5489  STOSEQ
 5490  DROP
-5491  93074
+5491  27054
 5492  STOSEQ
 5493  DROP
-5494  27054
+5494  97064
 5495  STOSEQ
 5496  DROP
-5497  97064
+5497  34044
 5498  STOSEQ
 5499  DROP
-5500  34044
+5500  98077
 5501  STOSEQ
 5502  DROP
-5503  98077
+5503  35055
 5504  STOSEQ
 5505  DROP
-5506  35055
+5506  66055
 5507  STOSEQ
 5508  DROP
-5509  66055
-5510  STOSEQ
-5511  DROP
-5512  3
-5513  1
-5514  STOIJ
-5515  DROP
+5509  3
+5510  1
+5511  STOIJ
+5512  DROP
+5513  DROP
+5514  36056
+5515  STOSEQ
 5516  DROP
-5517  36056
+5517  86066
 5518  STOSEQ
 5519  DROP
-5520  86066
+5520  28047
 5521  STOSEQ
 5522  DROP
-5523  28047
+5523  98077
 5524  STOSEQ
 5525  DROP
-5526  98077
+5526  47066
 5527  STOSEQ
 5528  DROP
-5529  47066
+5529  85075
 5530  STOSEQ
 5531  DROP
-5532  85075
+5532  66047
 5533  STOSEQ
 5534  DROP
-5535  66047
+5535  77056
 5536  STOSEQ
 5537  DROP
-5538  77056
+5538  35055
 5539  STOSEQ
 5540  DROP
-5541  35055
+5541  75065
 5542  STOSEQ
 5543  DROP
-5544  75065
-5545  STOSEQ
-5546  DROP
-5547  4
-5548  1
-5549  STOIJ
-5550  DROP
+5544  4
+5545  1
+5546  STOIJ
+5547  DROP
+5548  DROP
+5549  36056
+5550  STOSEQ
 5551  DROP
-5552  36056
+5552  84064
 5553  STOSEQ
 5554  DROP
-5555  84064
+5555  28047
 5556  STOSEQ
 5557  DROP
-5558  28047
+5558  85075
 5559  STOSEQ
 5560  DROP
-5561  85075
+5561  35055
 5562  STOSEQ
 5563  DROP
-5564  35055
+5564  64055
 5565  STOSEQ
 5566  DROP
-5567  64055
+5567  47055
 5568  STOSEQ
 5569  DROP
-5570  47055
+5570  98077
 5571  STOSEQ
 5572  DROP
-5573  98077
+5573  23044
 5574  STOSEQ
 5575  DROP
-5576  23044
+5576  82072
 5577  STOSEQ
 5578  DROP
-5579  82072
-5580  STOSEQ
-5581  DROP
-5582  5
-5583  1
-5584  STOIJ
-5585  DROP
+5579  5
+5580  1
+5581  STOIJ
+5582  DROP
+5583  DROP
+5584  36056
+5585  STOSEQ
 5586  DROP
-5587  36056
+5587  84064
 5588  STOSEQ
 5589  DROP
-5590  84064
+5590  28047
 5591  STOSEQ
 5592  DROP
-5593  28047
+5593  93074
 5594  STOSEQ
 5595  DROP
-5596  93074
+5596  35055
 5597  STOSEQ
 5598  DROP
-5599  35055
+5599  64055
 5600  STOSEQ
 5601  DROP
-5602  64055
+5602  47055
 5603  STOSEQ
 5604  DROP
-5605  47055
+5605  98077
 5606  STOSEQ
 5607  DROP
-5608  98077
+5608  23044
 5609  STOSEQ
 5610  DROP
-5611  23044
+5611  86066
 5612  STOSEQ
 5613  DROP
-5614  86066
-5615  STOSEQ
-5616  DROP
-5617  6
-5618  1
-5619  STOIJ
-5620  DROP
+5614  6
+5615  1
+5616  STOIJ
+5617  DROP
+5618  DROP
+5619  36056
+5620  STOSEQ
 5621  DROP
-5622  36056
+5622  86076
 5623  STOSEQ
 5624  DROP
-5625  86076
+5625  35055
 5626  STOSEQ
 5627  DROP
-5628  35055
+5628  85065
 5629  STOSEQ
 5630  DROP
-5631  85065
+5631  23044
 5632  STOSEQ
 5633  DROP
-5634  23044
+5634  98077
 5635  STOSEQ
 5636  DROP
-5637  98077
+5637  24068
 5638  STOSEQ
 5639  DROP
-5640  24068
+5640  97086
 5641  STOSEQ
 5642  DROP
-5643  97086
+5643  56066
 5644  STOSEQ
 5645  DROP
-5646  56066
+5646  77085
 5647  STOSEQ
 5648  DROP
-5649  77085
-5650  STOSEQ
-5651  DROP
-5652  7
-5653  1
-5654  STOIJ
-5655  DROP
+5649  7
+5650  1
+5651  STOIJ
+5652  DROP
+5653  DROP
+5654  36056
+5655  STOSEQ
 5656  DROP
-5657  36056
+5657  84074
 5658  STOSEQ
 5659  DROP
-5660  84074
+5660  35055
 5661  STOSEQ
 5662  DROP
-5663  35055
+5663  85065
 5664  STOSEQ
 5665  DROP
-5666  85065
+5666  23044
 5667  STOSEQ
 5668  DROP
-5669  23044
+5669  65056
 5670  STOSEQ
 5671  DROP
-5672  65056
+5672  44056
 5673  STOSEQ
 5674  DROP
-5675  44056
+5675  94067
 5676  STOSEQ
 5677  DROP
-5678  94067
+5678  56048
 5679  STOSEQ
 5680  DROP
-5681  56048
+5681  67078
 5682  STOSEQ
 5683  DROP
-5684  67078
-5685  STOSEQ
-5686  DROP
-5687  8
-5688  1
-5689  STOIJ
-5690  DROP
+5684  8
+5685  1
+5686  STOIJ
+5687  DROP
+5688  DROP
+5689  36056
+5690  STOSEQ
 5691  DROP
-5692  36056
+5692  85065
 5693  STOSEQ
 5694  DROP
-5695  85065
+5695  56065
 5696  STOSEQ
 5697  DROP
-5698  56065
+5698  95065
 5699  STOSEQ
 5700  DROP
-5701  95065
+5701  23044
 5702  STOSEQ
 5703  DROP
-5704  23044
+5704  65062
 5705  STOSEQ
 5706  DROP
-5707  65062
+5707  35055
 5708  STOSEQ
 5709  DROP
-5710  35055
+5710  98077
 5711  STOSEQ
 5712  DROP
-5713  98077
+5713  28047
 5714  STOSEQ
 5715  DROP
-5716  28047
+5716  84074
 5717  STOSEQ
 5718  DROP
-5719  84074
-5720  STOSEQ
-5721  DROP
-5722  9
-5723  1
-5724  STOIJ
-5725  DROP
+5719  9
+5720  1
+5721  STOIJ
+5722  DROP
+5723  DROP
+5724  35055
+5725  STOSEQ
 5726  DROP
-5727  35055
+5727  85065
 5728  STOSEQ
 5729  DROP
-5730  85065
+5730  34054
 5731  STOSEQ
 5732  DROP
-5733  34054
+5733  86076
 5734  STOSEQ
 5735  DROP
-5736  86076
+5736  23044
 5737  STOSEQ
 5738  DROP
-5739  23044
+5739  98077
 5740  STOSEQ
 5741  DROP
-5742  98077
+5742  24068
 5743  STOSEQ
 5744  DROP
-5745  24068
+5745  97086
 5746  STOSEQ
 5747  DROP
-5748  97086
+5748  36046
 5749  STOSEQ
 5750  DROP
-5751  36046
+5751  96098
 5752  STOSEQ
 5753  DROP
-5754  96098
-5755  STOSEQ
-5756  DROP
-5757  10
-5758  1
-5759  STOIJ
-5760  DROP
+5754  10
+5755  1
+5756  STOIJ
+5757  DROP
+5758  DROP
+5759  35055
+5760  STOSEQ
 5761  DROP
-5762  35055
+5762  85065
 5763  STOSEQ
 5764  DROP
-5765  85065
+5765  34054
 5766  STOSEQ
 5767  DROP
-5768  34054
+5768  84074
 5769  STOSEQ
 5770  DROP
-5771  84074
+5771  28047
 5772  STOSEQ
 5773  DROP
-5774  28047
+5774  98077
 5775  STOSEQ
 5776  DROP
-5777  98077
+5777  23044
 5778  STOSEQ
 5779  DROP
-5780  23044
+5780  65054
 5781  STOSEQ
 5782  DROP
-5783  65054
+5783  32052
 5784  STOSEQ
 5785  DROP
-5786  32052
+5786  94067
 5787  STOSEQ
 5788  DROP
-5789  94067
-5790  STOSEQ
-5791  DROP
-5792  11
-5793  1
-5794  STOIJ
-5795  DROP
+5789  11
+5790  1
+5791  STOIJ
+5792  DROP
+5793  DROP
+5794  35055
+5795  STOSEQ
 5796  DROP
-5797  35055
+5797  98077
 5798  STOSEQ
 5799  DROP
-5800  98077
+5800  34054
 5801  STOSEQ
 5802  DROP
-5803  34054
+5803  88078
 5804  STOSEQ
 5805  DROP
-5806  88078
+5806  23044
 5807  STOSEQ
 5808  DROP
-5809  23044
+5809  97088
 5810  STOSEQ
 5811  DROP
-5812  97088
+5812  36056
 5813  STOSEQ
 5814  DROP
-5815  36056
+5815  85075
 5816  STOSEQ
 5817  DROP
-5818  85075
+5818  28047
 5819  STOSEQ
 5820  DROP
-5821  28047
+5821  96098
 5822  STOSEQ
 5823  DROP
-5824  96098
-5825  STOSEQ
-5826  DROP
-5827  12
-5828  1
-5829  STOIJ
-5830  DROP
+5824  12
+5825  1
+5826  STOIJ
+5827  DROP
+5828  DROP
+5829  35055
+5830  STOSEQ
 5831  DROP
-5832  35055
+5832  98077
 5833  STOSEQ
 5834  DROP
-5835  98077
+5835  34054
 5836  STOSEQ
 5837  DROP
-5838  34054
+5838  86076
 5839  STOSEQ
 5840  DROP
-5841  86076
+5841  23044
 5842  STOSEQ
 5843  DROP
-5844  23044
+5844  97053
 5845  STOSEQ
 5846  DROP
-5847  97053
+5847  36046
 5848  STOSEQ
 5849  DROP
-5850  36046
+5850  96098
 5851  STOSEQ
 5852  DROP
-5853  96098
+5853  27045
 5854  STOSEQ
 5855  DROP
-5856  27045
+5856  85065
 5857  STOSEQ
 5858  DROP
-5859  85065
-5860  STOSEQ
-5861  DROP
-5862  13
-5863  1
-5864  STOIJ
-5865  DROP
+5859  13
+5860  1
+5861  STOIJ
+5862  DROP
+5863  DROP
+5864  34054
+5865  STOSEQ
 5866  DROP
-5867  34054
+5867  86066
 5868  STOSEQ
 5869  DROP
-5870  86066
+5870  23044
 5871  STOSEQ
 5872  DROP
-5873  23044
+5873  98077
 5874  STOSEQ
 5875  DROP
-5876  98077
+5876  28047
 5877  STOSEQ
 5878  DROP
-5879  28047
+5879  93074
 5880  STOSEQ
 5881  DROP
-5882  93074
+5882  38048
 5883  STOSEQ
 5884  DROP
-5885  38048
+5885  85065
 5886  STOSEQ
 5887  DROP
-5888  85065
+5888  54065
 5889  STOSEQ
 5890  DROP
-5891  54065
+5891  77065
 5892  STOSEQ
 5893  DROP
-5894  77065
-5895  STOSEQ
-5896  DROP
-5897  14
-5898  1
-5899  STOIJ
-5900  DROP
+5894  14
+5895  1
+5896  STOIJ
+5897  DROP
+5898  DROP
+5899  28047
+5900  STOSEQ
 5901  DROP
-5902  28047
+5902  85065
 5903  STOSEQ
 5904  DROP
-5905  85065
+5905  38048
 5906  STOSEQ
 5907  DROP
-5908  38048
+5908  98077
 5909  STOSEQ
 5910  DROP
-5911  98077
+5911  27038
 5912  STOSEQ
 5913  DROP
-5914  27038
+5914  86076
 5915  STOSEQ
 5916  DROP
-5917  86076
+5917  26028
 5918  STOSEQ
 5919  DROP
-5920  26028
+5920  97086
 5921  STOSEQ
 5922  DROP
-5923  97086
+5923  35045
 5924  STOSEQ
 5925  DROP
-5926  35045
+5926  96098
 5927  STOSEQ
 5928  DROP
-5929  96098
-5930  STOSEQ
-5931  DROP
       ; the offsets: the knight R80-R87, the diagonals R88-R91, the lines R92-R95
-5932  -21
-5933  STO 80
-5934  -19
-5935  STO 81
-5936  -12
-5937  STO 82
-5938  -8
-5939  STO 83
-5940  8
-5941  STO 84
-5942  12
-5943  STO 85
-5944  19
-5945  STO 86
-5946  21
-5947  STO 87
-5948  -11
-5949  STO 88
-5950  -9
-5951  STO 89
-5952  9
-5953  STO 90
-5954  11
-5955  STO 91
-5956  -10
-5957  STO 92
-5958  -1
-5959  STO 93
-5960  1
-5961  STO 94
-5962  10
-5963  STO 95
+5929  -21
+5930  STO 80
+5931  -19
+5932  STO 81
+5933  -12
+5934  STO 82
+5935  -8
+5936  STO 83
+5937  8
+5938  STO 84
+5939  12
+5940  STO 85
+5941  19
+5942  STO 86
+5943  21
+5944  STO 87
+5945  -11
+5946  STO 88
+5947  -9
+5948  STO 89
+5949  9
+5950  STO 90
+5951  11
+5952  STO 91
+5953  -10
+5954  STO 92
+5955  -1
+5956  STO 93
+5957  1
+5958  STO 94
+5959  10
+5960  STO 95
       ; the board: the border 8 everywhere, then the squares (empty) and the pieces of the two first rows each side
-5964  INDEX "BD"
-5965  120
-5966  STO 33
+5961  INDEX "BD"
+5962  120
+5963  STO 33
       ; the whole row 1 of BD set to 8 (the border)
-5967  DO    (45)
-5968    8
-5969    STOSEQ
-5970    DROP
-5971    DSE 33
-5972  WHILE    (45)
-5973  ENDDO    (45)
-5974  22
-5975  STO 30
+5964  DO    (45)
+5965    8
+5966    STOSEQ
+5967    DROP
+5968    DSE 33
+5969  WHILE    (45)
+5970  ENDDO    (45)
+5971  22
+5972  STO 30
       ; the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
-5976  DO    (46)
-5977    1
-5978    RCL 30
-5979    STOIJ
-5980    0
-5981    STOEL
-5982    DROP
-5983    RCL 30
-5984    1
-5985    -
-5986    10
-5987    MOD
-5988    8
-5989    X≤Y?
-5990    IF    (237)
-5991      3
+5973  DO    (46)
+5974    1
+5975    RCL 30
+5976    STOIJ
+5977    0
+5978    STOEL
+5979    DROP
+5980    RCL 30
+5981    1
+5982    -
+5983    10
+5984    MOD
+5985    8
+5986    X≤Y?
+5987    IF    (237)
+5988      3
+5989      STO+ 30
+5990    ELSE    (237)
+5991      1
 5992      STO+ 30
-5993    ELSE    (237)
-5994      1
-5995      STO+ 30
-5996    ENDIF    (237)
-5997    99
-5998    RCL 30
-5999    X≤Y?
-6000  WHILE    (46)
-6001  ENDDO    (46)
-6002  1
-6003  22
-6004  STOIJ
-6005  4
-6006  STOSEQ
-6007  2
-6008  STOSEQ
-6009  3
-6010  STOSEQ
-6011  5
-6012  STOSEQ
-6013  6
-6014  STOSEQ
-6015  3
-6016  STOSEQ
-6017  2
-6018  STOSEQ
-6019  4
-6020  STOSEQ
-6021  1
-6022  92
-6023  STOIJ
-6024  -4
-6025  STOSEQ
-6026  -2
-6027  STOSEQ
-6028  -3
-6029  STOSEQ
-6030  -5
-6031  STOSEQ
-6032  -6
-6033  STOSEQ
-6034  -3
-6035  STOSEQ
-6036  -2
-6037  STOSEQ
-6038  -4
-6039  STOSEQ
-6040  8
-6041  STO 33
-6042  1
-6043  32
-6044  STOIJ
+5993    ENDIF    (237)
+5994    99
+5995    RCL 30
+5996    X≤Y?
+5997  WHILE    (46)
+5998  ENDDO    (46)
+5999  1
+6000  22
+6001  STOIJ
+6002  4
+6003  STOSEQ
+6004  2
+6005  STOSEQ
+6006  3
+6007  STOSEQ
+6008  5
+6009  STOSEQ
+6010  6
+6011  STOSEQ
+6012  3
+6013  STOSEQ
+6014  2
+6015  STOSEQ
+6016  4
+6017  STOSEQ
+6018  1
+6019  92
+6020  STOIJ
+6021  -4
+6022  STOSEQ
+6023  -2
+6024  STOSEQ
+6025  -3
+6026  STOSEQ
+6027  -5
+6028  STOSEQ
+6029  -6
+6030  STOSEQ
+6031  -3
+6032  STOSEQ
+6033  -2
+6034  STOSEQ
+6035  -4
+6036  STOSEQ
+6037  8
+6038  STO 33
+6039  1
+6040  32
+6041  STOIJ
       ; the eight white pawns on 32-39
-6045  DO    (47)
-6046    1
-6047    STOSEQ
-6048    DROP
-6049    DSE 33
-6050  WHILE    (47)
-6051  ENDDO    (47)
-6052  8
-6053  STO 33
-6054  1
-6055  82
-6056  STOIJ
+6042  DO    (47)
+6043    1
+6044    STOSEQ
+6045    DROP
+6046    DSE 33
+6047  WHILE    (47)
+6048  ENDDO    (47)
+6049  8
+6050  STO 33
+6051  1
+6052  82
+6053  STOIJ
       ; the eight black pawns on 82-89
-6057  DO    (48)
-6058    -1
-6059    STOSEQ
-6060    DROP
-6061    DSE 33
-6062  WHILE    (48)
-6063  ENDDO    (48)
+6054  DO    (48)
+6055    -1
+6056    STOSEQ
+6057    DROP
+6058    DSE 33
+6059  WHILE    (48)
+6060  ENDDO    (48)
       ; the state: white to move, no en passant square, all four castling rights, SC 0 (the start is symmetric)
-6064  1
-6065  STO 20
-6066  0
-6067  STO 21
-6068  1111#2
-6069  STO 22
-6070  0
-6071  STO 23
-6072  26
-6073  STO 24
-6074  96
-6075  STO 25
-6076  2
-6077  STO 26
-6078  1
-6079  STO 27
-6080  36
-6081  STO 28
-6082  0
-6083  STO 29
-6084  1
-6085  STO 96
-6086  0
-6087  STO 97
+6061  1
+6062  STO 20
+6063  0
+6064  STO 21
+6065  1111#2
+6066  STO 22
+6067  0
+6068  STO 23
+6069  26
+6070  STO 24
+6071  96
+6072  STO 25
+6073  2
+6074  STO 26
+6075  1
+6076  STO 27
+6077  36
+6078  STO 28
+6079  0
+6080  STO 29
+6081  1
+6082  STO 96
+6083  0
+6084  STO 97
       ; the level and your side of the saved game (CHN 0: level 2, white)
-6088  RCL "CHN"
-6089  X≠0?
-6090  IF    (238)
-6091    10
-6092    MOD
-6093    2
-6094    -
-6095    STO 27
-6096    RCL "CHN"
+6085  RCL "CHN"
+6086  X≠0?
+6087  IF    (238)
+6088    10
+6089    MOD
+6090    2
+6091    -
+6092    STO 27
+6093    RCL "CHN"
+6094    10
+6095    ÷
+6096    IP
 6097    10
-6098    ÷
-6099    IP
-6100    10
-6101    MOD
-6102    STO 26
-6103  ENDIF    (238)
+6098    MOD
+6099    STO 26
+6100  ENDIF    (238)
       ; Chess960: BD (11, 7) = n + 1 (0: normal chess), the back ranks of the position n (LBL :BACK9:); the kings, the
       ; castling rooks and the castling rights' masks (LBL :CSQ:)
-6104  INDEX "BD"
-6105  11
-6106  7
-6107  STOIJ
-6108  RCL "CHN"
-6109  100000
-6110  ÷
-6111  IP
-6112  STOEL
-6113  X≠0?
-6114  XEQ :BACK9:    (84)
+6101  INDEX "BD"
+6102  11
+6103  7
+6104  STOIJ
+6105  RCL "CHN"
+6106  100000
+6107  ÷
+6108  IP
+6109  STOEL
+6110  X≠0?
+6111  XEQ :BACK9:    (84)
       ; ---- (was LBL :CSQ:) from white's back rank: the king's square (BD (11, 4), R24; black's + 70, R25), the rook on its right
       ; (11, 5: short castling) and on its left (11, 6: long); the masks of the castling rights (row 23: 15, the white
       ; king 1100#2, its rooks 1110#2 1101#2, black's 0011#2 1011#2 0111#2) for LBL :CRSQ: ----
-6115  0
-6116  STO 34
-6117  22
-6118  STO 33
+6112  0
+6113  STO 34
+6114  22
+6115  STO 33
       ; white's back rank 22-29: the king's square, the rook on its left (before it) and on its right (after it)
-6119  DO    (49)
-6120    1
-6121    RCL 33
-6122    STOIJ
-6123    RCLEL
-6124    STO 35
-6125    6
-6126    X=Y?
-6127    IF    (239)
-6128      11
-6129      4
-6130      STOIJ
-6131      RCL 33
-6132      STOEL
-6133      1
-6134      STO 34
-6135    ENDIF    (239)
-6136    RCL 35
-6137    4
-6138    X=Y?
-6139    IF    (240)
-6140      RCL 34
-6141      X=0?
-6142      IF    (241)
-6143        6
-6144      ELSE    (241)
-6145        5
-6146      ENDIF    (241)
-6147      11
-6148      X<>Y
-6149      STOIJ
-6150      RCL 33
-6151      STOEL
-6152    ENDIF    (240)
-6153    1
-6154    STO+ 33
-6155    29
-6156    RCL 33
-6157    X≤Y?
-6158  WHILE    (49)
-6159  ENDDO    (49)
-6160  23
-6161  22
-6162  STOIJ
-6163  78
-6164  STO 33
+6116  DO    (49)
+6117    1
+6118    RCL 33
+6119    STOIJ
+6120    RCLEL
+6121    STO 35
+6122    6
+6123    X=Y?
+6124    IF    (239)
+6125      11
+6126      4
+6127      STOIJ
+6128      RCL 33
+6129      STOEL
+6130      1
+6131      STO 34
+6132    ENDIF    (239)
+6133    RCL 35
+6134    4
+6135    X=Y?
+6136    IF    (240)
+6137      RCL 34
+6138      X=0?
+6139      IF    (241)
+6140        6
+6141      ELSE    (241)
+6142        5
+6143      ENDIF    (241)
+6144      11
+6145      X<>Y
+6146      STOIJ
+6147      RCL 33
+6148      STOEL
+6149    ENDIF    (240)
+6150    1
+6151    STO+ 33
+6152    29
+6153    RCL 33
+6154    X≤Y?
+6155  WHILE    (49)
+6156  ENDDO    (49)
+6157  23
+6158  22
+6159  STOIJ
+6160  78
+6161  STO 33
       ; the masks of the castling rights: 15 into row 23 for the squares 22-99
-6165  DO    (50)
-6166    15
-6167    STOSEQ
-6168    DROP
-6169    DSE 33
-6170  WHILE    (50)
-6171  ENDDO    (50)
-6172  11
-6173  4
-6174  STOIJ
-6175  RCLEL
-6176  STO 36
-6177  STO 24
-6178  70
-6179  +
-6180  STO 25
-6181  11
-6182  5
-6183  STOIJ
-6184  RCLEL
-6185  STO 37
-6186  11
-6187  6
-6188  STOIJ
-6189  RCLEL
-6190  STO 38
-6191  23
-6192  RCL 36
-6193  STOIJ
-6194  12
-6195  STOEL
-6196  23
-6197  RCL 37
-6198  STOIJ
-6199  14
-6200  STOEL
-6201  23
-6202  RCL 38
-6203  STOIJ
-6204  13
-6205  STOEL
-6206  23
-6207  RCL 36
-6208  70
-6209  +
-6210  STOIJ
-6211  3
-6212  STOEL
-6213  23
-6214  RCL 37
-6215  70
-6216  +
-6217  STOIJ
-6218  11
-6219  STOEL
-6220  23
-6221  RCL 38
-6222  70
-6223  +
-6224  STOIJ
-6225  7
-6226  STOEL
+6162  DO    (50)
+6163    15
+6164    STOSEQ
+6165    DROP
+6166    DSE 33
+6167  WHILE    (50)
+6168  ENDDO    (50)
+6169  11
+6170  4
+6171  STOIJ
+6172  RCLEL
+6173  STO 36
+6174  STO 24
+6175  70
+6176  +
+6177  STO 25
+6178  11
+6179  5
+6180  STOIJ
+6181  RCLEL
+6182  STO 37
+6183  11
+6184  6
+6185  STOIJ
+6186  RCLEL
+6187  STO 38
+6188  23
+6189  RCL 36
+6190  STOIJ
+6191  12
+6192  STOEL
+6193  23
+6194  RCL 37
+6195  STOIJ
+6196  14
+6197  STOEL
+6198  23
+6199  RCL 38
+6200  STOIJ
+6201  13
+6202  STOEL
+6203  23
+6204  RCL 36
+6205  70
+6206  +
+6207  STOIJ
+6208  3
+6209  STOEL
+6210  23
+6211  RCL 37
+6212  70
+6213  +
+6214  STOIJ
+6215  11
+6216  STOEL
+6217  23
+6218  RCL 38
+6219  70
+6220  +
+6221  STOIJ
+6222  7
+6223  STOEL
       ; level 3's time budget, tenths of a second
-6227  11
-6228  18
-6229  STOIJ
-6230  600
-6231  STOEL
+6224  11
+6225  18
+6226  STOIJ
+6227  600
+6228  STOEL
       ; R72-R79: no moves yet (0, not a text)
-6232  RCL 57
-6233  X=0?
-6234  IF    (242)
-6235    XEQ :PSTALL:    (86)
-6236    XEQ :GLYPHS:    (88)
-6237  ENDIF    (242)
+6229  RCL 57
+6230  X=0?
+6231  IF    (242)
+6232    XEQ :PSTALL:    (86)
+6233    XEQ :GLYPHS:    (88)
+6234  ENDIF    (242)
       ; the game record: the start's key at GH (2, 1); the clock (tenths of a second: TICKS)
-6238  XEQ :HASH:    (63)
-6239  INDEX "GH"
-6240  2
-6241  1
-6242  STOIJ
-6243  RCL Z
-6244  STOEL
-6245  INDEX "BD"
-6246  TICKS
-6247  STO "TK"
-6248  RCL 68
-6249  X=0?
-6250  IF    (243)
-6251    3000
-6252    STO "TW"
-6253    STO "TB"
-6254  ENDIF    (243)
+6235  XEQ :HASH:    (63)
+6236  INDEX "GH"
+6237  2
+6238  1
+6239  STOIJ
+6240  RCL Z
+6241  STOEL
+6242  INDEX "BD"
+6243  TICKS
+6244  STO "TK"
+6245  RCL 68
+6246  X=0?
+6247  IF    (243)
+6248    3000
+6249    STO "TW"
+6250    STO "TB"
+6251  ENDIF    (243)
       ; the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
-6255  WSIZE 64
-6256  XEQ :NINIT:    (17)
-6257  RCL 68
-6258  X≠0?
-6259  IF    (244)
-6260    1
-6261    STO 69
+6252  WSIZE 64
+6253  XEQ :NINIT:    (17)
+6254  RCL 68
+6255  X≠0?
+6256  IF    (244)
+6257    1
+6258    STO 69
         ; the saved game's moves played again (R69 the ply, 1 to R68): MAKE, the record, the move list (+ or # in check)
-6262    DO    (51)
-6263      INDEX "GH"
-6264      1
-6265      RCL 69
-6266      STOIJ
-6267      RCLEL
-6268      INDEX "BD"
-6269      STO 40
-6270      3
-6271      STO 46
-6272      XEQ :MAKE:    (13)
-6273      XEQ :GHADD:    (62)
-6274      XEQ :HTEXT:    (72)
-6275      XEQ :INCHK:    (47)
-6276      X≠0?
-6277      IF    (245)
-6278        RCL 69
-6279        STO 62
-6280        XEQ :ANYMV:    (46)
-6281        STO 63
-6282        RCL 62
-6283        STO 69
-6284        XEQ :SUFFIX:    (59)
-6285      ENDIF    (245)
-6286      1
-6287      STO+ 69
-6288      RCL 68
-6289      RCL 69
-6290      X≤Y?
-6291    WHILE    (51)
-6292    ENDDO    (51)
-6293  ENDIF    (244)
+6259    DO    (51)
+6260      INDEX "GH"
+6261      1
+6262      RCL 69
+6263      STOIJ
+6264      RCLEL
+6265      INDEX "BD"
+6266      STO 40
+6267      3
+6268      STO 46
+6269      XEQ :MAKE:    (13)
+6270      XEQ :GHADD:    (62)
+6271      XEQ :HTEXT:    (72)
+6272      XEQ :INCHK:    (47)
+6273      X≠0?
+6274      IF    (245)
+6275        RCL 69
+6276        STO 62
+6277        XEQ :ANYMV:    (46)
+6278        STO 63
+6279        RCL 62
+6280        STO 69
+6281        XEQ :SUFFIX:    (59)
+6282      ENDIF    (245)
+6283      1
+6284      STO+ 69
+6285      RCL 68
+6286      RCL 69
+6287      X≤Y?
+6288    WHILE    (51)
+6289    ENDDO    (51)
+6290  ENDIF    (244)
       ; the screen: the board, the panel, the moves, the state
-6294  CLLCD
-6295  XEQ :BOARD:    (78)
-6296  XEQ :PANEL:    (70)
-6297  XEQ :HSHOW:    (71)
-6298  XEQ :STATE:    (80)
+6291  CLLCD
+6292  XEQ :BOARD:    (78)
+6293  XEQ :PANEL:    (70)
+6294  XEQ :HSHOW:    (71)
+6295  XEQ :STATE:    (80)
       ; the clock from now (the setting up is nobody's time)
-6299  TICKS
-6300  STO "TK"
-6301  XEQ :CLOCK:    (64)
-6302  DROP
-6303  INDEX "BD"
-6304  WSIZE 64
-6305  RTN
+6296  TICKS
+6297  STO "TK"
+6298  XEQ :CLOCK:    (64)
+6299  DROP
+6300  INDEX "BD"
+6301  WSIZE 64
+6302  RTN
       ; ---- LBL :BACK9: X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
       ; python/chess960.py start(); 518 is normal chess): n MOD 4 the light-squared bishop (b d f h), then MOD 4 the
       ; dark one (a c e g), MOD 6 the queen on the free squares, the 10 pairs of free squares for the knights (R34 the
       ; first, the second R34 + 1 + what is left), then R K R; black's the same (LBL :NTH: the free squares) ----
-6306  LBL :BACK9:    (84)
-6307  1
-6308  -
-6309  STO 30
-6310  8
-6311  STO 33
-6312  1
-6313  22
-6314  STOIJ
+6303  LBL :BACK9:    (84)
+6304  1
+6305  -
+6306  STO 30
+6307  8
+6308  STO 33
+6309  1
+6310  22
+6311  STOIJ
       ; white's back rank 22-29 emptied
-6315  DO    (52)
-6316    0
-6317    STOSEQ
-6318    DROP
-6319    DSE 33
-6320  WHILE    (52)
-6321  ENDDO    (52)
-6322  RCL 30
-6323  4
-6324  MOD
-6325  2
-6326  ×
-6327  23
-6328  +
-6329  1
-6330  X<>Y
-6331  STOIJ
-6332  3
-6333  STOEL
-6334  RCL 30
-6335  4
-6336  ÷
-6337  IP
-6338  STO 30
-6339  4
-6340  MOD
-6341  2
-6342  ×
-6343  22
-6344  +
-6345  1
-6346  X<>Y
-6347  STOIJ
-6348  3
-6349  STOEL
-6350  RCL 30
-6351  4
-6352  ÷
-6353  IP
-6354  STO 30
-6355  6
-6356  MOD
-6357  XEQ :NTH:    (85)
-6358  1
-6359  X<>Y
-6360  STOIJ
-6361  5
-6362  STOEL
-6363  RCL 30
-6364  6
-6365  ÷
-6366  IP
-6367  STO 30
-6368  0
-6369  STO 34
+6312  DO    (52)
+6313    0
+6314    STOSEQ
+6315    DROP
+6316    DSE 33
+6317  WHILE    (52)
+6318  ENDDO    (52)
+6319  RCL 30
+6320  4
+6321  MOD
+6322  2
+6323  ×
+6324  23
+6325  +
+6326  1
+6327  X<>Y
+6328  STOIJ
+6329  3
+6330  STOEL
+6331  RCL 30
+6332  4
+6333  ÷
+6334  IP
+6335  STO 30
+6336  4
+6337  MOD
+6338  2
+6339  ×
+6340  22
+6341  +
+6342  1
+6343  X<>Y
+6344  STOIJ
+6345  3
+6346  STOEL
+6347  RCL 30
+6348  4
+6349  ÷
+6350  IP
+6351  STO 30
+6352  6
+6353  MOD
+6354  XEQ :NTH:    (85)
+6355  1
+6356  X<>Y
+6357  STOIJ
+6358  5
+6359  STOEL
+6360  RCL 30
+6361  6
+6362  ÷
+6363  IP
+6364  STO 30
+6365  0
+6366  STO 34
       ; the pair of free squares of the knights: R34 the first (0-3), R30 what is left over
-6370  DO    (53)
-6371    4
-6372    RCL- 34
-6373    STO 35
-6374    RCL 30
-6375    X≥Y?
-6376    IF    (246)
-6377      RCL 35
-6378      STO- 30
-6379      1
-6380      STO+ 34
-6381      1
-6382    ELSE    (246)
-6383      0
-6384    ENDIF    (246)
-6385    X≠0?
-6386  WHILE    (53)
-6387  ENDDO    (53)
-6388  RCL 34
-6389  1
-6390  +
-6391  RCL+ 30
-6392  XEQ :NTH:    (85)
-6393  1
-6394  X<>Y
-6395  STOIJ
-6396  2
-6397  STOEL
-6398  RCL 34
-6399  XEQ :NTH:    (85)
-6400  1
-6401  X<>Y
-6402  STOIJ
-6403  2
-6404  STOEL
-6405  0
-6406  XEQ :NTH:    (85)
-6407  1
-6408  X<>Y
-6409  STOIJ
-6410  4
-6411  STOEL
-6412  0
-6413  XEQ :NTH:    (85)
-6414  1
-6415  X<>Y
-6416  STOIJ
-6417  6
-6418  STOEL
-6419  0
-6420  XEQ :NTH:    (85)
-6421  1
-6422  X<>Y
-6423  STOIJ
-6424  4
-6425  STOEL
-6426  22
-6427  STO 33
+6367  DO    (53)
+6368    4
+6369    RCL- 34
+6370    STO 35
+6371    RCL 30
+6372    X≥Y?
+6373    IF    (246)
+6374      RCL 35
+6375      STO- 30
+6376      1
+6377      STO+ 34
+6378      1
+6379    ELSE    (246)
+6380      0
+6381    ENDIF    (246)
+6382    X≠0?
+6383  WHILE    (53)
+6384  ENDDO    (53)
+6385  RCL 34
+6386  1
+6387  +
+6388  RCL+ 30
+6389  XEQ :NTH:    (85)
+6390  1
+6391  X<>Y
+6392  STOIJ
+6393  2
+6394  STOEL
+6395  RCL 34
+6396  XEQ :NTH:    (85)
+6397  1
+6398  X<>Y
+6399  STOIJ
+6400  2
+6401  STOEL
+6402  0
+6403  XEQ :NTH:    (85)
+6404  1
+6405  X<>Y
+6406  STOIJ
+6407  4
+6408  STOEL
+6409  0
+6410  XEQ :NTH:    (85)
+6411  1
+6412  X<>Y
+6413  STOIJ
+6414  6
+6415  STOEL
+6416  0
+6417  XEQ :NTH:    (85)
+6418  1
+6419  X<>Y
+6420  STOIJ
+6421  4
+6422  STOEL
+6423  22
+6424  STO 33
       ; black's back rank: each piece of white's (22-29), the other colour, 70 squares up
-6428  DO    (54)
-6429    1
-6430    RCL 33
-6431    STOIJ
-6432    RCLEL
-6433    CHS
-6434    STO 34
-6435    1
-6436    RCL 33
-6437    70
-6438    +
-6439    STOIJ
-6440    RCL 34
-6441    STOEL
-6442    1
-6443    STO+ 33
-6444    29
-6445    RCL 33
-6446    X≤Y?
-6447  WHILE    (54)
-6448  ENDDO    (54)
-6449  RTN
+6425  DO    (54)
+6426    1
+6427    RCL 33
+6428    STOIJ
+6429    RCLEL
+6430    CHS
+6431    STO 34
+6432    1
+6433    RCL 33
+6434    70
+6435    +
+6436    STOIJ
+6437    RCL 34
+6438    STOEL
+6439    1
+6440    STO+ 33
+6441    29
+6442    RCL 33
+6443    X≤Y?
+6444  WHILE    (54)
+6445  ENDDO    (54)
+6446  RTN
       ; ---- LBL :NTH: X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the square) ----
-6450  LBL :NTH:    (85)
-6451  STO 31
-6452  21
-6453  STO 32
+6447  LBL :NTH:    (85)
+6448  STO 31
+6449  21
+6450  STO 32
       ; the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
-6454  DO    (55)
-6455    1
-6456    STO+ 32
-6457    1
-6458    RCL 32
-6459    STOIJ
-6460    RCLEL
-6461    X=0?
-6462    IF    (247)
-6463      -1
-6464      STO+ 31
-6465    ENDIF    (247)
-6466    RCL 31
-6467    0
-6468    X≤Y?
-6469  WHILE    (55)
-6470  ENDDO    (55)
-6471  RCL 32
-6472  RTN
+6451  DO    (55)
+6452    1
+6453    STO+ 32
+6454    1
+6455    RCL 32
+6456    STOIJ
+6457    RCLEL
+6458    X=0?
+6459    IF    (247)
+6460      -1
+6461      STO+ 31
+6462    ENDIF    (247)
+6463    RCL 31
+6464    0
+6465    X≤Y?
+6466  WHILE    (55)
+6467  ENDDO    (55)
+6468  RCL 32
+6469  RTN
       ; ---- LBL :PSTALL: the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the rank 0-7, cen
       ; 6 - (|2f - 7| + |2r - 7|) / 2; for each kind t the value V(t) + pst (as python/chess47ref.py): P 6 (r - 1) + 8
       ; on d e of the ranks 2-4, N 5 cen - 15, B 3 cen - 6, R 10 on the 7th rank, Q 2 cen - 6, K -4 cen + 10 on the 1st;
       ; V 100 300 320 500 900 20000. Row t + 11 (white) at s, row 11 - t (black) minus it at the mirror square
       ; s + 10 (11 - 2 row) ----
-6473  LBL :PSTALL:    (86)
-6474  22
-6475  STO 42
+6470  LBL :PSTALL:    (86)
+6471  22
+6472  STO 42
       ; the squares 22-99 (R42): the six pieces' values there (LBL :PSQ:), white's and black's
-6476  DO    (56)
-6477    RCL 42
-6478    1
-6479    -
-6480    10
-6481    MOD
-6482    4.5
-6483    -
-6484    ABS
-6485    3.5
-6486    X≥Y?
-6487    IF    (248)
+6473  DO    (56)
+6474    RCL 42
+6475    1
+6476    -
+6477    10
+6478    MOD
+6479    4.5
+6480    -
+6481    ABS
+6482    3.5
+6483    X≥Y?
+6484    IF    (248)
           ; ---- (was LBL :PSQ:) the six values of the square R42 (R47 f, R48 r, R49 cen; R44 the mirror square; R43 a value) ----
-6488      RCL 42
-6489      1
-6490      -
-6491      10
-6492      MOD
-6493      1
-6494      -
-6495      STO 47
-6496      RCL 42
-6497      1
-6498      -
-6499      10
-6500      ÷
-6501      IP
-6502      STO 44
-6503      2
-6504      -
-6505      STO 48
-6506      11
-6507      RCL 44
-6508      2
+6485      RCL 42
+6486      1
+6487      -
+6488      10
+6489      MOD
+6490      1
+6491      -
+6492      STO 47
+6493      RCL 42
+6494      1
+6495      -
+6496      10
+6497      ÷
+6498      IP
+6499      STO 44
+6500      2
+6501      -
+6502      STO 48
+6503      11
+6504      RCL 44
+6505      2
+6506      ×
+6507      -
+6508      10
 6509      ×
-6510      -
-6511      10
-6512      ×
-6513      RCL+ 42
-6514      STO 44
-6515      RCL 47
-6516      2
-6517      ×
-6518      7
-6519      -
-6520      ABS
-6521      RCL 48
-6522      2
-6523      ×
-6524      7
-6525      -
-6526      ABS
-6527      +
-6528      2
-6529      ÷
-6530      6
-6531      X<>Y
-6532      -
-6533      STO 49
-6534      RCL 48
-6535      1
-6536      -
-6537      6
-6538      ×
-6539      100
-6540      +
-6541      STO 43
-6542      RCL 47
-6543      3.5
-6544      -
-6545      ABS
-6546      0.5
-6547      X=Y?
-6548      IF    (249)
-6549        RCL 48
-6550        3
-6551        -
-6552        ABS
-6553        1
-6554        X≥Y?
-6555        IF    (250)
-6556          8
-6557          STO+ 43
-6558        ENDIF    (250)
-6559      ENDIF    (249)
-6560      1
-6561      XEQ :PSTO:    (87)
-6562      RCL 49
-6563      5
-6564      ×
-6565      285
-6566      +
-6567      STO 43
-6568      2
-6569      XEQ :PSTO:    (87)
-6570      RCL 49
-6571      3
-6572      ×
-6573      314
-6574      +
-6575      STO 43
-6576      3
-6577      XEQ :PSTO:    (87)
-6578      500
-6579      STO 43
-6580      RCL 48
-6581      6
-6582      X=Y?
-6583      IF    (251)
-6584        10
-6585        STO+ 43
-6586      ENDIF    (251)
-6587      4
-6588      XEQ :PSTO:    (87)
-6589      RCL 49
-6590      2
-6591      ×
-6592      894
-6593      +
-6594      STO 43
-6595      5
-6596      XEQ :PSTO:    (87)
-6597      RCL 49
-6598      -4
-6599      ×
-6600      20000
-6601      +
-6602      STO 43
-6603      RCL 48
-6604      X=0?
-6605      IF    (252)
-6606        10
-6607        STO+ 43
-6608      ENDIF    (252)
-6609      6
-6610      XEQ :PSTO:    (87)
-6611    ENDIF    (248)
-6612    1
-6613    STO+ 42
-6614    99
-6615    RCL 42
-6616    X≤Y?
-6617  WHILE    (56)
-6618  ENDDO    (56)
-6619  INDEX "BD"
-6620  RTN
+6510      RCL+ 42
+6511      STO 44
+6512      RCL 47
+6513      2
+6514      ×
+6515      7
+6516      -
+6517      ABS
+6518      RCL 48
+6519      2
+6520      ×
+6521      7
+6522      -
+6523      ABS
+6524      +
+6525      2
+6526      ÷
+6527      6
+6528      X<>Y
+6529      -
+6530      STO 49
+6531      RCL 48
+6532      1
+6533      -
+6534      6
+6535      ×
+6536      100
+6537      +
+6538      STO 43
+6539      RCL 47
+6540      3.5
+6541      -
+6542      ABS
+6543      0.5
+6544      X=Y?
+6545      IF    (249)
+6546        RCL 48
+6547        3
+6548        -
+6549        ABS
+6550        1
+6551        X≥Y?
+6552        IF    (250)
+6553          8
+6554          STO+ 43
+6555        ENDIF    (250)
+6556      ENDIF    (249)
+6557      1
+6558      XEQ :PSTO:    (87)
+6559      RCL 49
+6560      5
+6561      ×
+6562      285
+6563      +
+6564      STO 43
+6565      2
+6566      XEQ :PSTO:    (87)
+6567      RCL 49
+6568      3
+6569      ×
+6570      314
+6571      +
+6572      STO 43
+6573      3
+6574      XEQ :PSTO:    (87)
+6575      500
+6576      STO 43
+6577      RCL 48
+6578      6
+6579      X=Y?
+6580      IF    (251)
+6581        10
+6582        STO+ 43
+6583      ENDIF    (251)
+6584      4
+6585      XEQ :PSTO:    (87)
+6586      RCL 49
+6587      2
+6588      ×
+6589      894
+6590      +
+6591      STO 43
+6592      5
+6593      XEQ :PSTO:    (87)
+6594      RCL 49
+6595      -4
+6596      ×
+6597      20000
+6598      +
+6599      STO 43
+6600      RCL 48
+6601      X=0?
+6602      IF    (252)
+6603        10
+6604        STO+ 43
+6605      ENDIF    (252)
+6606      6
+6607      XEQ :PSTO:    (87)
+6608    ENDIF    (248)
+6609    1
+6610    STO+ 42
+6611    99
+6612    RCL 42
+6613    X≤Y?
+6614  WHILE    (56)
+6615  ENDDO    (56)
+6616  INDEX "BD"
+6617  RTN
       ; ---- LBL :PSTO: X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44) ----
-6621  LBL :PSTO:    (87)
-6622  STO 45
-6623  11
-6624  +
-6625  RCL 42
-6626  STOIJ
-6627  RCL 43
-6628  STOEL
-6629  11
-6630  RCL- 45
-6631  RCL 44
-6632  STOIJ
-6633  RCL 43
-6634  CHS
-6635  STOEL
-6636  RTN
+6618  LBL :PSTO:    (87)
+6619  STO 45
+6620  11
+6621  +
+6622  RCL 42
+6623  STOIJ
+6624  RCL 43
+6625  STOEL
+6626  11
+6627  RCL- 45
+6628  RCL 44
+6629  STOIJ
+6630  RCL 43
+6631  CHS
+6632  STOEL
+6633  RTN
       ; ---- LBL :GLYPHS: the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the
       ; silhouette S of a black one, nothing on row 7), rows 14-26 the dark ones (piece + 20): the dither D AND NOT
       ; the mask M (rows 27-32) OR the glyph, computed with the bitwise commands (WSIZE 24) ----
-6637  LBL :GLYPHS:    (88)
-6638  INDEX "GL"
+6634  LBL :GLYPHS:    (88)
+6635  INDEX "GL"
       ; the glyph words O S M of python/layout.py (written by the build)
-6639  8
-6640  4
-6641  STOIJ
-6642  DROP
+6636  8
+6637  4
+6638  STOIJ
+6639  DROP
+6640  DROP
+6641  0
+6642  STOSEQ
 6643  DROP
 6644  0
 6645  STOSEQ
@@ -7038,37 +7038,37 @@
 6650  0
 6651  STOSEQ
 6652  DROP
-6653  0
+6653  96
 6654  STOSEQ
 6655  DROP
-6656  96
+6656  160
 6657  STOSEQ
 6658  DROP
-6659  160
+6659  4384
 6660  STOSEQ
 6661  DROP
-6662  4384
+6662  56864
 6663  STOSEQ
 6664  DROP
-6665  56864
+6665  73760
 6666  STOSEQ
 6667  DROP
 6668  73760
 6669  STOSEQ
 6670  DROP
-6671  73760
+6671  56864
 6672  STOSEQ
 6673  DROP
-6674  56864
+6674  4384
 6675  STOSEQ
 6676  DROP
-6677  4384
+6677  160
 6678  STOSEQ
 6679  DROP
-6680  160
+6680  96
 6681  STOSEQ
 6682  DROP
-6683  96
+6683  0
 6684  STOSEQ
 6685  DROP
 6686  0
@@ -7080,13 +7080,13 @@
 6692  0
 6693  STOSEQ
 6694  DROP
-6695  0
-6696  STOSEQ
-6697  DROP
-6698  6
-6699  4
-6700  STOIJ
-6701  DROP
+6695  6
+6696  4
+6697  STOIJ
+6698  DROP
+6699  DROP
+6700  0
+6701  STOSEQ
 6702  DROP
 6703  0
 6704  STOSEQ
@@ -7097,37 +7097,37 @@
 6709  0
 6710  STOSEQ
 6711  DROP
-6712  0
+6712  96
 6713  STOSEQ
 6714  DROP
-6715  96
+6715  224
 6716  STOSEQ
 6717  DROP
-6718  224
+6718  4576
 6719  STOSEQ
 6720  DROP
-6721  4576
+6721  57312
 6722  STOSEQ
 6723  DROP
-6724  57312
+6724  131040
 6725  STOSEQ
 6726  DROP
 6727  131040
 6728  STOSEQ
 6729  DROP
-6730  131040
+6730  57312
 6731  STOSEQ
 6732  DROP
-6733  57312
+6733  4576
 6734  STOSEQ
 6735  DROP
-6736  4576
+6736  224
 6737  STOSEQ
 6738  DROP
-6739  224
+6739  96
 6740  STOSEQ
 6741  DROP
-6742  96
+6742  0
 6743  STOSEQ
 6744  DROP
 6745  0
@@ -7139,13 +7139,13 @@
 6751  0
 6752  STOSEQ
 6753  DROP
-6754  0
-6755  STOSEQ
-6756  DROP
-6757  27
-6758  4
-6759  STOIJ
-6760  DROP
+6754  27
+6755  4
+6756  STOIJ
+6757  DROP
+6758  DROP
+6759  0
+6760  STOSEQ
 6761  DROP
 6762  0
 6763  STOSEQ
@@ -7153,19 +7153,19 @@
 6765  0
 6766  STOSEQ
 6767  DROP
-6768  0
+6768  240
 6769  STOSEQ
 6770  DROP
-6771  240
+6771  496
 6772  STOSEQ
 6773  DROP
-6774  496
+6774  15344
 6775  STOSEQ
 6776  DROP
-6777  15344
+6777  131056
 6778  STOSEQ
 6779  DROP
-6780  131056
+6780  262128
 6781  STOSEQ
 6782  DROP
 6783  262128
@@ -7177,19 +7177,19 @@
 6789  262128
 6790  STOSEQ
 6791  DROP
-6792  262128
+6792  131056
 6793  STOSEQ
 6794  DROP
-6795  131056
+6795  15344
 6796  STOSEQ
 6797  DROP
-6798  15344
+6798  496
 6799  STOSEQ
 6800  DROP
-6801  496
+6801  240
 6802  STOSEQ
 6803  DROP
-6804  240
+6804  0
 6805  STOSEQ
 6806  DROP
 6807  0
@@ -7198,148 +7198,148 @@
 6810  0
 6811  STOSEQ
 6812  DROP
-6813  0
-6814  STOSEQ
-6815  DROP
-6816  9
-6817  4
-6818  STOIJ
-6819  DROP
+6813  9
+6814  4
+6815  STOIJ
+6816  DROP
+6817  DROP
+6818  0
+6819  STOSEQ
 6820  DROP
 6821  0
 6822  STOSEQ
 6823  DROP
-6824  0
+6824  6144
 6825  STOSEQ
 6826  DROP
-6827  6144
+6827  25600
 6828  STOSEQ
 6829  DROP
-6830  25600
+6830  33816
 6831  STOSEQ
 6832  DROP
-6833  33816
+6833  66600
 6834  STOSEQ
 6835  DROP
-6836  66600
+6836  133192
 6837  STOSEQ
 6838  DROP
-6839  133192
+6839  264328
 6840  STOSEQ
 6841  DROP
-6842  264328
+6842  137480
 6843  STOSEQ
 6844  DROP
-6845  137480
+6845  142856
 6846  STOSEQ
 6847  DROP
-6848  142856
+6848  280584
 6849  STOSEQ
 6850  DROP
-6851  280584
+6851  165896
 6852  STOSEQ
 6853  DROP
-6854  165896
+6854  149512
 6855  STOSEQ
 6856  DROP
-6857  149512
+6857  141320
 6858  STOSEQ
 6859  DROP
-6860  141320
+6860  106472
 6861  STOSEQ
 6862  DROP
-6863  106472
+6863  28696
 6864  STOSEQ
 6865  DROP
-6866  28696
+6866  0
 6867  STOSEQ
 6868  DROP
 6869  0
 6870  STOSEQ
 6871  DROP
-6872  0
-6873  STOSEQ
-6874  DROP
-6875  5
-6876  4
-6877  STOIJ
-6878  DROP
+6872  5
+6873  4
+6874  STOIJ
+6875  DROP
+6876  DROP
+6877  0
+6878  STOSEQ
 6879  DROP
 6880  0
 6881  STOSEQ
 6882  DROP
-6883  0
+6883  6144
 6884  STOSEQ
 6885  DROP
-6886  6144
+6886  31744
 6887  STOSEQ
 6888  DROP
-6889  31744
+6889  64536
 6890  STOSEQ
 6891  DROP
-6892  64536
+6892  130104
 6893  STOSEQ
 6894  DROP
-6895  130104
+6895  260216
 6896  STOSEQ
 6897  DROP
-6898  260216
+6898  522488
 6899  STOSEQ
 6900  DROP
-6901  522488
+6901  260600
 6902  STOSEQ
 6903  DROP
-6904  260600
+6904  258040
 6905  STOSEQ
 6906  DROP
-6907  258040
+6907  511992
 6908  STOSEQ
 6909  DROP
-6910  511992
+6910  233464
 6911  STOSEQ
 6912  DROP
-6913  233464
+6913  249848
 6914  STOSEQ
 6915  DROP
-6916  249848
+6916  258040
 6917  STOSEQ
 6918  DROP
-6919  258040
+6919  131064
 6920  STOSEQ
 6921  DROP
-6922  131064
+6922  28696
 6923  STOSEQ
 6924  DROP
-6925  28696
+6925  0
 6926  STOSEQ
 6927  DROP
 6928  0
 6929  STOSEQ
 6930  DROP
-6931  0
-6932  STOSEQ
-6933  DROP
-6934  28
-6935  4
-6936  STOIJ
-6937  DROP
+6931  28
+6932  4
+6933  STOIJ
+6934  DROP
+6935  DROP
+6936  0
+6937  STOSEQ
 6938  DROP
-6939  0
+6939  15360
 6940  STOSEQ
 6941  DROP
-6942  15360
+6942  65024
 6943  STOSEQ
 6944  DROP
-6945  65024
+6945  130620
 6946  STOSEQ
 6947  DROP
-6948  130620
+6948  261756
 6949  STOSEQ
 6950  DROP
-6951  261756
+6951  524028
 6952  STOSEQ
 6953  DROP
-6954  524028
+6954  1048572
 6955  STOSEQ
 6956  DROP
 6957  1048572
@@ -7357,7 +7357,7 @@
 6969  1048572
 6970  STOSEQ
 6971  DROP
-6972  1048572
+6972  524284
 6973  STOSEQ
 6974  DROP
 6975  524284
@@ -7366,22 +7366,22 @@
 6978  524284
 6979  STOSEQ
 6980  DROP
-6981  524284
+6981  262140
 6982  STOSEQ
 6983  DROP
-6984  262140
+6984  63548
 6985  STOSEQ
 6986  DROP
-6987  63548
+6987  0
 6988  STOSEQ
 6989  DROP
-6990  0
-6991  STOSEQ
-6992  DROP
-6993  10
-6994  4
-6995  STOIJ
-6996  DROP
+6990  10
+6991  4
+6992  STOIJ
+6993  DROP
+6994  DROP
+6995  0
+6996  STOSEQ
 6997  DROP
 6998  0
 6999  STOSEQ
@@ -7392,37 +7392,37 @@
 7004  0
 7005  STOSEQ
 7006  DROP
-7007  0
+7007  96
 7008  STOSEQ
 7009  DROP
-7010  96
+7010  28832
 7011  STOSEQ
 7012  DROP
-7013  28832
+7013  43296
 7014  STOSEQ
 7015  DROP
-7016  43296
+7016  120352
 7017  STOSEQ
 7018  DROP
-7019  120352
+7019  460832
 7020  STOSEQ
 7021  DROP
 7022  460832
 7023  STOSEQ
 7024  DROP
-7025  460832
+7025  120352
 7026  STOSEQ
 7027  DROP
-7028  120352
+7028  43296
 7029  STOSEQ
 7030  DROP
-7031  43296
+7031  28832
 7032  STOSEQ
 7033  DROP
-7034  28832
+7034  96
 7035  STOSEQ
 7036  DROP
-7037  96
+7037  0
 7038  STOSEQ
 7039  DROP
 7040  0
@@ -7434,13 +7434,13 @@
 7046  0
 7047  STOSEQ
 7048  DROP
-7049  0
-7050  STOSEQ
-7051  DROP
-7052  4
-7053  4
-7054  STOIJ
-7055  DROP
+7049  4
+7050  4
+7051  STOIJ
+7052  DROP
+7053  DROP
+7054  0
+7055  STOSEQ
 7056  DROP
 7057  0
 7058  STOSEQ
@@ -7451,37 +7451,37 @@
 7063  0
 7064  STOSEQ
 7065  DROP
-7066  0
+7066  96
 7067  STOSEQ
 7068  DROP
-7069  96
+7069  28896
 7070  STOSEQ
 7071  DROP
-7072  28896
+7072  63968
 7073  STOSEQ
 7074  DROP
-7075  63968
+7075  122848
 7076  STOSEQ
 7077  DROP
-7078  122848
+7078  462816
 7079  STOSEQ
 7080  DROP
 7081  462816
 7082  STOSEQ
 7083  DROP
-7084  462816
+7084  122848
 7085  STOSEQ
 7086  DROP
-7087  122848
+7087  63968
 7088  STOSEQ
 7089  DROP
-7090  63968
+7090  28896
 7091  STOSEQ
 7092  DROP
-7093  28896
+7093  96
 7094  STOSEQ
 7095  DROP
-7096  96
+7096  0
 7097  STOSEQ
 7098  DROP
 7099  0
@@ -7493,13 +7493,13 @@
 7105  0
 7106  STOSEQ
 7107  DROP
-7108  0
-7109  STOSEQ
-7110  DROP
-7111  29
-7112  4
-7113  STOIJ
-7114  DROP
+7108  29
+7109  4
+7110  STOIJ
+7111  DROP
+7112  DROP
+7113  0
+7114  STOSEQ
 7115  DROP
 7116  0
 7117  STOSEQ
@@ -7507,19 +7507,19 @@
 7119  0
 7120  STOSEQ
 7121  DROP
-7122  0
+7122  240
 7123  STOSEQ
 7124  DROP
-7125  240
+7125  63984
 7126  STOSEQ
 7127  DROP
-7128  63984
+7128  131056
 7129  STOSEQ
 7130  DROP
-7131  131056
+7131  262128
 7132  STOSEQ
 7133  DROP
-7134  262128
+7134  1048560
 7135  STOSEQ
 7136  DROP
 7137  1048560
@@ -7531,19 +7531,19 @@
 7143  1048560
 7144  STOSEQ
 7145  DROP
-7146  1048560
+7146  262128
 7147  STOSEQ
 7148  DROP
-7149  262128
+7149  131056
 7150  STOSEQ
 7151  DROP
-7152  131056
+7152  63984
 7153  STOSEQ
 7154  DROP
-7155  63984
+7155  240
 7156  STOSEQ
 7157  DROP
-7158  240
+7158  0
 7159  STOSEQ
 7160  DROP
 7161  0
@@ -7552,13 +7552,13 @@
 7164  0
 7165  STOSEQ
 7166  DROP
-7167  0
-7168  STOSEQ
-7169  DROP
-7170  11
-7171  4
-7172  STOIJ
-7173  DROP
+7167  11
+7168  4
+7169  STOIJ
+7170  DROP
+7171  DROP
+7172  0
+7173  STOSEQ
 7174  DROP
 7175  0
 7176  STOSEQ
@@ -7566,43 +7566,43 @@
 7178  0
 7179  STOSEQ
 7180  DROP
-7181  0
+7181  458976
 7182  STOSEQ
 7183  DROP
-7184  458976
+7184  295200
 7185  STOSEQ
 7186  DROP
-7187  295200
+7187  425504
 7188  STOSEQ
 7189  DROP
-7190  425504
+7190  65568
 7191  STOSEQ
 7192  DROP
-7193  65568
+7193  393248
 7194  STOSEQ
 7195  DROP
-7196  393248
+7196  262176
 7197  STOSEQ
 7198  DROP
 7199  262176
 7200  STOSEQ
 7201  DROP
-7202  262176
+7202  393248
 7203  STOSEQ
 7204  DROP
-7205  393248
+7205  65568
 7206  STOSEQ
 7207  DROP
-7208  65568
+7208  425504
 7209  STOSEQ
 7210  DROP
-7211  425504
+7211  295200
 7212  STOSEQ
 7213  DROP
-7214  295200
+7214  458976
 7215  STOSEQ
 7216  DROP
-7217  458976
+7217  0
 7218  STOSEQ
 7219  DROP
 7220  0
@@ -7611,13 +7611,13 @@
 7223  0
 7224  STOSEQ
 7225  DROP
-7226  0
-7227  STOSEQ
-7228  DROP
-7229  3
-7230  4
-7231  STOIJ
-7232  DROP
+7226  3
+7227  4
+7228  STOIJ
+7229  DROP
+7230  DROP
+7231  0
+7232  STOSEQ
 7233  DROP
 7234  0
 7235  STOSEQ
@@ -7625,19 +7625,19 @@
 7237  0
 7238  STOSEQ
 7239  DROP
-7240  0
+7240  458976
 7241  STOSEQ
 7242  DROP
-7243  458976
+7243  492000
 7244  STOSEQ
 7245  DROP
-7246  492000
+7246  524256
 7247  STOSEQ
 7248  DROP
-7249  524256
+7249  131040
 7250  STOSEQ
 7251  DROP
-7252  131040
+7252  524256
 7253  STOSEQ
 7254  DROP
 7255  524256
@@ -7649,19 +7649,19 @@
 7261  524256
 7262  STOSEQ
 7263  DROP
-7264  524256
+7264  131040
 7265  STOSEQ
 7266  DROP
-7267  131040
+7267  524256
 7268  STOSEQ
 7269  DROP
-7270  524256
+7270  492000
 7271  STOSEQ
 7272  DROP
-7273  492000
+7273  458976
 7274  STOSEQ
 7275  DROP
-7276  458976
+7276  0
 7277  STOSEQ
 7278  DROP
 7279  0
@@ -7670,24 +7670,24 @@
 7282  0
 7283  STOSEQ
 7284  DROP
-7285  0
-7286  STOSEQ
-7287  DROP
-7288  30
-7289  4
-7290  STOIJ
-7291  DROP
+7285  30
+7286  4
+7287  STOIJ
+7288  DROP
+7289  DROP
+7290  0
+7291  STOSEQ
 7292  DROP
 7293  0
 7294  STOSEQ
 7295  DROP
-7296  0
+7296  1016304
 7297  STOSEQ
 7298  DROP
-7299  1016304
+7299  1033200
 7300  STOSEQ
 7301  DROP
-7302  1033200
+7302  1048560
 7303  STOSEQ
 7304  DROP
 7305  1048560
@@ -7717,163 +7717,163 @@
 7329  1048560
 7330  STOSEQ
 7331  DROP
-7332  1048560
+7332  1033200
 7333  STOSEQ
 7334  DROP
-7335  1033200
+7335  1016304
 7336  STOSEQ
 7337  DROP
-7338  1016304
+7338  0
 7339  STOSEQ
 7340  DROP
 7341  0
 7342  STOSEQ
 7343  DROP
-7344  0
-7345  STOSEQ
-7346  DROP
-7347  12
-7348  4
-7349  STOIJ
-7350  DROP
+7344  12
+7345  4
+7346  STOIJ
+7347  DROP
+7348  DROP
+7349  0
+7350  STOSEQ
 7351  DROP
 7352  0
 7353  STOSEQ
 7354  DROP
-7355  0
+7355  786432
 7356  STOSEQ
 7357  DROP
-7358  786432
+7358  491744
 7359  STOSEQ
 7360  DROP
-7361  491744
+7361  155936
 7362  STOSEQ
 7363  DROP
-7364  155936
+7364  72224
 7365  STOSEQ
 7366  DROP
-7367  72224
+7367  33824
 7368  STOSEQ
 7369  DROP
-7370  33824
+7370  458784
 7371  STOSEQ
 7372  DROP
-7373  458784
+7373  524320
 7374  STOSEQ
 7375  DROP
 7376  524320
 7377  STOSEQ
 7378  DROP
-7379  524320
+7379  458784
 7380  STOSEQ
 7381  DROP
-7382  458784
+7382  33824
 7383  STOSEQ
 7384  DROP
-7385  33824
+7385  72224
 7386  STOSEQ
 7387  DROP
-7388  72224
+7388  155936
 7389  STOSEQ
 7390  DROP
-7391  155936
+7391  491744
 7392  STOSEQ
 7393  DROP
-7394  491744
+7394  786432
 7395  STOSEQ
 7396  DROP
-7397  786432
+7397  0
 7398  STOSEQ
 7399  DROP
 7400  0
 7401  STOSEQ
 7402  DROP
-7403  0
-7404  STOSEQ
-7405  DROP
-7406  2
-7407  4
-7408  STOIJ
-7409  DROP
+7403  2
+7404  4
+7405  STOIJ
+7406  DROP
+7407  DROP
+7408  0
+7409  STOSEQ
 7410  DROP
 7411  0
 7412  STOSEQ
 7413  DROP
-7414  0
+7414  786432
 7415  STOSEQ
 7416  DROP
-7417  786432
+7417  491744
 7418  STOSEQ
 7419  DROP
-7420  491744
+7420  254432
 7421  STOSEQ
 7422  DROP
-7423  254432
+7423  130016
 7424  STOSEQ
 7425  DROP
-7426  130016
+7426  65504
 7427  STOSEQ
 7428  DROP
-7429  65504
+7429  524256
 7430  STOSEQ
 7431  DROP
-7432  524256
+7432  1048544
 7433  STOSEQ
 7434  DROP
 7435  1048544
 7436  STOSEQ
 7437  DROP
-7438  1048544
+7438  524256
 7439  STOSEQ
 7440  DROP
-7441  524256
+7441  65504
 7442  STOSEQ
 7443  DROP
-7444  65504
+7444  130016
 7445  STOSEQ
 7446  DROP
-7447  130016
+7447  254432
 7448  STOSEQ
 7449  DROP
-7450  254432
+7450  491744
 7451  STOSEQ
 7452  DROP
-7453  491744
+7453  786432
 7454  STOSEQ
 7455  DROP
-7456  786432
+7456  0
 7457  STOSEQ
 7458  DROP
 7459  0
 7460  STOSEQ
 7461  DROP
-7462  0
-7463  STOSEQ
-7464  DROP
-7465  31
-7466  4
-7467  STOIJ
-7468  DROP
+7462  31
+7463  4
+7464  STOIJ
+7465  DROP
+7466  DROP
+7467  0
+7468  STOSEQ
 7469  DROP
-7470  0
+7470  1966080
 7471  STOSEQ
 7472  DROP
-7473  1966080
+7473  2081264
 7474  STOSEQ
 7475  DROP
-7476  2081264
+7476  2094064
 7477  STOSEQ
 7478  DROP
-7479  2094064
+7479  1048560
 7480  STOSEQ
 7481  DROP
-7482  1048560
+7482  524272
 7483  STOSEQ
 7484  DROP
-7485  524272
+7485  1048560
 7486  STOSEQ
 7487  DROP
-7488  1048560
+7488  2097136
 7489  STOSEQ
 7490  DROP
 7491  2097136
@@ -7885,172 +7885,172 @@
 7497  2097136
 7498  STOSEQ
 7499  DROP
-7500  2097136
+7500  1048560
 7501  STOSEQ
 7502  DROP
-7503  1048560
+7503  524272
 7504  STOSEQ
 7505  DROP
-7506  524272
+7506  1048560
 7507  STOSEQ
 7508  DROP
-7509  1048560
+7509  2094064
 7510  STOSEQ
 7511  DROP
-7512  2094064
+7512  2081264
 7513  STOSEQ
 7514  DROP
-7515  2081264
+7515  1966080
 7516  STOSEQ
 7517  DROP
-7518  1966080
+7518  0
 7519  STOSEQ
 7520  DROP
-7521  0
-7522  STOSEQ
-7523  DROP
-7524  13
-7525  4
-7526  STOIJ
-7527  DROP
+7521  13
+7522  4
+7523  STOIJ
+7524  DROP
+7525  DROP
+7526  0
+7527  STOSEQ
 7528  DROP
-7529  0
+7529  57344
 7530  STOSEQ
 7531  DROP
-7532  57344
+7532  69632
 7533  STOSEQ
 7534  DROP
-7535  69632
+7535  67680
 7536  STOSEQ
 7537  DROP
-7538  67680
+7538  66720
 7539  STOSEQ
 7540  DROP
-7541  66720
+7541  66336
 7542  STOSEQ
 7543  DROP
-7544  66336
+7544  294944
 7545  STOSEQ
 7546  DROP
-7547  294944
+7547  278560
 7548  STOSEQ
 7549  DROP
-7550  278560
+7550  753696
 7551  STOSEQ
 7552  DROP
 7553  753696
 7554  STOSEQ
 7555  DROP
-7556  753696
+7556  278560
 7557  STOSEQ
 7558  DROP
-7559  278560
+7559  294944
 7560  STOSEQ
 7561  DROP
-7562  294944
+7562  66336
 7563  STOSEQ
 7564  DROP
-7565  66336
+7565  66720
 7566  STOSEQ
 7567  DROP
-7568  66720
+7568  67680
 7569  STOSEQ
 7570  DROP
-7571  67680
+7571  69632
 7572  STOSEQ
 7573  DROP
-7574  69632
+7574  57344
 7575  STOSEQ
 7576  DROP
-7577  57344
+7577  0
 7578  STOSEQ
 7579  DROP
-7580  0
-7581  STOSEQ
-7582  DROP
-7583  1
-7584  4
-7585  STOIJ
-7586  DROP
+7580  1
+7581  4
+7582  STOIJ
+7583  DROP
+7584  DROP
+7585  0
+7586  STOSEQ
 7587  DROP
-7588  0
+7588  57344
 7589  STOSEQ
 7590  DROP
-7591  57344
+7591  126976
 7592  STOSEQ
 7593  DROP
-7594  126976
+7594  129120
 7595  STOSEQ
 7596  DROP
-7597  129120
+7597  130272
 7598  STOSEQ
 7599  DROP
-7600  130272
+7600  131040
 7601  STOSEQ
 7602  DROP
-7603  131040
+7603  327648
 7604  STOSEQ
 7605  DROP
-7606  327648
+7606  294880
 7607  STOSEQ
 7608  DROP
-7609  294880
+7609  1048544
 7610  STOSEQ
 7611  DROP
 7612  1048544
 7613  STOSEQ
 7614  DROP
-7615  1048544
+7615  294880
 7616  STOSEQ
 7617  DROP
-7618  294880
+7618  327648
 7619  STOSEQ
 7620  DROP
-7621  327648
+7621  131040
 7622  STOSEQ
 7623  DROP
-7624  131040
+7624  130272
 7625  STOSEQ
 7626  DROP
-7627  130272
+7627  129120
 7628  STOSEQ
 7629  DROP
-7630  129120
+7630  126976
 7631  STOSEQ
 7632  DROP
-7633  126976
+7633  57344
 7634  STOSEQ
 7635  DROP
-7636  57344
+7636  0
 7637  STOSEQ
 7638  DROP
-7639  0
-7640  STOSEQ
-7641  DROP
-7642  32
-7643  4
-7644  STOIJ
-7645  DROP
+7639  32
+7640  4
+7641  STOIJ
+7642  DROP
+7643  DROP
+7644  126976
+7645  STOSEQ
 7646  DROP
-7647  126976
+7647  260096
 7648  STOSEQ
 7649  DROP
-7650  260096
+7650  261360
 7651  STOSEQ
 7652  DROP
-7653  261360
+7653  262128
 7654  STOSEQ
 7655  DROP
 7656  262128
 7657  STOSEQ
 7658  DROP
-7659  262128
+7659  1048560
 7660  STOSEQ
 7661  DROP
 7662  1048560
 7663  STOSEQ
 7664  DROP
-7665  1048560
+7665  2097136
 7666  STOSEQ
 7667  DROP
 7668  2097136
@@ -8062,106 +8062,103 @@
 7674  2097136
 7675  STOSEQ
 7676  DROP
-7677  2097136
+7677  1048560
 7678  STOSEQ
 7679  DROP
 7680  1048560
 7681  STOSEQ
 7682  DROP
-7683  1048560
+7683  262128
 7684  STOSEQ
 7685  DROP
 7686  262128
 7687  STOSEQ
 7688  DROP
-7689  262128
+7689  261360
 7690  STOSEQ
 7691  DROP
-7692  261360
+7692  260096
 7693  STOSEQ
 7694  DROP
-7695  260096
+7695  126976
 7696  STOSEQ
 7697  DROP
-7698  126976
-7699  STOSEQ
-7700  DROP
-7701  -6
-7702  STO 41
+7698  -6
+7699  STO 41
       ; each piece R41 (-6 to 6)
-7703  DO    (57)
-7704    1
-7705    STO 33
+7700  DO    (57)
+7701    1
+7702    STO 33
         ; its 24 columns R33: the dither AND NOT the mask OR the glyph, into its dark square's row of GL
-7706    DO    (58)
-7707      RCL 41
-7708      7
-7709      +
-7710      RCL 33
-7711      STOIJ
-7712      RCLEL
-7713      SINT
-7714      STO 48
-7715      DROP
-7716      0
-7717      SINT
-7718      STO 49
-7719      DROP
-7720      RCL 41
-7721      X≠0?
-7722      IF    (253)
-7723        RCL 41
-7724        ABS
-7725        26
-7726        +
-7727        RCL 33
-7728        STOIJ
-7729        RCLEL
-7730        SINT
-7731        STO 49
-7732        DROP
-7733      ENDIF    (253)
-7734      5592405
-7735      SINT
-7736      RCL 33
-7737      2
-7738      MOD
-7739      X=0?
-7740      IF    (254)
-7741        DROP
-7742        11184810
-7743        SINT
-7744      ELSE    (254)
-7745        DROP
-7746      ENDIF    (254)
-7747      RCL 49
-7748      NOT
-7749      AND
-7750      RCL 48
-7751      OR
-7752      STO 49
-7753      RCL 41
-7754      20
-7755      +
-7756      RCL 33
-7757      STOIJ
-7758      RCL 49
-7759      →REAL
-7760      STOEL
-7761      1
-7762      STO+ 33
-7763      24
-7764      RCL 33
-7765      X≤Y?
-7766    WHILE    (58)
-7767    ENDDO    (58)
-7768    1
-7769    STO+ 41
-7770    6
-7771    RCL 41
-7772    X≤Y?
-7773  WHILE    (57)
-7774  ENDDO    (57)
-7775  INDEX "BD"
-7776  RTN
-7777  END
+7703    DO    (58)
+7704      RCL 41
+7705      7
+7706      +
+7707      RCL 33
+7708      STOIJ
+7709      RCLEL
+7710      SINT
+7711      STO 48
+7712      DROP
+7713      0
+7714      SINT
+7715      STO 49
+7716      DROP
+7717      RCL 41
+7718      X≠0?
+7719      IF    (253)
+7720        RCL 41
+7721        ABS
+7722        26
+7723        +
+7724        RCL 33
+7725        STOIJ
+7726        RCLEL
+7727        SINT
+7728        STO 49
+7729        DROP
+7730      ENDIF    (253)
+7731      5592405
+7732      SINT
+7733      RCL 33
+7734      2
+7735      MOD
+7736      X=0?
+7737      IF    (254)
+7738        DROP
+7739        11184810
+7740        SINT
+7741      ELSE    (254)
+7742        DROP
+7743      ENDIF    (254)
+7744      RCL 49
+7745      NOT
+7746      AND
+7747      RCL 48
+7748      OR
+7749      STO 49
+7750      RCL 41
+7751      20
+7752      +
+7753      RCL 33
+7754      STOIJ
+7755      RCL 49
+7756      →REAL
+7757      STOEL
+7758      1
+7759      STO+ 33
+7760      24
+7761      RCL 33
+7762      X≤Y?
+7763    WHILE    (58)
+7764    ENDDO    (58)
+7765    1
+7766    STO+ 41
+7767    6
+7768    RCL 41
+7769    X≤Y?
+7770  WHILE    (57)
+7771  ENDDO    (57)
+7772  INDEX "BD"
+7773  RTN
+7774  END

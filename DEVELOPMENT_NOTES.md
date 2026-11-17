@@ -301,7 +301,12 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - The start checks the memory first (Victor: avoid "RAM is full" when the game sets up). Old BD GL OB freed (0 STO),
   then MEM# against 62 000 bytes (BD, GL, OB at 16 bytes a number, 3 000 to spare) + 9 600 for GH when there is no
   saved game. Too little: "CHESS 47: NOT ENOUGH MEMORY", the free and the needed KB, a key, the end with nothing
-  changed. The 16 bytes a number and the margin are estimates: to be checked with MEM on the calculator. IF 254. No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
+  changed. The 16 bytes a number and the margin are estimates: to be checked with MEM on the calculator. IF 254.
+- The panel in the big font (Victor: bigger fonts for the menu, the moves and the mode): everything at x 212 in
+  GRFNT 21, 20 rows a line. Your side and level at row 196 ("YOU: WHITE  LEVEL 2", "  CRAZY" without LEVEL so the
+  longest fits 188 columns), Chess960's number at 176, the status at 156 as before, the last three moves (R77-R79)
+  at 128 108 88, the keys in four lines at 64 44 24 4: "8 2 4 6 MOVE 5 PLAY", "+ SIDES  3 2 PLAYERS",
+  "9 C47-C47 7 NEW 0 END", "1 LEVEL ÷ 960 × ABC". HTEXT still keeps seven moves (R73-R79). No new register: after the columns R34 is the piece x CHF (read again from BD), R36 the text, R33 the counter
   (R48 R49 are not free: the Chess960 castling by the keys keeps values in them across DRAWSQ).
 - CHF is made by INIT (0 STO+), kept over 7 and ÷ and at the end when it is 1 (deleted when 0).
 - The panel's last line: "1 LEVEL  ÷ 960  × ABC  0 END". IF 253 of 255, DO 56.

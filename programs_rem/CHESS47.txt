@@ -4088,7 +4088,7 @@ ATEXT Z
 0
 GRMOD
 RTN
-REM ---- LBL :PANEL: the title, your side, the level, the keys (x 212) ----
+REM ---- LBL :PANEL: the title, your side, the level, the keys (x 212), all in GRFNT 21 (v0.6.0: the big font) ----
 LBL :PANEL:
 1
 GRMOD
@@ -4100,11 +4100,8 @@ DROP
 218
 212
 ATEXT Z
-10
-GRFNT
-DROP
-"                                      "
-200
+"                           "
+196
 212
 ATEXT Z
 "YOU: "
@@ -4130,35 +4127,35 @@ IF
   "2 PLAYERS"
   STO 48
 ENDIF
-"   LEVEL "
-x→α 48
 RCL 26
 X=0?
 IF
-  "CRAZY"
+  "  CRAZY"
   x→α 48
 ELSE
+  "  LEVEL "
+  x→α 48
   RCL 26
   αIP 48
 ENDIF
 RCL 48
-200
+196
 212
 ATEXT Z
-"8 2 4 6 CURSOR  5 PICK / PLAY"
-45
+"8 2 4 6 MOVE 5 PLAY"
+64
 212
 ATEXT Z
-"+ SWAP SIDES  9 C47 VS C47"
-34
+"+ SIDES  3 2 PLAYERS"
+44
 212
 ATEXT Z
-"3 TWO PLAYERS  7 NEW GAME"
-23
+"9 C47-C47 7 NEW 0 END"
+24
 212
 ATEXT Z
-"1 LEVEL  ÷ 960  × ABC  0 END"
-12
+"1 LEVEL ÷ 960 × ABC"
+4
 212
 ATEXT Z
 INDEX "BD"
@@ -4175,7 +4172,7 @@ IF
   -
   αIP 48
   RCL 48
-  186
+  176
   212
   ATEXT Z
 ENDIF
@@ -4216,22 +4213,22 @@ WSIZE 64
 0
 GRMOD
 RTN
-REM ---- LBL :HSHOW: the move list R73-R79 shown in GRFNT 10 at x 212, rows 136 down (12 rows a line): "12. e4" for
+REM ---- LBL :HSHOW: the last three moves of the list R73-R79 (R77-R79) shown in GRFNT 21 at x 212, rows 128 down (20 rows a line, as the panel since v0.6.0): "12. e4" for
 REM white, "12... Nxe5+" for black (LBL :HTEXT: writes them) ----
 LBL :HSHOW:
 1
 GRMOD
 DROP
-10
+21
 GRFNT
 DROP
-73
+77
 STO 48
-136
+128
 STO 49
-REM the seven lines R73-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
+REM the three lines R77-R79 (R48 the register, R49 the row), each cleared, then its text when there is one
 DO
-  "                    "
+  "               "
   RCL 49
   212
   ATEXT Z
@@ -4243,7 +4240,7 @@ DO
     212
     ATEXT Z
   ENDIF
-  -12
+  -20
   STO+ 49
   1
   STO+ 48
