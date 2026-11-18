@@ -1,4 +1,4 @@
-REM CHESS47 v0.7.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.7.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -2597,9 +2597,18 @@ ENDIF
 RTN
 REM ---- LBL :RECAP: the capture reply R40, not played: R71 = R60 x (SC + its change) by LBL :DELTA:, + the value of the
 REM piece that took (R43, a queen if it promoted) when R60 attacks the target; the attack test with the square it left
-REM emptied for the time of the test (R46 its piece), as after the reply ----
+REM emptied for the time of the test (R46 its piece), as after the reply. Not when the reply takes a king (v0.7.1: the
+REM taking king's 20 000 cancelled the king's loss, so a king move next to the other king looked legal) ----
 LBL :RECAP:
 XEQ :DELTA:
+1
+RCL 42
+STOIJ
+RCLEL
+ABS
+6
+X=Y?
+RTN
 1
 RCL 41
 STOIJ
