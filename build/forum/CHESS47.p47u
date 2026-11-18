@@ -6691,7 +6691,7 @@ STOIJ
 STOEL
 1                               ; row CR
 RCL 38
-INDEX "ML"
+INDEX "CR"
 STOIJ
 13
 STOEL
@@ -6715,7 +6715,7 @@ STOEL
 RCL 38
 70
 +
-INDEX "ML"
+INDEX "CR"
 STOIJ
 7
 STOEL
