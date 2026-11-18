@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""The dev-opt test programs in the simulator (python/c47sim.py, which keeps local registers per subroutine level as
-the firmware does): LOCT47 runs its five timings and shows them, and after the key its XEQ'd routine cannot read the
-caller's R.05 (the firmware: local register .05 not defined).
+"""The dev-opt test programs in the simulator (python/c47sim.py): LOCT47 v0.2 runs its ten timings of the matrix
+commands, shows them and ends (TM and TS deleted). (v0.1's subroutine test, on the C47: "Out of range".)
   python3 tools/build_devopt.py && python3 tests/test_devopt.py"""
 import os, sys
 from decimal import Decimal as D
@@ -35,9 +34,9 @@ def main():
         err = 'waits for a key'
     except ValueError as e:
         err = str(e)
-    check(c.steps > 6 * 10000, 'the five timings and the empty loop ran (%d steps), TM deleted: %s' % (c.steps, 'TM' not in c.mats))
-    check(err is not None and 'no local register' in err,
-          'the XEQ\'d routine cannot read R.05 of LOCT47 (as the firmware): %s' % err)
+    check(err is None or err == 'waits for a key', 'LOCT47 v0.2 runs to its end in the simulator (%s)' % (err or 'ended'))
+    check(c.steps > 11 * 2000 * 2, 'the ten tests and the empty loop ran (%d steps)' % c.steps)
+    check('TM' not in c.mats and 'TS' not in c.mats, 'the matrices TM and TS deleted')
     print('\n%s' % ('ALL OK' if not FAIL else '%d FAILED' % len(FAIL)))
     return not FAIL
 
