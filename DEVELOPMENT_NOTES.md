@@ -327,3 +327,49 @@ EIGEN and the 34-digit precision do not help a chess engine: not planned.
 - Easter egg: ÷ 1701 (NCC-1701, the Kobayashi Maru) starts a new game of normal chess with "KIRK RULES!" in the
   status line, for the forum's "beat the machine under the James T Kirk rules".
 - The number's entry takes a fourth digit after 170 only (1701; 1704 and the like: "960: 000 TO 959").
+
+## Nov 18, 2026 - v0.7.0: a third less memory, the build's macros (branch claude/chess47-opt)
+
+Victor asked about a suggestion (Gemini) to pack CHESS47's piece-square tables bit by bit (8 bits a square at WSIZE 64)
+or as 2 decimal digits a square. It was written for another engine: PT holds material + piece-square values (up to
+±20 044, not 8 bits or 2 digits), it is computed at the start (packing saves no program bytes), and the search reads it
+about once every 105 steps (2 720 reads in 286 508 steps over 5 positions at level 2): a decode of 8-12 steps a read
+would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. What was done instead:
+
+1. **The build** (tools/build_chess47.py): macros, `DEF :NAME:` ... `ENDDEF`, written out (with a REM line) where
+   `USE :NAME:` stands, and constants `@NAME` (python/layout.py BD: the rows of BD; MEM and GHM, the memory the start
+   checks, computed from the sizes). The listing shows `@ST    (5)`, the forum file the row's name. Four IFs of the end
+   (a test and one step) became the test alone: IF 254 -> 250. The same program (7 766 steps).
+2. **The memory** (the start: 62 000 + 9 600 -> 43 000 + 4 800 bytes):
+   - PT white's only. The piece-square values of python/chess47ref.py are the same on both wings (checked for the six
+     kinds on every square), so black's table is white's turned round: value(-t, s) = -value(t, 121 - s) (a1 22 <->
+     h8 99). The macros :PTW: (a piece of the colour c = R45) and :PTX: (the other colour's) read W = c x the value,
+     row |p| + PT, column 60.5 + c (s - 60.5) (60.5 - c (s - 60.5) for the other colour); LBL :VAL: is :PTW: x c.
+     PSTALL writes white's rows only. The twin is unchanged (the same values).
+   - The undo data (6 numbers a ply) in the columns 1-6 of PT's rows 6-8: those columns are never a square. Row 5 is
+     the state row and the empty piece's row (as row 11 was). BD 23 x 120 -> 14 x 120 (1 080 numbers, about 17 KB).
+     INIT's clearing of a kept BD: rows 2-5 whole, the undo columns of rows 6-8.
+   - GH 2 x 300 -> 1 x 300: key x 100 000 + move a ply (key < 2^32: up to 4.3E14, exact), the start's key in column 300
+     (the ply q at column (q + 299) MOD 300 + 1). The moves read with 100000 MOD, so a record of v0.6.0 (moves in row 1)
+     is read the same way, and the replay at the start writes it again as one row (tests: a saved game of v0.6.0).
+     chess47sim.gh / gh_row give the moves (tests, match47, selfplay47).
+   - OB 14 x 11 -> 14 x 2: five book moves to a number (25 digits), read in turn by LBL :OBNX: (R48 the rest).
+     To be confirmed on the C47: a 25-digit number as a program step.
+   - Found by the tests' Chess960 search: in Chess960's castling the king lands on its own rook, so MAKE's "piece
+     taken" can be one's own; it is read as 0 there ((x - |x|) / 2 of x = c x piece) and the castling takes the rook's
+     value off with VAL (40 random Chess960 positions, then the full tests).
+   - A 13 x 64 PT of its own (Victor's idea, Nov 18) would save 728 numbers; the mirrored PT saves 840 (with the undo
+     data, 1 080) and keeps one INDEX. A 6 x 64 matrix on top of it would save 336 more numbers (about 5 KB) for an
+     INDEX switch and a mailbox -> 64 index on every read (about +10 % steps): not done.
+3. **The speed:** DELTA keeps T, the column of to for its colour, in R44 (the piece taken's is 121 - T) and adds the
+   values to c SC (one multiplication at the end); MAKE keeps T in R49; :CRSQ: is a macro (inlined twice). 22 positions
+   at level 2 (the 12 of the tests and 10 of random games, seed 47): v0.6.0 1 443 347 steps, v0.7.0 1 505 142 (+4.3 %).
+   NUPD and ALIGN were not inlined: NUPD would cost 2 IFs for 0.3 %, ALIGN returns from inside.
+4. **The board in local registers** (the plan of Nov 1: RCL IND, one step a square instead of four) **cannot work**:
+   in the firmware (src/c47/programming/lblGtoXeq.c fnExecute) every XEQ starts a new subroutine level with no local
+   registers (currentNumberOfLocalRegisters = 0), and RCL IND of 112 + n reaches R.nn of the running level only
+   (registers.c isValidIndirectRegisterParam). The engine's board is read in XEQ'd routines (GEN, ATT, MAKE, DELTA),
+   so they would not see CHESS47's local registers; LocR also stops at 99 (registers.c allocateLocalRegisters), and
+   the mailbox has 120 squares. c47sim already models it (locals per level). A test program for Victor (it shows the
+   error on the calculator and times a matrix read, a register read and an XEQ / RTN) is on the branch
+   claude/chess47-dev-opt (build/dev-opt/).
