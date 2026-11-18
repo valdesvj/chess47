@@ -373,3 +373,13 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
    the mailbox has 120 squares. c47sim already models it (locals per level). A test program for Victor (it shows the
    error on the calculator and times a matrix read, a register read and an XEQ / RTN) is on the branch
    claude/chess47-dev-opt (build/dev-opt/).
+
+## Nov 18, 2026 - dev-opt: LOCT47, the test for the board in local registers (branch claude/chess47-dev-opt)
+
+- Step 4 of the plan of Nov 18 (the board in local registers, `RCL IND`) cannot work in CHESS47: the firmware gives
+  each `XEQ` level its own local registers (none until its own `LocR`), see v0.7.0 above and docs/DEVOPT.md.
+- Instead: programs_rem/LOCT47.txt, built by tools/build_devopt.py into build/dev-opt/ (LOCT47.txt for rejig,
+  LOCT47_doc.txt the listing): it times a matrix read, `RCL IND` global and local, `RCL R.nn`, `XEQ`/`RTN` on the
+  calculator, then shows the error of a subroutine reading the caller's R.05. tests/test_devopt.py runs it in the
+  simulator (213 steps; the timings, then "no local register R.05 at level 1").
+- Waiting for Victor's numbers: they decide the next speed work (inlining, registers instead of matrix reads).
