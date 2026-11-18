@@ -67,3 +67,22 @@ play it, for example:
 
 The fix: no recapture bonus when the reply took the king. Done in v0.7.1 (branch claude/chess47-kingrecap, LBL :RECAP:
 and the twin), merged into this branch; `python/influence.py` had it already, so the results above are unchanged.
+
+## v0.9.0: the influence term in CHESS47 (branch claude/chess47-influence2, Nov 18, 2026)
+
+Bitboards first, in Python (`python/influence.py`, variant `bits`): which squares a side attacks at all is worth
+nothing (-3 / +3 Elo); the counts matter. Counts kept up to 2 (two 64-bit words a side: A1 attacked once or more,
+A2 twice or more) keep all of it: **+86 (+65 to +109)**, CAP 3 +80, the full counts +79 (710 games each).
+
+The twin (`python/chess47ref.py`, `infl` in ENGINE) and CHESS47 (LBL :INFL:) compute the same term after each root
+move (the same for all its replies; the replies are searched against best - T): `tools/influence47.py --variant twin`
+gives the same +86. On the C47, with the commands it has already run (AND OR NOT SINT →REAL Y^X):
+- each piece's attack word: pawns all at once (their bits from SB summed, times 128 and 512 or divided, the edge
+  files masked), knights from KN, kings from the new matrix KG (1 × 120), the sliding pieces by walking their rays
+  (the bit times 2^(d - 2 IP(d / 9)) a square: N 2^8, E 2, NE 2^9 ...);
+- A2 = A2 OR (A1 AND X), A1 = A1 OR X; S's squares (A1s AND NOT A1x) OR (A2s AND NOT A2x);
+- counted by LBL :POPC: (a = w - (w/2 AND 0x55..), b = (a AND 0x33..) + (a/4 AND 0x33..), c = (b + b/16) AND 0x0F..,
+  c MOD 255), not `#B`: the firmware has it, but a step that starts with `#` is a comment for rejig.
+
+The cost (python/time47.py, LOCT47's costs): a map about 0.94 s (about 5 700 steps: the rays 2 800, the board's
+scan 1 400), about 30 a move: about 49 s a level-2 move (v0.8.0 13.7 s). Memory: + KG (1 × 120), the start 45.8 KB.

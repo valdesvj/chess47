@@ -428,3 +428,16 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   STOIJ 119 s, RCLEL 63, other steps 31), v0.8.0 68.5 s (13.7 a move: STOIJ 17, RCLEL 10, INDEX 2.6). The seconds
   are an estimate (the README's 6-11 s came from 0.17 ms a step); Victor times a move on the C47.
 - The start's memory: 39 000 + 4 800 bytes (v0.7.0 43 000 + 4 800).
+
+## Nov 18, 2026 - v0.9.0: the influence term with 64-bit words (branch claude/chess47-influence2, from claude/chess47-split)
+
+- Victor: the influence version, even if slow. Python first: attacked-or-not bitboards gain nothing; counts up to 2
+  (two words a side) +86 (docs/INFLUENCE.md). The twin computes it (chess47ref.infl, 'infl' in ENGINE), and so does
+  CHESS47 (LBL :INFL: :IPIECE: :IPAWN: :IKNI: :IKING: :ISLID: :IADD: :POPC:, macros :IKGM: :ICNT: :IPWN:).
+- R50-R53 the words, R41 R42 the pawns' bits, R48 R49 R72 POPC's masks, R98 T during the replies (no key is read
+  while the C47 thinks); all free between the root move and its replies. The first count of :ICNT: in R36: POPC
+  needs three stack levels (the bug: the 4-level stack lost it).
+- No #B (rejig: a step starting with # is a comment), no 1/x (not in c47sim): 0.0078125 and 0.001953125.
+- 97 local labels (3 of the new routines are macros), IF 251 of 255.
+- Estimated about 49 s a level-2 move (a map 0.94 s, about 30 a move). To make it faster: the rays' setup (most
+  rays are short in the opening), the board's scan (14 border squares read), or maps updated between root moves.

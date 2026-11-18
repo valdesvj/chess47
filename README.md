@@ -12,7 +12,7 @@ biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, 
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
 see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
-that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose). v0.8.0: about 4 times faster on the calculator (estimated): the firmware copies a whole matrix at each element command, so BD became eight small matrices.
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose). v0.8.0: about 4 times faster on the calculator (estimated): the firmware copies a whole matrix at each element command, so BD became eight small matrices. **v0.9.0 (branch claude/chess47-influence2): the influence term** at level 2: after each of its moves the C47 counts, with 64-bit words, the squares each side controls (attacked more often by it, counted up to twice) in the centre and around the kings; about +86 Elo against v0.8.0 (Python, 710 games), about 3-4 times slower (estimated: about 49 s a move).
 
 | | |
 |---|---|
@@ -143,6 +143,7 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 
 | **v0.5.0**: ADD reads the target through the index its caller set and checks the list's room only in the list modes; GEN tests an own piece with one `X>0?`; DELTA takes from and to from R30 R33; VAL inlined in DELTA and MAKE; ATT's diagonals and lines in two loops; GPAWN, GSLIDE and 8 other routines inlined (10 local labels freed) | 15 positions: 901 000 -> 839 000 (93 %) | **6-11 s** |
 
+| **v0.9.0**: the influence term at level 2 (LBL :INFL:, 64-bit words A1 A2 a colour, counted by LBL :POPC:) | 5 positions: 1 395 000 steps; estimated 13.7 s -> 49.4 s a move | **slower** (+86 Elo, docs/INFLUENCE.md) |
 | **v0.8.0**: BD split into eight small matrices (the firmware copies the whole matrix at each element command) | 5 positions: 314 000 steps (+5 %: the INDEX steps); the time estimated with LOCT47's costs (`python/time47.py`): 53.5 s → 13.7 s a move | about 4 x faster (to be timed on the C47) |
 | **v0.7.0**: BD 23 → 14 rows (PT white's only, the undo data in PT's free columns), GH one row, OB packed: 23.8 KB less at the start; DELTA and MAKE read the column of the target once | 22 positions: 1 443 000 -> 1 505 000 (+4.3 %) | about the same |
 
