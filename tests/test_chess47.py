@@ -355,6 +355,21 @@ def main():
                 fen[:36], level, R.mname(got[0]) if got[0] else '-', got[1], S.secs(c.steps),
                 '' if got == (m, v) else ' WANT %s %d' % (R.mname(m) if m else '-', v)))
 
+    print('== a king never moves next to the other king (v0.7.1: no recapture bonus when the reply takes the king)')
+    import chess
+    for fen in ('2n5/3B4/2K5/k1N5/8/8/8/Q7 b - - 0 1', '8/4B3/8/8/7Q/4P1K1/5q2/4k3 w - - 0 1',
+                '1R6/3b4/6N1/5k1K/8/8/8/7B b - - 0 1'):
+        p = R.Pos.fen(fen)
+        shots, c = S.run([], prog=prog)
+        setpos(c, p)
+        c.reg['26'] = D(2)
+        c.run('TTHK', maxsteps=10 ** 9)
+        m = int(c.reg['62'])
+        mv = chess.Move(chess.square((m // 1000 - 1) % 10 - 1, (m // 1000 - 1) // 10 - 2),
+                        chess.square((m % 1000 - 1) % 10 - 1, (m % 1000 - 1) // 10 - 2))
+        check(mv in chess.Board(fen).legal_moves and (m, int(c.reg['61'])) == p.search(2)[:2],
+              '%s: %s, legal, as the twin (v0.7.0 played a king move next to the other king)' % (fen[:30], R.mname(m)))
+
     print('== a game: the C47 plays both sides (%d moves; the book first, then the search)' % n)
     import book
     shots, c = S.run([S.HAND] * n)
