@@ -441,8 +441,24 @@ def main():
     check(c.reg.get('20') == 1 and S.board(c)[36] == 1, 'e2-e5 refused: the pawn stays, white to move')
     chess960_tests(prog)
     level3_tests(prog)
+    variant_tests()
     print('\n%s' % ('ALL OK' if not FAIL else '%d FAILED' % len(FAIL)))
     return 1 if FAIL else 0
+
+
+def variant_tests():
+    """v0.8.1: the two builds, build/draw/ (the pieces drawn, GL) and build/text/ (letters only, no GL, no key ×):
+    the same game, the start's memory."""
+    print('== the two builds: build/draw/ and build/text/')
+    import build_chess47 as B
+    games = {}
+    for name in B.VARIANTS:
+        shots, c = S.run([S.HAND] * 4, prog=os.path.join(ROOT, 'build', name, 'CHESS47.txt'))
+        games[name] = S.gh(c)[:4]
+        check(('GL' in c.mats) == (name == 'draw') and int(c.reg.get('CHF', 0)) == (name == 'text'),
+              '%s: GL %s, CHF %s, the C47 played %s' % (name, 'made' if 'GL' in c.mats else 'none',
+                                                         c.reg.get('CHF'), ' '.join(R.mname(m) for m in games[name])))
+    check(games['draw'] == games['text'] and all(games['draw']), 'the same moves in both')
 
 
 def level3_tests(prog):
@@ -472,7 +488,11 @@ def level3_tests(prog):
           '%s with the 60 s budget: %s, %.0f s in all (level 2 first; the time over: the best found so far), R29 '
           'back to 0' % (FENS[1][:30], R.mname(int(c.reg['62'])), secs))
     shots, c = S.run([S.LEVEL, S.LEVEL, S.LEVEL])
-    check(c.reg.get('26') == 3, 'the key 1 three times: level 2 -> 1 -> CRAZY -> 3')
+    check(c.reg.get('26') == 5 and int(c.mats['ST'][0][17]) == 5400,
+          'the key 1 three times: level 2 -> 1 -> CRAZY -> 5 (v0.8.1: level 3 with 9 min, 5400 tenths)')
+    shots, c = S.run([S.LEVEL] * 5)
+    check(c.reg.get('26') == 3 and int(c.mats['ST'][0][17]) == 600,
+          'five times: -> 4 -> 3 (60 s, 600 tenths); six: back to 2')
 
 
 def setpos960(c, p, n):

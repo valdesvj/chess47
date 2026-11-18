@@ -218,6 +218,34 @@ def macros(lines):
 NUMBER = 16                    # bytes a number of a real matrix (an estimate: real34, to be checked with MEM#)
 
 
+VARIANTS = ('draw', 'text')     # v0.8.1: the drawn pieces (GL, the key ×) and the letters only (no GL): build/draw/
+                                # and build/text/; build/CHESS47.txt, programs/ and listings/ are the drawn one
+
+
+def variant(lines, name):
+    """The source for a variant: the lines between REM ==== IF DRAW and REM ==== ELSE (or ENDIF) kept for 'draw',
+    those between ELSE and ENDIF for 'text' (not nested)."""
+    out, mode = [], None
+    for ln in lines:
+        st = ln.strip()
+        if st == 'REM ==== IF DRAW':
+            if mode is not None:
+                raise SystemExit('IF DRAW inside IF DRAW')
+            mode = 'draw'
+        elif st == 'REM ==== ELSE' and mode is not None:
+            mode = 'text'
+        elif st == 'REM ==== ENDIF' and mode is not None:
+            mode = None
+        elif mode is None or mode == name:
+            out.append(ln)
+    if mode is not None:
+        raise SystemExit('IF DRAW without ENDIF')
+    return out
+
+
+VAR = {'name': 'draw'}          # the variant being built (constants: GL only in the drawn one)
+
+
 def constants():
     """The constants @NAME: the rows and offsets of the game's matrices (python/layout.py BD), @XR @XC the sizes of
     the matrix X (layout.MATS); MEM the bytes the start checks with MEM# (the game's matrices, GL, OB at NUMBER bytes a
@@ -228,7 +256,7 @@ def constants():
     for k, (r, n) in layout.MATS.items():
         c[k + 'R'], c[k + 'C'] = str(r), str(n)
     els = sum(r * n for r, n in layout.MATS.values())
-    need = (els + layout.GL_SIZE + book.ob_size()) * NUMBER + 3000
+    need = (els + (layout.GL_SIZE if VAR['name'] == 'draw' else 0) + book.ob_size()) * NUMBER + 3000
     c['MEM'] = str(-(-need // 1000) * 1000)
     c['GHM'] = str(layout.GH_SIZE * NUMBER)
     return c
@@ -257,9 +285,12 @@ def labels_text(lines, num):
     return '\n'.join(out) + '\n'
 
 
-def build():
+def build(name='draw'):
+    """Build the variant name (VARIANTS): build/<name>/CHESS47.txt and its listing; the drawn one also programs/,
+    build/ and listings/ (as before v0.8.1)."""
+    VAR['name'] = name
     src = os.path.join(ROOT, 'programs_rem', NAME + '.txt')
-    lines = macros(fill([ln.rstrip() for ln in open(src, encoding='utf-8')]))
+    lines = macros(fill(variant([ln.rstrip() for ln in open(src, encoding='utf-8')], name)))
     steps = source_steps(lines)
     numeric, num = resolve(const_steps(steps))
     numeric = structures(numeric)
@@ -277,6 +308,14 @@ def build():
                 numeric[n] if CONST_RE.match(steps[n]) else numeric[n].split(' ', 1)[1])
             listing.append('%4d  %s' % (n + 1, ind + steps[n] + extra))
             n += 1
+    vdir = os.path.join(ROOT, 'build', name)
+    os.makedirs(vdir, exist_ok=True)
+    with open(os.path.join(vdir, NAME + '.txt'), 'w', encoding='utf-8') as fh:
+        fh.write('\n'.join(numeric) + '\n')
+    with open(os.path.join(vdir, NAME + '_doc.txt'), 'w', encoding='utf-8') as fh:
+        fh.write('\n'.join(listing) + '\n')
+    if name != 'draw':
+        return numeric
     for d in ('programs', 'build', 'listings'):
         os.makedirs(os.path.join(ROOT, d), exist_ok=True)
     for d in ('programs', 'build'):
@@ -290,11 +329,14 @@ def build():
 
 
 if __name__ == '__main__':
-    st = build()
-    txt = [s for s in st if s.startswith('"')]
-    print('%s %5d steps, %2d local labels, about %d bytes (.p47, estimated); IF %d, DO %d' % (
-        NAME, len(st), sum(1 for s in st if re.match(r'LBL \d\d', s)), estimate(st),
-        sum(1 for s in st if s.startswith('IF ')), sum(1 for s in st if s.startswith('DO '))))
+    for name in ('text', 'draw'):                             # the drawn one last: VAR and the files as before
+        st = build(name)
+        k = constants()
+        print('%s (%s) %5d steps, %2d local labels, about %d bytes (.p47, estimated); IF %d, DO %d; the start needs %d '
+              'bytes (%d with a saved game)' % (
+                  NAME, name, len(st), sum(1 for s in st if re.match(r'LBL \d\d', s)), estimate(st),
+                  sum(1 for s in st if s.startswith('IF ')), sum(1 for s in st if s.startswith('DO ')),
+                  int(k['MEM']) + int(k['GHM']), int(k['MEM'])))
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import build_forum
     build_forum.build(NAME)                                   # build/forum/CHESS47.p47u, the commented rejig source

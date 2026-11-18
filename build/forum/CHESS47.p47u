@@ -1,6 +1,6 @@
 @ Index:   Chess against the C47: legal moves, check, mate, draws, a 2-ply search, a book, a clock
 @ Author:  Victor Valdes
-@ Version: 0.8.0
+@ Version: 0.8.1
 @ Source:  https://github.com/valdesvj/chess47
 @ Tested:  C47 simulator only (python/c47sim.py): tests/test_chess47.py, the moves, the scores and the choices of
 @ Tested:  the search against python/chess47ref.py (the same algorithm), whose move generator gives the published
@@ -56,7 +56,7 @@
 @ ENDDO) of the C47 / R47 firmware, ATEXT and GRFNT, AGRAPH and the bitwise commands AND OR XOR NOT BS?.
 @
 @ ---- Technical notes (from the commented source) ----
-@ CHESS47 v0.8.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+@ CHESS47 v0.8.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 @ You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 @ The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 @ queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -81,7 +81,7 @@
 @ square to play it (5 on the same square drops it); + swaps sides (the C47 plays the side to move; black: the board
 @ turns); 9 C47 vs C47 until the end (a key: you take the side to move); 3 two players (the C47 only checks the
 @ moves and the end); 7 a new game of normal chess; ÷ a Chess960 game (its number, three digits, or ÷ again for a
-@ random one; castling: the king onto its own rook); 1 the level 2 -> 1 -> 0 -> 3 (level 3: LBL :THINK3:, 60 s at most) -> 2
+@ random one; castling: the king onto its own rook); 1 the level 2 -> 1 -> 0 -> 5 -> 4 -> 3 -> 2 (3-5: LBL :THINK3: with 60 s, 3 min, 9 min at most)
 @ (CRAZY: random legal moves, a crazy face by the title); × the pieces as letters of the firmware's font (K Q R B N P
 @ white, k q r b n p black: the variable CHF 1; LBL :DRAWSQ:) or drawn again: ready for a chess font in the firmware;
 @ 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
@@ -274,7 +274,7 @@ INDEX "BB"
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 100000
 ×
@@ -404,7 +404,7 @@ IF 11
     1
     RCL 30
     INDEX "BB"
-    STOIJ
+    STO J
     RCLEL
     RCL× 32
     STO 34
@@ -425,7 +425,7 @@ ELSE 11
     1
     RCL 30
     INDEX "BB"
-    STOIJ
+    STO J
     RCLEL
     RCL× 32
     STO 34
@@ -458,7 +458,7 @@ IF 12
   1
   X<>Y
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   X=0?
   IF 13
@@ -483,7 +483,7 @@ IF 12
       1
       RCL 33
       INDEX "BB"
-      STOIJ
+      STO J
       RCLEL
       X=0?
       XEQ 02                    ; -> :ADD:
@@ -561,7 +561,7 @@ ELSE 12
           1
           RCL 33
           INDEX "BB"
-          STOIJ
+          STO J
           RCLEL
           X=0?
           IF 19
@@ -635,7 +635,10 @@ IF 20
   121
   RCL- 72
   INDEX "ML"
-  STOIJ
+  STO J
+  X<>Y
+  STO I
+  X<>Y
   RCL 30
   1000
   ×
@@ -693,7 +696,10 @@ DO 07
     1
     -
     INDEX "ML"
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     STO 47
     100000
@@ -708,7 +714,10 @@ DO 07
       RCL 38
       RCL 49
       INDEX "ML"
-      STOIJ
+      STO J
+      X<>Y
+      STO I
+      X<>Y
       RCL 47
       STOEL
       -1
@@ -726,7 +735,10 @@ ENDDO 07
 RCL 38
 RCL 49
 INDEX "ML"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCL 48
 STOEL
 1
@@ -746,7 +758,10 @@ ELSE 28
   DROP
 ENDIF 28
 INDEX "ML"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 100000
 MOD
@@ -755,7 +770,7 @@ LBL 04                          ; :PCAP:
 1
 RCL 33
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL× 32
 3.5
@@ -781,7 +796,7 @@ DO 08
   1
   X<>Y
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   RCL× 32
   3.5
@@ -805,7 +820,7 @@ LBL 06                          ; :GCAST:
 1                               ; row ST
 4
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 35
 +
@@ -862,7 +877,7 @@ LBL 09                          ; :CROOK:
 1                               ; row ST
 X<>Y
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 35
 +
@@ -882,7 +897,7 @@ LBL 10                          ; :CAST:
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL 32
 4
@@ -916,7 +931,7 @@ DO 09
   1
   RCL 44
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   X≠0?
   IF 29
@@ -940,7 +955,7 @@ ENDDO 09
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 0
 STOEL
 RCL 30
@@ -977,7 +992,7 @@ ENDDO 10
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCL 32
 4
 ×
@@ -988,7 +1003,7 @@ RTN
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 X≠0?
 IF 31
@@ -1006,7 +1021,10 @@ RCL 38
 121
 RCL- 72
 INDEX "ML"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCL 30
 1000
 ×
@@ -1028,7 +1046,7 @@ RCL 51
 ×
 -
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL 51
 X=Y?
@@ -1040,7 +1058,7 @@ RCL 51
 ×
 -
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL 51
 X=Y?
@@ -1048,7 +1066,7 @@ RTN
 1                               ; row KN
 RCL 50
 INDEX "KN"
-STOIJ
+STO J
 RCLEL
 SINT
 RCL 51
@@ -1073,13 +1091,13 @@ DO 11
   RCL 50
   STO 52
 @   from R50 along the direction R53 to the first square that is not empty (R52)
+  INDEX "BB"
   DO 12
     RCL 53
     STO+ 52
     1
     RCL 52
-    INDEX "BB"
-    STOIJ
+    STO J
     RCLEL
     X=0?
   WHILE 12
@@ -1116,13 +1134,13 @@ DO 13
   RCL 50
   STO 52
 @   from R50 along the direction R53 to the first square that is not empty (R52)
+  INDEX "BB"
   DO 14
     RCL 53
     STO+ 52
     1
     RCL 52
-    INDEX "BB"
-    STOIJ
+    STO J
     RCLEL
     X=0?
   WHILE 14
@@ -1177,7 +1195,10 @@ RCL× 45
 39.5
 +
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 RCL× 45
 RTN
@@ -1199,7 +1220,7 @@ STO 42
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 43
 SIGN
@@ -1207,7 +1228,7 @@ STO 45
 1
 RCL 42
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 44
 XEQ 14                          ; -> :NUPD:
@@ -1216,7 +1237,10 @@ RCL 46
 +
 1
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCL 40
 STOSEQ
 RCL 43
@@ -1256,7 +1280,10 @@ X<>Y
 79                              ; row PX
 RCL- 49
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 RCL× 45
 STO+ 23
@@ -1273,14 +1300,17 @@ RCL× 45
 39.5
 +
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 RCL× 45
 STO- 23
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 0
 STOEL
 0
@@ -1303,7 +1333,7 @@ IF 35
     1
     X<>Y
     INDEX "BB"
-    STOIJ
+    STO J
     RCL 48
     RCLEL
 @     (macro :PTX:)
@@ -1319,14 +1349,17 @@ IF 35
     39.5
     +
     INDEX "PT"
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     RCL× 45
     STO+ 23
     1
     RCL 48
     INDEX "BB"
-    STOIJ
+    STO J
     0
     STOEL
     1
@@ -1354,7 +1387,7 @@ ENDIF 35
 1
 RCL 42
 INDEX "BB"
-STOIJ
+STO J
 RCL 43
 STOEL
 RCL 43
@@ -1363,7 +1396,10 @@ RCL× 45
 +
 RCL 49
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 RCL× 45
 STO+ 23
@@ -1401,13 +1437,13 @@ IF 38
     1
     RCL 42
     INDEX "BB"
-    STOIJ
+    STO J
     0
     STOEL
     1
     RCL 48
     INDEX "BB"
-    STOIJ
+    STO J
     RCL 43
     STOEL
     RCL 48
@@ -1417,7 +1453,7 @@ IF 38
     1
     RCL 49
     INDEX "BB"
-    STOIJ
+    STO J
     RCL 45
     4
     ×
@@ -1467,7 +1503,10 @@ IF 38
     39.5
     +
     INDEX "PT"
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     RCL× 45
     STO+ 23
@@ -1486,14 +1525,17 @@ IF 38
     39.5
     +
     INDEX "PT"
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     RCL× 45
     STO- 23
     1
     RCL 49
     INDEX "BB"
-    STOIJ
+    STO J
     RCL 45
     4
     ×
@@ -1501,7 +1543,7 @@ IF 38
     1
     RCL 48
     INDEX "BB"
-    STOIJ
+    STO J
     0
     STOEL
     2
@@ -1533,7 +1575,7 @@ RCL 41
 1                               ; row CR
 X<>Y
 INDEX "CR"
-STOIJ
+STO J
 RCLEL
 SINT
 RCL 22
@@ -1544,7 +1586,7 @@ RCL 42
 1                               ; row CR
 X<>Y
 INDEX "CR"
-STOIJ
+STO J
 RCLEL
 SINT
 RCL 22
@@ -1558,7 +1600,10 @@ RCL 46
 +
 6
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCL 47
 STOEL
 RTN
@@ -1575,7 +1620,7 @@ IF 43
   1                             ; row SB
   RCL 41
   INDEX "SB"
-  STOIJ
+  STO J
   DROP
   DROP
   RCLEL
@@ -1583,7 +1628,7 @@ IF 43
   1                             ; row SB
   RCL 42
   INDEX "SB"
-  STOIJ
+  STO J
   DROP
   DROP
   RCLEL
@@ -1600,7 +1645,7 @@ IF 44
   1                             ; row SB
   RCL 42
   INDEX "SB"
-  STOIJ
+  STO J
   DROP
   DROP
   RCLEL
@@ -1668,7 +1713,7 @@ DO 15
   1
   RCL 41
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   8
   X≠Y?
@@ -1676,7 +1721,7 @@ DO 15
     1                           ; row SB
     RCL 41
     INDEX "SB"
-    STOIJ
+    STO J
     DROP
     DROP
     RCL 41
@@ -1686,7 +1731,7 @@ DO 15
     1
     RCL 41
     INDEX "BB"
-    STOIJ
+    STO J
     RCLEL
     ABS
     2
@@ -1695,7 +1740,7 @@ DO 15
       1
       RCL 41
       INDEX "BB"
-      STOIJ
+      STO J
       RCLEL
       SIGN
       STO 42
@@ -1764,6 +1809,8 @@ RCL 41
 STO 49
 RTN
 @
+@ ---- the macro :BUDG: (v0.8.1) level 3's budget from the level R26 into ST (1, 18), tenths of a second: 600 x
+@ 3^(level - 3): level 3 60 s, 4 3 min, 5 9 min (levels 4 and 5: level 3 with more time; below 3 not used) ----
 @ ---- the macro :CRSQ: (was LBL :CRSQ:, inlined in MAKE) X = a square: a move from or to it keeps the castling rights
 @ of its mask (row CR of BD, LBL :CSQ:: 15, the kings' and rooks' first squares less their rights) (AND) ----
 @ ---- LBL :UNMK: takes back the move of the ply R46 (its row of UN, the castling word R56 + R46) ----
@@ -1773,7 +1820,10 @@ RCL 46
 +
 1
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLSEQ
 STO 40
 RCLSEQ
@@ -1811,26 +1861,26 @@ IF 49
   1
   RCL 48
   INDEX "BB"
-  STOIJ
+  STO J
   0
   STOEL
   1
   RCL 49
   INDEX "BB"
-  STOIJ
+  STO J
   0
   STOEL
 ENDIF 49
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCL 43
 STOEL
 1
 RCL 42
 INDEX "BB"
-STOIJ
+STO J
 RCL 44
 STOEL
 XEQ 14                          ; -> :NUPD:
@@ -1845,7 +1895,7 @@ IF 50
   ×
   -
   INDEX "BB"
-  STOIJ
+  STO J
   RCL 45
   CHS
   STOEL
@@ -1858,7 +1908,7 @@ IF 51
   1
   RCL 48
   INDEX "BB"
-  STOIJ
+  STO J
   RCL 45
   4
   ×
@@ -1866,7 +1916,7 @@ IF 51
   1
   RCL 49
   INDEX "BB"
-  STOIJ
+  STO J
   0
   STOEL
 ENDIF 51
@@ -1915,7 +1965,7 @@ RTN
 1                               ; row ST
 1
 INDEX "ST"
-STOIJ
+STO J
 0
 STOEL
 0
@@ -1979,43 +2029,43 @@ RTN
 1                               ; row ST
 12
 INDEX "ST"
-STOIJ
+STO J
 RCL 62
 STOEL
 1                               ; row ST
 16
 INDEX "ST"
-STOIJ
+STO J
 RCL 61
 STOEL
 1                               ; row ST
 14
 INDEX "ST"
-STOIJ
+STO J
 RCL 29
 STOEL
 1                               ; row ST
 15
 INDEX "ST"
-STOIJ
+STO J
 TICKS
 STOEL
 1                               ; row ST
 13
 INDEX "ST"
-STOIJ
+STO J
 0
 STOEL
 1                               ; row ST
 8
 INDEX "ST"
-STOIJ
+STO J
 0
 STOEL
 1                               ; row ST
 1
 INDEX "ST"
-STOIJ
+STO J
 0
 STOEL
 RCL 20
@@ -2044,7 +2094,7 @@ DO 17
     1                           ; row ST
     12
     INDEX "ST"
-    STOIJ
+    STO J
     RCLEL
     STO 40
     XEQ 24                      ; -> :ROOT3:
@@ -2057,7 +2107,7 @@ DO 17
     1                           ; row ST
     12
     INDEX "ST"
-    STOIJ
+    STO J
     RCLEL
     RCL 40
     X≠Y?
@@ -2084,20 +2134,20 @@ IF 57
   1                             ; row ST
   12
   INDEX "ST"
-  STOIJ
+  STO J
   RCLEL
   STO 62
   1                             ; row ST
   16
   INDEX "ST"
-  STOIJ
+  STO J
   RCLEL
   STO 61
 ENDIF 57
 1                               ; row ST
 14
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 STO 29
 RTN
@@ -2108,14 +2158,14 @@ LBL 23                          ; :TIME3:
 1                               ; row ST
 13
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 X≠0?
 RTN
 1                               ; row ST
 15
 INDEX "ST"
-STOIJ
+STO J
 TICKS
 RCLEL
 -
@@ -2123,7 +2173,7 @@ STO 47
 1                               ; row ST
 18
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 RCL 47
 X<Y?
@@ -2134,7 +2184,7 @@ ENDIF 58
 1                               ; row ST
 13
 INDEX "ST"
-STOIJ
+STO J
 1
 STOEL
 RTN
@@ -2198,7 +2248,7 @@ STO 66
 1                               ; row ST
 17
 INDEX "ST"
-STOIJ
+STO J
 0
 STOEL
 1
@@ -2208,7 +2258,7 @@ IF 62
   1                             ; row ST
   17
   INDEX "ST"
-  STOIJ
+  STO J
   1
   STOEL
   XEQ 26                        ; -> :R3ONE:
@@ -2229,7 +2279,7 @@ DO 18
   1                             ; row ST
   1
   INDEX "ST"
-  STOIJ
+  STO J
   RCLEL
   RCL 40
   X=Y?
@@ -2237,7 +2287,7 @@ DO 18
     1                           ; row ST
     17
     INDEX "ST"
-    STOIJ
+    STO J
     RCLEL
   ELSE 63
     0
@@ -2624,7 +2674,7 @@ STO 48
 1                               ; row ST
 X<>Y
 INDEX "ST"
-STOIJ
+STO J
 RCL 30
 1000
 ×
@@ -2633,7 +2683,7 @@ STOEL
 1
 RCL 30
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 47
 1                               ; row ST
@@ -2641,13 +2691,13 @@ RCL 48
 1
 +
 INDEX "ST"
-STOIJ
+STO J
 RCL 47
 STOEL
 1
 RCL 33
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 47
 1                               ; row ST
@@ -2655,7 +2705,7 @@ RCL 48
 2
 +
 INDEX "ST"
-STOIJ
+STO J
 RCL 47
 STOEL
 RTN
@@ -2699,7 +2749,7 @@ STO 48
 1                               ; row ST
 X<>Y
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 X=0?
 RTN
@@ -2715,7 +2765,7 @@ STO 33
 1
 RCL 30
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 43
 1                               ; row ST
@@ -2723,7 +2773,7 @@ RCL 48
 1
 +
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 RCL 43
 X≠Y?
@@ -2734,7 +2784,7 @@ ENDIF 84
 1
 RCL 33
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 44
 1                               ; row ST
@@ -2742,7 +2792,7 @@ RCL 48
 2
 +
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 RCL 44
 X≠Y?
@@ -2832,7 +2882,7 @@ IF 91
       1
       RCL 46
       INDEX "BB"
-      STOIJ
+      STO J
       RCLEL
       X≠0?
       IF 93
@@ -2857,7 +2907,7 @@ XEQ 44                          ; -> :DELTA:
 1
 RCL 42
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 ABS
 6
@@ -2866,7 +2916,7 @@ RTN
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 46
 0
@@ -2880,7 +2930,7 @@ XEQ 11                          ; -> :ATT:
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCL 46
 STOEL
 RCL 55
@@ -2909,7 +2959,7 @@ STO 42
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 STO 43
 SIGN
@@ -2927,7 +2977,7 @@ STO 44
 1
 RCL 42
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL× 45
 1                               ; row PT
@@ -2936,7 +2986,10 @@ X<>Y
 79                              ; row PX
 RCL- 44
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO+ 71
 RCL 41
@@ -2952,7 +3005,10 @@ RCL× 45
 39.5
 +
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO- 71
 RCL 43
@@ -2984,7 +3040,10 @@ IF 95
     39.5
     +
     INDEX "PT"
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     STO+ 71
   ENDIF 96
@@ -3013,7 +3072,10 @@ RCL× 45
 +
 RCL 44
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO+ 71
 RCL 60
@@ -3131,7 +3193,7 @@ IF 101
   XEQ 51                        ; -> :ASK960:
   RTN
 ENDIF 101
-@ × (65): the pieces as letters or drawn (CHF 1 or 0), the board again
+@ × (65): the pieces as letters or drawn (CHF 1 or 0), the board again (the drawn build only)
 RCL 98
 65
 X=Y?
@@ -3185,11 +3247,25 @@ RCL 98
 X=Y?
 IF 107
   RCL 26
-  3
+  5
   +
-  4
+  6
   MOD
   STO 26
+@   (macro :BUDG:)
+  1                             ; row ST
+  18
+  INDEX "ST"
+  STO J
+  3
+  RCL 26
+  3
+  -
+  Y^X
+  600
+  ×
+  STOEL
+  INDEX "BB"
   XEQ 70                        ; -> :PANEL:
   RTN
 ENDIF 107
@@ -3246,7 +3322,7 @@ STO 49
 RCL 28
 RCL+ 49
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 8
 X=Y?
@@ -3282,7 +3358,7 @@ INDEX "BB"
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 DROP
 DROP
 RCLEL
@@ -3469,7 +3545,7 @@ ENDIF 125
 1
 RCL 28
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL× 20
 3.5
@@ -3586,7 +3662,7 @@ ELSE 132
     XEQ 21                      ; -> :THINK:
     RCL 26
     3
-    X=Y?
+    X≤Y?
     XEQ 22                      ; -> :THINK3:
   ENDIF 133
 ENDIF 132
@@ -3815,7 +3891,7 @@ INDEX "BB"
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 X≠0?
 RTN
@@ -3899,7 +3975,7 @@ DO 28
     INDEX "GH"
     1
     RCL 64
-    STOIJ
+    STO J
     RCLEL
     100000
     MOD
@@ -3947,7 +4023,10 @@ IF 152
   5
   ÷
   IP
-  STOIJ
+  STO J
+  X<>Y
+  STO I
+  X<>Y
   RCLEL
   STO 48
   INDEX "BB"
@@ -4001,7 +4080,7 @@ RTN
 INDEX "GH"
 1
 RCL 63
-STOIJ
+STO J
 RCL 64
 100000
 ×
@@ -4029,7 +4108,7 @@ DO 29
     MOD
     1
     +
-    STOIJ
+    STO J
     RCLEL
     100000
     ÷
@@ -4073,11 +4152,11 @@ STO 46
 22
 STO 30
 @ the squares 22-99 (R30): each piece's word XORed into the key; R47 counts the pieces that are not kings
+INDEX "BB"
 DO 30
   1
   RCL 30
-  INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   STO 31
   ABS
@@ -4269,11 +4348,11 @@ INDEX "BB"
 22
 STO 30
 @ the squares 22-99 (R30): each piece counted for the side that may still mate or the other
+INDEX "BB"
 DO 31
   1
   RCL 30
-  INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   STO 39
   ABS
@@ -4565,7 +4644,7 @@ INDEX "BB"
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 X≠0?
 IF 195
@@ -4855,19 +4934,28 @@ INDEX "BB"
 3                               ; row UNP
 2
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO 43
 3                               ; row UNP
 3
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO 44
 3                               ; row UNP
 6
 INDEX "UN"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCLEL
 STO 47
 1
@@ -4908,7 +4996,7 @@ IF 201
   1
   RCL 42
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   ABS
   5
@@ -5020,7 +5108,7 @@ DO 34
       1
       RCL 39
       INDEX "BB"
-      STOIJ
+      STO J
       RCLEL
       X=0?
       IF 213
@@ -5071,13 +5159,13 @@ LBL 74                          ; :SANC:
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 RCL 43
 STOEL
 1
 RCL 39
 INDEX "BB"
-STOIJ
+STO J
 0
 STOEL
 RCL 45
@@ -5087,13 +5175,13 @@ STO 30
 1
 RCL 41
 INDEX "BB"
-STOIJ
+STO J
 0
 STOEL
 1
 RCL 39
 INDEX "BB"
-STOIJ
+STO J
 RCL 43
 STOEL
 RCL 30
@@ -5163,7 +5251,7 @@ DO 36
   1
   RCL 41
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   8
   X≠Y?
@@ -5298,6 +5386,10 @@ RCL 28
 XEQ 82                          ; -> :DRAWSQ:
 RTN
 @
+@ ---- the macro :SQW: (v0.8.1) a column word of the square being drawn (DRAWSQ: R33 = 24 ... 1, R36 its row):
+@ the drawn build reads it from GL (RCLSEQ: the next column of the row R36); the text build (no GL) computes it:
+@ an empty light square 0, a dark one the dither 5592405 x (1 + R33 MOD 2) (11184810 = 2 x 5592405) x IP(R36 / 20)
+@ (R36 7 light, 20 dark: the letters' row) ----
 @ ---- LBL :DRAWSQ: X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piece
 @ (light: piece + 7, dark: piece + 20). The square picked (R29): the light square's row, inverted (NOT): seen on
 @ a dark square too. The cursor (R28): a frame of 2 pixels (OR: the 2 columns at each side whole, 12582915 the
@@ -5362,7 +5454,7 @@ RCL 34
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 @ letters (CHF 1): the empty square's row (piece x (1 - CHF) = 0); the letter after the columns
 RCL "CHF"
@@ -5399,7 +5491,10 @@ ENDIF 224
 INDEX "GL"
 RCL 36
 1
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 1
 GRMOD
 DROP
@@ -5412,6 +5507,7 @@ X=0?
 IF 225
 @   a plain square: its 24 columns from the row of GL (RCLSEQ), each an AGRAPH word (R33 counts down)
   DO 39
+@     (macro :SQW:)
     RCLSEQ
     SINT
     STO 99
@@ -5427,6 +5523,7 @@ ELSE 225
 @   the cursor or the piece picked: its 24 columns, inverted (NOT) for the piece picked, the frame ORed for the
 @   cursor
   DO 40
+@     (macro :SQW:)
     RCLSEQ
     SINT
     RCL 32
@@ -5481,7 +5578,7 @@ INDEX "BB"
 1
 RCL 34
 INDEX "BB"
-STOIJ
+STO J
 RCLEL
 RCL "CHF"
 ×
@@ -5710,518 +5807,164 @@ ENDIF 231
 INDEX "BB"
 @ the knights' masks of python/layout.py into row 21 of BD (written by the build)
 INDEX "KN"
-1
 22
-STOIJ
-DROP
-DROP
+STO J
 132096
-STOEL
-DROP
-1
-23
-STOIJ
-DROP
-DROP
+STOSEQ
 329728
-STOEL
-DROP
-1
-24
-STOIJ
-DROP
-DROP
+STOSEQ
 659712
-STOEL
-DROP
-1
-25
-STOIJ
-DROP
-DROP
+STOSEQ
 1319424
-STOEL
-DROP
-1
-26
-STOIJ
-DROP
-DROP
+STOSEQ
 2638848
-STOEL
-DROP
-1
-27
-STOIJ
-DROP
-DROP
+STOSEQ
 5277696
-STOEL
-DROP
-1
-28
-STOIJ
-DROP
-DROP
+STOSEQ
 10489856
-STOEL
-DROP
-1
-29
-STOIJ
-DROP
-DROP
+STOSEQ
 4202496
-STOEL
-DROP
-1
-32
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 33816580
-STOEL
-DROP
-1
-33
-STOIJ
-DROP
-DROP
+STOSEQ
 84410376
-STOEL
-DROP
-1
-34
-STOIJ
-DROP
-DROP
+STOSEQ
 168886289
-STOEL
-DROP
-1
-35
-STOIJ
-DROP
-DROP
+STOSEQ
 337772578
-STOEL
-DROP
-1
-36
-STOIJ
-DROP
-DROP
+STOSEQ
 675545156
-STOEL
-DROP
-1
-37
-STOIJ
-DROP
-DROP
+STOSEQ
 1351090312
-STOEL
-DROP
-1
-38
-STOIJ
-DROP
-DROP
+STOSEQ
 2685403152
-STOEL
-DROP
-1
-39
-STOIJ
-DROP
-DROP
+STOSEQ
 1075839008
-STOEL
-DROP
-1
-42
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 8657044482
-STOEL
-DROP
-1
-43
-STOIJ
-DROP
-DROP
+STOSEQ
 21609056261
-STOEL
-DROP
-1
-44
-STOIJ
-DROP
-DROP
+STOSEQ
 43234889994
-STOEL
-DROP
-1
-45
-STOIJ
-DROP
-DROP
+STOSEQ
 86469779988
-STOEL
-DROP
-1
-46
-STOIJ
-DROP
-DROP
+STOSEQ
 172939559976
-STOEL
-DROP
-1
-47
-STOIJ
-DROP
-DROP
+STOSEQ
 345879119952
-STOEL
-DROP
-1
-48
-STOIJ
-DROP
-DROP
+STOSEQ
 687463207072
-STOEL
-DROP
-1
-49
-STOIJ
-DROP
-DROP
+STOSEQ
 275414786112
-STOEL
-DROP
-1
-52
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 2216203387392
-STOEL
-DROP
-1
-53
-STOIJ
-DROP
-DROP
+STOSEQ
 5531918402816
-STOEL
-DROP
-1
-54
-STOIJ
-DROP
-DROP
+STOSEQ
 11068131838464
-STOEL
-DROP
-1
-55
-STOIJ
-DROP
-DROP
+STOSEQ
 22136263676928
-STOEL
-DROP
-1
-56
-STOIJ
-DROP
-DROP
+STOSEQ
 44272527353856
-STOEL
-DROP
-1
-57
-STOIJ
-DROP
-DROP
+STOSEQ
 88545054707712
-STOEL
-DROP
-1
-58
-STOIJ
-DROP
-DROP
+STOSEQ
 175990581010432
-STOEL
-DROP
-1
-59
-STOIJ
-DROP
-DROP
+STOSEQ
 70506185244672
-STOEL
-DROP
-1
-62
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 567348067172352
-STOEL
-DROP
-1
-63
-STOIJ
-DROP
-DROP
+STOSEQ
 1416171111120896
-STOEL
-DROP
-1
-64
-STOIJ
-DROP
-DROP
+STOSEQ
 2833441750646784
-STOEL
-DROP
-1
-65
-STOIJ
-DROP
-DROP
+STOSEQ
 5666883501293568
-STOEL
-DROP
-1
-66
-STOIJ
-DROP
-DROP
+STOSEQ
 11333767002587136
-STOEL
-DROP
-1
-67
-STOIJ
-DROP
-DROP
+STOSEQ
 22667534005174272
-STOEL
-DROP
-1
-68
-STOIJ
-DROP
-DROP
+STOSEQ
 45053588738670592
-STOEL
-DROP
-1
-69
-STOIJ
-DROP
-DROP
+STOSEQ
 18049583422636032
-STOEL
-DROP
-1
-72
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 145241105196122112
-STOEL
-DROP
-1
-73
-STOIJ
-DROP
-DROP
+STOSEQ
 362539804446949376
-STOEL
-DROP
-1
-74
-STOIJ
-DROP
-DROP
+STOSEQ
 725361088165576704
-STOEL
-DROP
-1
-75
-STOIJ
-DROP
-DROP
+STOSEQ
 1450722176331153408
-STOEL
-DROP
-1
-76
-STOIJ
-DROP
-DROP
+STOSEQ
 2901444352662306816
-STOEL
-DROP
-1
-77
-STOIJ
-DROP
-DROP
+STOSEQ
 5802888705324613632
-STOEL
-DROP
-1
-78
-STOIJ
-DROP
-DROP
+STOSEQ
 11533718717099671552
-STOEL
-DROP
-1
-79
-STOIJ
-DROP
-DROP
+STOSEQ
 4620693356194824192
-STOEL
-DROP
-1
-82
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 288234782788157440
-STOEL
-DROP
-1
-83
-STOIJ
-DROP
-DROP
+STOSEQ
 576469569871282176
-STOEL
-DROP
-1
-84
-STOIJ
-DROP
-DROP
+STOSEQ
 1224997833292120064
-STOEL
-DROP
-1
-85
-STOIJ
-DROP
-DROP
+STOSEQ
 2449995666584240128
-STOEL
-DROP
-1
-86
-STOIJ
-DROP
-DROP
+STOSEQ
 4899991333168480256
-STOEL
-DROP
-1
-87
-STOIJ
-DROP
-DROP
+STOSEQ
 9799982666336960512
-STOEL
-DROP
-1
-88
-STOIJ
-DROP
-DROP
+STOSEQ
 1152939783987658752
-STOEL
-DROP
-1
-89
-STOIJ
-DROP
-DROP
+STOSEQ
 2305878468463689728
-STOEL
-DROP
-1
-92
-STOIJ
-DROP
-DROP
+STOSEQ
+0
+STOSEQ
+0
+STOSEQ
 1128098930098176
-STOEL
-DROP
-1
-93
-STOIJ
-DROP
-DROP
+STOSEQ
 2257297371824128
-STOEL
-DROP
-1
-94
-STOIJ
-DROP
-DROP
+STOSEQ
 4796069720358912
-STOEL
-DROP
-1
-95
-STOIJ
-DROP
-DROP
+STOSEQ
 9592139440717824
-STOEL
-DROP
-1
-96
-STOIJ
-DROP
-DROP
+STOSEQ
 19184278881435648
-STOEL
-DROP
-1
-97
-STOIJ
-DROP
-DROP
+STOSEQ
 38368557762871296
-STOEL
-DROP
-1
-98
-STOIJ
-DROP
-DROP
+STOSEQ
 4679521487814656
-STOEL
-DROP
-1
-99
-STOIJ
-DROP
-DROP
+STOSEQ
 9077567998918656
-STOEL
-DROP
+STOSEQ
 INDEX "BB"
 @ the old book freed first (0 STO), as BD and GL: made again over a matrix left by a stop (an error, EXIT) or by
 @ 7 and ÷, NEWMAT needed the memory of both
@@ -6235,21 +5978,11 @@ NEWMAT
 STO "OB"
 DROP
 INDEX "OB"
-1
-1
-STOIJ
-DROP
-DROP
 2706393074280478606636056
 STOSEQ
 DROP
 9708626028980776305282072
 STOSEQ
-DROP
-2
-1
-STOIJ
-DROP
 DROP
 2705493074280478606636056
 STOSEQ
@@ -6257,21 +5990,11 @@ DROP
 6605535055980773404497064
 STOSEQ
 DROP
-3
-1
-STOIJ
-DROP
-DROP
 4706698077280478606636056
 STOSEQ
 DROP
 7506535055770566604785075
 STOSEQ
-DROP
-4
-1
-STOIJ
-DROP
 DROP
 3505585075280478406436056
 STOSEQ
@@ -6279,21 +6002,11 @@ DROP
 8207223044980774705564055
 STOSEQ
 DROP
-5
-1
-STOIJ
-DROP
-DROP
 3505593074280478406436056
 STOSEQ
 DROP
 8606623044980774705564055
 STOSEQ
-DROP
-6
-1
-STOIJ
-DROP
 DROP
 2304485065350558607636056
 STOSEQ
@@ -6301,21 +6014,11 @@ DROP
 7708556066970862406898077
 STOSEQ
 DROP
-7
-1
-STOIJ
-DROP
-DROP
 2304485065350558407436056
 STOSEQ
 DROP
 6707856048940674405665056
 STOSEQ
-DROP
-8
-1
-STOIJ
-DROP
 DROP
 2304495065560658506536056
 STOSEQ
@@ -6323,21 +6026,11 @@ DROP
 8407428047980773505565062
 STOSEQ
 DROP
-9
-1
-STOIJ
-DROP
-DROP
 2304486076340548506535055
 STOSEQ
 DROP
 9609836046970862406898077
 STOSEQ
-DROP
-10
-1
-STOIJ
-DROP
 DROP
 2804784074340548506535055
 STOSEQ
@@ -6345,21 +6038,11 @@ DROP
 9406732052650542304498077
 STOSEQ
 DROP
-11
-1
-STOIJ
-DROP
-DROP
 2304488078340549807735055
 STOSEQ
 DROP
 9609828047850753605697088
 STOSEQ
-DROP
-12
-1
-STOIJ
-DROP
 DROP
 2304486076340549807735055
 STOSEQ
@@ -6367,21 +6050,11 @@ DROP
 8506527045960983604697053
 STOSEQ
 DROP
-13
-1
-STOIJ
-DROP
-DROP
 2804798077230448606634054
 STOSEQ
 DROP
 7706554065850653804893074
 STOSEQ
-DROP
-14
-1
-STOIJ
-DROP
 DROP
 2703898077380488506528047
 STOSEQ
@@ -6437,11 +6110,11 @@ ENDDO 43
 22
 STO 30
 @ the 64 squares (22-29, 32-39 ... 92-99: three steps at the end of each row) emptied
+INDEX "BB"
 DO 44
   1
   RCL 30
-  INDEX "BB"
-  STOIJ
+  STO J
   0
   STOEL
   DROP
@@ -6467,7 +6140,7 @@ ENDDO 44
 1
 22
 INDEX "BB"
-STOIJ
+STO J
 4
 STOSEQ
 2
@@ -6487,7 +6160,7 @@ STOSEQ
 1
 92
 INDEX "BB"
-STOIJ
+STO J
 -4
 STOSEQ
 -2
@@ -6509,7 +6182,7 @@ STO 33
 1
 32
 INDEX "BB"
-STOIJ
+STO J
 @ the eight white pawns on 32-39
 DO 45
   1
@@ -6523,7 +6196,7 @@ STO 33
 1
 82
 INDEX "BB"
-STOIJ
+STO J
 @ the eight black pawns on 82-89
 DO 46
   -1
@@ -6580,7 +6253,7 @@ INDEX "BB"
 1                               ; row ST
 7
 INDEX "ST"
-STOIJ
+STO J
 RCL "CHN"
 100000
 ÷
@@ -6601,7 +6274,7 @@ DO 47
   1
   RCL 33
   INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   STO 35
   6
@@ -6610,7 +6283,7 @@ DO 47
     1                           ; row ST
     4
     INDEX "ST"
-    STOIJ
+    STO J
     RCL 33
     STOEL
     1
@@ -6630,7 +6303,7 @@ DO 47
     1                           ; row ST
     X<>Y
     INDEX "ST"
-    STOIJ
+    STO J
     RCL 33
     STOEL
   ENDIF 235
@@ -6644,7 +6317,7 @@ ENDDO 47
 1                               ; row CR
 22
 INDEX "CR"
-STOIJ
+STO J
 78
 STO 33
 @ the masks of the castling rights: 15 into row CR for the squares 22-99
@@ -6658,7 +6331,7 @@ ENDDO 48
 1                               ; row ST
 4
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 STO 36
 STO 24
@@ -6668,31 +6341,31 @@ STO 25
 1                               ; row ST
 5
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 STO 37
 1                               ; row ST
 6
 INDEX "ST"
-STOIJ
+STO J
 RCLEL
 STO 38
 1                               ; row CR
 RCL 36
 INDEX "CR"
-STOIJ
+STO J
 12
 STOEL
 1                               ; row CR
 RCL 37
 INDEX "CR"
-STOIJ
+STO J
 14
 STOEL
 1                               ; row CR
 RCL 38
 INDEX "CR"
-STOIJ
+STO J
 13
 STOEL
 1                               ; row CR
@@ -6700,7 +6373,7 @@ RCL 36
 70
 +
 INDEX "CR"
-STOIJ
+STO J
 3
 STOEL
 1                               ; row CR
@@ -6708,7 +6381,7 @@ RCL 37
 70
 +
 INDEX "CR"
-STOIJ
+STO J
 11
 STOEL
 1                               ; row CR
@@ -6716,16 +6389,24 @@ RCL 38
 70
 +
 INDEX "CR"
-STOIJ
+STO J
 7
 STOEL
-@ level 3's time budget, tenths of a second
+@ level 3's time budget, tenths of a second (from the level: the macro :BUDG:)
+@ (macro :BUDG:)
 1                               ; row ST
 18
 INDEX "ST"
-STOIJ
+STO J
+3
+RCL 26
+3
+-
+Y^X
 600
+×
 STOEL
+INDEX "BB"
 @ R72-R79: no moves yet (0, not a text)
 RCL 57
 X=0?
@@ -6740,7 +6421,7 @@ XEQ 63                          ; -> :HASH:
 INDEX "GH"
 1
 300
-STOIJ
+STO J
 RCL Z
 100000
 ×
@@ -6768,7 +6449,7 @@ IF 239
     INDEX "GH"
     1
     RCL 69
-    STOIJ
+    STO J
     RCLEL
     100000
     MOD
@@ -6826,7 +6507,7 @@ STO 33
 1
 22
 INDEX "BB"
-STOIJ
+STO J
 @ white's back rank 22-29 emptied
 DO 50
   0
@@ -6845,7 +6526,7 @@ MOD
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 3
 STOEL
 RCL 30
@@ -6862,7 +6543,7 @@ MOD
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 3
 STOEL
 RCL 30
@@ -6876,7 +6557,7 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 5
 STOEL
 RCL 30
@@ -6913,7 +6594,7 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 2
 STOEL
 RCL 34
@@ -6921,7 +6602,7 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 2
 STOEL
 0
@@ -6929,7 +6610,7 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 4
 STOEL
 0
@@ -6937,7 +6618,7 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 6
 STOEL
 0
@@ -6945,17 +6626,17 @@ XEQ 85                          ; -> :NTH:
 1
 X<>Y
 INDEX "BB"
-STOIJ
+STO J
 4
 STOEL
 22
 STO 33
 @ black's back rank: each piece of white's (22-29), the other colour, 70 squares up
+INDEX "BB"
 DO 52
   1
   RCL 33
-  INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   CHS
   STO 34
@@ -6963,8 +6644,7 @@ DO 52
   RCL 33
   70
   +
-  INDEX "BB"
-  STOIJ
+  STO J
   RCL 34
   STOEL
   1
@@ -6982,13 +6662,13 @@ STO 31
 21
 STO 32
 @ the squares from a1 on: each free one counts R31 down; the k-th free one ends the loop
+INDEX "BB"
 DO 53
   1
   STO+ 32
   1
   RCL 32
-  INDEX "BB"
-  STOIJ
+  STO J
   RCLEL
   X=0?
   IF 242
@@ -7158,7 +6838,10 @@ RCL 42
 21                              ; row PC
 -
 INDEX "PT"
-STOIJ
+STO J
+X<>Y
+STO I
+X<>Y
 RCL 43
 STOEL
 RTN
@@ -8243,7 +7926,10 @@ DO 55
     7
     +
     RCL 33
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCLEL
     SINT
     STO 48
@@ -8260,7 +7946,10 @@ DO 55
       26
       +
       RCL 33
-      STOIJ
+      STO J
+      X<>Y
+      STO I
+      X<>Y
       RCLEL
       SINT
       STO 49
@@ -8289,7 +7978,10 @@ DO 55
     20
     +
     RCL 33
-    STOIJ
+    STO J
+    X<>Y
+    STO I
+    X<>Y
     RCL 49
     →REAL
     STOEL

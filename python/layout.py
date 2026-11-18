@@ -306,16 +306,17 @@ GH_SIZE = 300                             # the game record GH (numbers: one row
 
 
 def knight_steps():
-    """The steps of the marker REM ==== KNIGHTS: the matrix KN, column s (a square of the board): the 64-bit mask
-    of the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "KN" set here, "BB" again at the
-    end); the program runs in UNSIGN, so bit 63 (h8) is a plain positive value."""
-    out = ['INDEX "KN"']
-    for r in range(8):
-        for f in range(8):
-            s = 10 * (r + 2) + f + 2
-            m = 0
+    """The steps of the marker REM ==== KNIGHTS: the matrix KN, columns 22-99 in turn (STOSEQ, v0.8.1: 2 steps a
+    square, the border squares 0): the 64-bit mask of the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as
+    a real (INDEX "KN" set here, "BB" again at the end); the program runs in UNSIGN, so bit 63 (h8) is a plain positive
+    value. (v0.8.0: 1 s STOIJ DROP DROP m STOEL DROP, 8 steps a square.)"""
+    out = ['INDEX "KN"', '22', 'STO J']
+    for s in range(22, 100):
+        r, f = (s - 1) // 10 - 2, (s - 1) % 10 - 1
+        m = 0
+        if 0 <= f < 8:
             for dr, df in ((1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)):
                 if 0 <= r + dr < 8 and 0 <= f + df < 8:
                     m |= 1 << (8 * (r + dr) + f + df)
-            out += [str(BD['KN']), str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
+        out += [str(m), 'STOSEQ']
     return out + ['INDEX "BB"']

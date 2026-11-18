@@ -59,8 +59,7 @@ def steps():
     """The steps of the marker REM ==== BOOK: OB (rows x 2, zeros) and its rows (INDEX "OB" set)."""
     L = lines()
     out = [str(len(L)), str(WIDTH), 'NEWMAT', 'STO "OB"', 'DROP', 'INDEX "OB"']
-    for r, row in enumerate(L):
-        out += [str(r + 1), '1', 'STOIJ', 'DROP', 'DROP']
+    for row in L:                                    # in turn from (1, 1): STOSEQ goes on to the next row (v0.8.1)
         for c in packed(row):
             out += [str(c), 'STOSEQ', 'DROP']
     return out
