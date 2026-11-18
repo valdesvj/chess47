@@ -373,3 +373,14 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
    the mailbox has 120 squares. c47sim already models it (locals per level). A test program for Victor (it shows the
    error on the calculator and times a matrix read, a register read and an XEQ / RTN) is on the branch
    claude/chess47-dev-opt (build/dev-opt/).
+
+## Nov 18, 2026 - influence maps, a Python test (branch claude/chess47-influence)
+
+- Victor: an 8 x 8 "influence matrix" engine, stronger? Measured first in Python: python/influence.py (the twin plus
+  the maps at level 2, the twin unchanged), tools/influence47.py (710 games against the plain twin), docs/INFLUENCE.md.
+- Best: the maps once after each root move, square control only (weight 2): +79 (+57 to +101) against level 2, about
+  1060 on docs/ELO.md's scale; plain level 3 beats it by 170. On the C47 it would cost 5-6 times the time of a level-2
+  move (about 30 maps of about 10 000 steps each): about what level 3 costs, for less than half its gain. Not ported.
+- Found: the recapture rule adds the taking king's 20 000 when the reply took S's king, so the engine can play a king
+  move next to the other king (three positions in docs/INFLUENCE.md, the C47 program in the simulator too). Fix to be
+  made on its own branch (twin and program).
