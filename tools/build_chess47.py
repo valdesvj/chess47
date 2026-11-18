@@ -172,7 +172,7 @@ def fill(lines):
     return out
 
 
-CONST_RE = re.compile(r'@([A-Z]+)$')
+CONST_RE = re.compile(r'@([A-Z]+)$')               # (the names of MATS + R / C: their sizes)
 MACRO_RE = re.compile(r'(DEF|USE) :([A-Za-z0-9]{1,7}):$')
 
 
@@ -219,12 +219,16 @@ NUMBER = 16                    # bytes a number of a real matrix (an estimate: r
 
 
 def constants():
-    """The constants @NAME: the rows of BD (python/layout.py BD); MEM the bytes the start checks with MEM# (BD, GL,
-    OB at NUMBER bytes a number, 3 000 to spare, up to the thousand), GHM the game record GH's."""
+    """The constants @NAME: the rows and offsets of the game's matrices (python/layout.py BD), @XR @XC the sizes of
+    the matrix X (layout.MATS); MEM the bytes the start checks with MEM# (the game's matrices, GL, OB at NUMBER bytes a
+    number, 3 000 to spare, up to the thousand), GHM the game record GH's."""
     sys.path.insert(0, os.path.join(ROOT, 'python'))
     import layout, book
     c = {k: str(v) for k, v in layout.BD.items()}
-    need = (layout.BD['BD'] * 120 + layout.GL_SIZE + book.ob_size()) * NUMBER + 3000
+    for k, (r, n) in layout.MATS.items():
+        c[k + 'R'], c[k + 'C'] = str(r), str(n)
+    els = sum(r * n for r, n in layout.MATS.values())
+    need = (els + layout.GL_SIZE + book.ob_size()) * NUMBER + 3000
     c['MEM'] = str(-(-need // 1000) * 1000)
     c['GHM'] = str(layout.GH_SIZE * NUMBER)
     return c

@@ -287,23 +287,29 @@ if __name__ == '__main__':
     print(len(glyph_steps()), 'steps')
 
 
-# The rows of the matrix BD (the program reads them as the constants @NAME, filled in by tools/build_chess47.py):
-# BD the rows of BD; ST the state row (also the empty piece's row of PT: zeros on the squares 22-99); PT the offset of
-# PT (white's values: the row of a piece t = 1-6 is t + PT; black's are white's turned round, CHESS47's macros :PTW:
-# :PTX:); UN the offset of the undo data (the ply n: columns 1-6 of the row n + UN, a row of PT whose squares are
-# 22-99); KN the knights' masks, SB the square bits, CR the masks of the castling rights (all by the square s).
-# v0.6.0: 23 rows (PT 13 rows, both colours, rows 5-17; UN rows 18-20).
-BD = {'BD': 14, 'ST': 5, 'PT': 5, 'UN': 5, 'KN': 12, 'SB': 13, 'CR': 14}
+# The game's matrices (v0.8.0: BD split; the firmware copies the whole indexed matrix at every element command, so
+# small matrices are fast: LOCT47 v0.2, docs/DEVOPT.md). MATS: name -> (rows, columns). BB the board (the 10 x 12
+# mailbox, indexed by default), ML the move lists (rows 1-3: the root, the replies, the moves played), ST the state
+# (columns 1-18), PT white's values (row |p| + PT, the empty piece row 1 of zeros; column s - PC for the squares 22-99;
+# black's: white's turned round, CHESS47's macros :PTW: :PTX:), UN the undo data (row: the ply), KN the knights' masks,
+# SB the square bits, CR the masks of the castling rights (column: the square). The constants @NAME (BD, the rows and
+# offsets) and @XR @XC (the sizes) are filled in by tools/build_chess47.py.
+MATS = {'BB': (1, 120), 'ML': (3, 120), 'ST': (1, 18), 'PT': (7, 78), 'UN': (3, 6), 'KN': (1, 120), 'SB': (1, 120),
+        'CR': (1, 120)}
+# v0.7.0: one matrix BD 14 x 120 (row 1 the board, 2-4 ML, 5 ST, 6-11 PT and UN, 12-14 KN SB CR).
+BD = {'ST': 1, 'PT': 1, 'UN': 0, 'KN': 1, 'SB': 1, 'CR': 1, 'PC': 21, 'PM': 39.5, 'PX': 79}
 BD['UNP'] = BD['UN'] + 3                # the undo row of the played move (ply 3)
+# PM = 60.5 - PC: the column of PT for the square s and the colour c is PM + c (s - 60.5); PX = 121 - 2 PC: the other
+# colour's column for the same square is PX - (PM + c (s - 60.5))
 GL_SIZE = 32 * 24                         # the glyph matrix GL (numbers)
 GH_SIZE = 300                             # the game record GH (numbers: one row since v0.7.0)
 
 
 def knight_steps():
-    """The steps of the marker REM ==== KNIGHTS: row KN of BD, column s (a square of the board): the 64-bit mask of
-    the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "BD" set); the program runs in
-    UNSIGN, so bit 63 (h8) is a plain positive value."""
-    out = []
+    """The steps of the marker REM ==== KNIGHTS: the matrix KN, column s (a square of the board): the 64-bit mask
+    of the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "KN" set here, "BB" again at the
+    end); the program runs in UNSIGN, so bit 63 (h8) is a plain positive value."""
+    out = ['INDEX "KN"']
     for r in range(8):
         for f in range(8):
             s = 10 * (r + 2) + f + 2
@@ -312,4 +318,4 @@ def knight_steps():
                 if 0 <= r + dr < 8 and 0 <= f + df < 8:
                     m |= 1 << (8 * (r + dr) + f + df)
             out += [str(BD['KN']), str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
-    return out
+    return out + ['INDEX "BB"']

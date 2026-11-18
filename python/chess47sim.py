@@ -57,7 +57,7 @@ def gh(c):
 
 
 def board(c):
-    m = c.mats['BD'][0]
+    m = c.mats['BB'][0]
     return [None] + [int(v) if float(v) == int(float(v)) else float(v) for v in m]
 
 
