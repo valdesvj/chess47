@@ -428,3 +428,24 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   STOIJ 119 s, RCLEL 63, other steps 31), v0.8.0 68.5 s (13.7 a move: STOIJ 17, RCLEL 10, INDEX 2.6). The seconds
   are an estimate (the README's 6-11 s came from 0.17 ms a step); Victor times a move on the C47.
 - The start's memory: 39 000 + 4 800 bytes (v0.7.0 43 000 + 4 800).
+
+## Nov 18, 2026 - v0.8.1: levels 4 and 5, STO J instead of STOIJ, two builds (branch claude/chess47-v081)
+
+- Victor: two more levels, the size down (the tables), the firmware's functions for speed, a text build and a drawn
+  build. The influence term (v0.9.0) was not kept: plain level 3 beats it by about 170 (docs/INFLUENCE.md).
+- Levels 4 and 5: level 3 with 600 x 3^(level - 3) tenths (3 min, 9 min; the macro :BUDG: at the start and the key 1,
+  whose cycle is (level + 5) MOD 6: 2 1 0 5 4 3). On v0.8.0 the 3 plies need about 70-265 s in the test positions
+  (python/time47.py), so 60 s often cuts them short.
+- The firmware's STOIJ (store.c storeIjReal) copies Y into the register I and X into J and returns "changed", so
+  callByIndexedMatrix copies the whole matrix back (800 us on 1 x 120). RCLEL and the others read I and J (matrix.c
+  getI/JRegisterAsInt). Now STO J (one-row matrices: I = 1 from the INDEX before, as every STOIJ had one) or
+  STO J X<>Y STO I X<>Y (ML PT UN OB GL): the same stack. c47sim: STO / RCL I and J; the element commands check
+  the index (the firmware: Out of range). 136 + 24 places; estimated 13.7 -> 11.0 s a level-2 move.
+- The knights' masks (the KNIGHTS marker) and the book: STOSEQ in turn (512 -> 158 steps; the book's row STOIJs).
+- INDEX "BB" out of the 8 innermost board-only loops (BB has one row: I stays 1).
+- Two builds (REM ==== IF DRAW / ELSE / ENDIF; tools/build_chess47.py VARIANTS): build/draw/ (and build/CHESS47.txt,
+  programs/, listings/: the drawn one) and build/text/ (no GL, no GLYPHS, no key ×; the macro :SQW: computes an
+  empty square's column: 0 light, 5592405 x (1 + col MOD 2) dark). Text 6 271 steps, the start 31.8 KB; drawn 7 424,
+  43.8 KB. tests: the same game in both, GL only in the drawn one.
+- Where the time goes now (5 positions, estimated): MAKE 17 %, DELTA 14 %, ATT 11 %, GENSQ 8 %: PT (7 x 78)'s reads
+  in MAKE and DELTA. #B was not needed (no bit count here; v0.9.0's influence has POPC).
