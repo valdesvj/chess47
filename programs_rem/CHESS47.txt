@@ -1122,7 +1122,9 @@ STO 49
 RCL 22
 STO IND 49
 REM SC: the column of to for the colour c, T = 60.5 + c (to - 60.5), into R49 (the piece taken's: 121 - T); W = c x a
-REM value (white's table)
+REM value (white's table). A piece of the mover's own colour on to (Chess960's castling: the king onto its rook)
+REM counts 0 here ((x - |x|) / 2 of x = c x the piece: 0 for one's own, -|piece| for the other's): the Chess960
+REM castling below takes the rook's value off (LBL :VAL:)
 RCL 42
 60.5
 -
@@ -1132,6 +1134,11 @@ RCL× 45
 STO 49
 RCL 44
 RCL× 45
+ENTER
+ABS
+-
+2
+÷
 @PT
 X<>Y
 -
@@ -1239,6 +1246,10 @@ IF
   REM ---- (was LBL :C960M:) MAKE's Chess960 castling: the king R43 is on its rook's square R42 (its value added there): off it,
   REM onto its target R48, the rook onto R49 (LBL :KT960:), SC by PT, the king's square; the flag R47 = 3 ----
   IF
+    RCL 42
+    RCL 44
+    XEQ :VAL:
+    STO- 23
     XEQ :KT960:
     RCL 42
     RCL 43
