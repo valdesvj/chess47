@@ -98,6 +98,9 @@ def build(name):
         mm = re.fullmatch(r'(LBL|XEQ|GTO) (\d\d)', step)
         if mm and mm.group(2) in names:
             note = names[mm.group(2)] if mm.group(1) == 'LBL' else '-> ' + names[mm.group(2)]
+        mc = re.fullmatch(r'@([A-Z]+)\s{4}\(\d+\)', text)
+        if mc:                                                   # a constant of the source: its name
+            note = 'row ' + mc.group(1) if mc.group(1) != 'BD' else 'rows of BD'
         if k in data:
             note = (note + '  ' if note else '') + data[k]
         line = ind + step

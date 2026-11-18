@@ -87,5 +87,5 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :BACK9:    84  X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
 :NTH:      85  X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the sq
 :PSTALL:   86  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
-:PSTO:     87  X = the kind t: R43 into BD (t + 11, R42) and -R43 into (11 - t, R44)
+:PSTO:     87  X = the kind t: R43 into BD (t + PT, R42) and -R43 into (PT - t, R44)
 :GLYPHS:   88  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the

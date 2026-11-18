@@ -29,6 +29,7 @@ import c47sim                                                    # noqa: E402
 import chess47ref as R                                           # noqa: E402
 import chess47sim as S                                           # noqa: E402
 import layout as L                                               # noqa: E402
+ST, CR = L.BD['ST'] - 1, L.BD['CR'] - 1                          # the state row and the castling masks' row of BD (0-based)
 FAIL = []
 
 
@@ -429,7 +430,7 @@ def level3_tests(prog):
         shots, c = S.run([], prog=prog)
         setpos(c, p)
         c.reg['26'] = D(3)
-        c.mats['BD'][10][17] = D(10 ** 9)                      # no time limit
+        c.mats['BD'][L.BD['ST'] - 1][17] = D(10 ** 9)                      # no time limit
         c.steps = 0
         c.run('TTH3', maxsteps=10 ** 10)
         m, v, n = copy.deepcopy(p).search(3)
@@ -455,12 +456,12 @@ def setpos960(c, p, n):
     and the castling rooks' first squares, n + 1) and the masks of the castling rights (row 23), as INIT's LBL :CSQ:."""
     setpos(c, p)
     m = c.mats['BD']
-    m[10][3], m[10][4], m[10][5], m[10][6] = D(p.home[1]), D(p.rook[1][1]), D(p.rook[1][2]), D(n + 1)
+    m[ST][3], m[ST][4], m[ST][5], m[ST][6] = D(p.home[1]), D(p.rook[1][1]), D(p.rook[1][2]), D(n + 1)
     for s in range(22, 100):
-        m[22][s - 1] = D(15)
+        m[CR][s - 1] = D(15)
     for s, v in ((p.home[1], 12), (p.rook[1][1], 14), (p.rook[1][2], 13), (p.home[-1], 3), (p.rook[-1][4], 11),
                  (p.rook[-1][8], 7)):
-        m[22][s - 1] = D(v)
+        m[CR][s - 1] = D(v)
 
 
 def chess960_tests(prog):
@@ -473,10 +474,10 @@ def chess960_tests(prog):
     for n in (518, 0, 959, 123, 66, 300, 440, 777):
         shots, c = S.run([], regs={'CHN': D((n + 1) * 100000 + 23)})
         p, m = C.Pos960(n), c.mats['BD']
-        masks = {s: int(m[22][s - 1]) for s in range(22, 100) if int(m[22][s - 1]) != 15}
+        masks = {s: int(m[CR][s - 1]) for s in range(22, 100) if int(m[CR][s - 1]) != 15}
         want = {p.home[1]: 12, p.rook[1][1]: 14, p.rook[1][2]: 13, p.home[-1]: 3, p.rook[-1][4]: 11, p.rook[-1][8]: 7}
         if not (S.board(c)[22:100] == p.bd[22:100] and c.reg['24'] == p.kw and c.reg['25'] == p.kb and masks == want
-                and [int(m[10][k]) for k in (3, 4, 5, 6)] == [p.home[1], p.rook[1][1], p.rook[1][2], n + 1]):
+                and [int(m[ST][k]) for k in (3, 4, 5, 6)] == [p.home[1], p.rook[1][1], p.rook[1][2], n + 1]):
             bad.append(n)
     check(not bad, 'the back ranks of 8 positions (518 normal chess, 0, 959 ...) as chess960.start, the kings, the castling '
           'rooks, the masks of the castling rights%s' % ('' if not bad else ' BAD %s' % bad))
@@ -525,7 +526,7 @@ def chess960_tests(prog):
     print('== Chess960 with the keys: ÷ and the number, castling (king, then its rook), C47 vs C47, 0 and back')
     shots, c = S.run([DIV, 72, 73, 74, S.DOWN, S.RIGHT, S.PICK, S.RIGHT, S.PICK])
     b = S.board(c)
-    check(b[28] == 6 and b[27] == 4 and c.reg.get('78') == '1. O-O' and int(c.mats['BD'][10][6]) == 124,
+    check(b[28] == 6 and b[27] == 4 and c.reg.get('78') == '1. O-O' and int(c.mats['BD'][L.BD['ST'] - 1][6]) == 124,
           '÷ 1 2 3: No 123 (NQRNBKRB); 2 6 5 6 5: the king f1 onto its rook g1: O-O, the king on g1, the rook on f1')
     n = 16
     shots, c = S.run([DIV, 72, 73, 74] + [S.HAND] * n)
@@ -546,14 +547,14 @@ def chess960_tests(prog):
     p = C.Pos960(123)
     for m in got:
         p.make(m, 3)
-    check(keep['CHN'] == 12400321 and S.board(c2)[22:100] == p.bd[22:100] and int(c2.mats['BD'][10][6]) == 124,
+    check(keep['CHN'] == 12400321 and S.board(c2)[22:100] == p.bd[22:100] and int(c2.mats['BD'][L.BD['ST'] - 1][6]) == 124,
           '0 after 3 plies: CHN %s (No 123, 3 plies, level 2, white); the next start goes on in No 123' % keep['CHN'])
     shots, c = S.run([DIV, 54, 54, 54])
-    check(int(c.mats['BD'][10][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '÷ 9 9 9: refused (960: 000 TO 959)')
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '÷ 9 9 9: refused (960: 000 TO 959)')
     shots, c = S.run([DIV, DIV])
-    check(int(c.mats['BD'][10][6]) > 0, '÷ ÷: a random position (No %d)' % (int(c.mats['BD'][10][6]) - 1))
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) > 0, '÷ ÷: a random position (No %d)' % (int(c.mats['BD'][L.BD['ST'] - 1][6]) - 1))
     shots, c = S.run([DIV, 72, 73, 74, S.NEW])
-    check(int(c.mats['BD'][10][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '7: a new game of normal chess')
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '7: a new game of normal chess')
 
 
 if __name__ == '__main__':

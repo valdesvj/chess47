@@ -56,3 +56,8 @@ def steps():
         for c in row:
             out += [str(c), 'STOSEQ', 'DROP']
     return out
+
+
+def ob_size():
+    """The numbers of the matrix OB (the start's memory check)."""
+    return len(LINES) * WIDTH
