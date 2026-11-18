@@ -44,6 +44,18 @@ def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None, mem=N
     return shots, c
 
 
+def gh_row(m):
+    """The moves of a game record GH (the matrix as lists): one row since v0.7.0, a column per ply (1-299) holding
+    key x 100000 + move (column 300: the start's key); the move is the number MOD 100000 (also for the old record
+    of two rows, moves in row 1, keys in row 2)."""
+    return [int(v) % 100000 for v in m[0][:299]]
+
+
+def gh(c):
+    """The moves of the game record GH of the simulator c (gh_row)."""
+    return gh_row(c.mats['GH'])
+
+
 def board(c):
     m = c.mats['BD'][0]
     return [None] + [int(v) if float(v) == int(float(v)) else float(v) for v in m]

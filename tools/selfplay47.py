@@ -96,7 +96,7 @@ def game(level, seed, n960=None):
 
     def sync():
         """The moves of the game record GH not yet on b: each one legal, then pushed."""
-        row = c.mats['GH'][0]
+        row = S.gh(c)
         while st['synced'] < len(row) and int(row[st['synced']]):
             m = int(row[st['synced']])
             f, t = sq(m // 1000), sq(m % 1000)

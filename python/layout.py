@@ -289,12 +289,14 @@ if __name__ == '__main__':
 
 # The rows of the matrix BD (the program reads them as the constants @NAME, filled in by tools/build_chess47.py):
 # BD the rows of BD; ST the state row (also the empty piece's row of PT: zeros on the squares 22-99); PT the offset of
-# PT (the row of a piece p is p + PT); UN the offset of the undo data (the row of the ply n is n + UN, columns 1-6);
-# KN the knights' masks, SB the square bits, CR the masks of the castling rights (all by the square s).
-BD = {'BD': 23, 'ST': 11, 'PT': 11, 'UN': 17, 'KN': 21, 'SB': 22, 'CR': 23}
+# PT (white's values: the row of a piece t = 1-6 is t + PT; black's are white's turned round, CHESS47's macros :PTW:
+# :PTX:); UN the offset of the undo data (the ply n: columns 1-6 of the row n + UN, a row of PT whose squares are
+# 22-99); KN the knights' masks, SB the square bits, CR the masks of the castling rights (all by the square s).
+# v0.6.0: 23 rows (PT 13 rows, both colours, rows 5-17; UN rows 18-20).
+BD = {'BD': 14, 'ST': 5, 'PT': 5, 'UN': 5, 'KN': 12, 'SB': 13, 'CR': 14}
 BD['UNP'] = BD['UN'] + 3                # the undo row of the played move (ply 3)
 GL_SIZE = 32 * 24                         # the glyph matrix GL (numbers)
-GH_SIZE = 2 * 300                         # the game record GH (numbers)
+GH_SIZE = 300                             # the game record GH (numbers: one row since v0.7.0)
 
 
 def knight_steps():
