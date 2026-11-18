@@ -61,3 +61,38 @@ LOCT47 v0.2 (`build/dev-opt/LOCT47.txt`, about 2 minutes) times, 2 000 times eac
 
 If 4-7 cost clearly more than 1 and 3, the copy is the cost: then CHESS47 wants small matrices (the board apart), and
 a merge request to c43 (link instead of copy in `callByIndexedMatrix`) would speed up every matrix program.
+
+## v0.2 on Victor's DM42n (C47 firmware), Nov 18, 2026
+
+| | microseconds a time |
+|---|---|
+| the empty loop | 200 |
+| 1 `RCLEL` 1 × 120 | 550 |
+| 2 `STOIJ` 1 × 120 | 800 |
+| 3 `STOEL` 1 × 120 | 800 |
+| 4 `RCLEL` 14 × 120 | 5 000 |
+| 5 `STOEL` 14 × 120 | 7 950 |
+| 6 `RCLEL` 23 × 120 | 6 100 |
+| 7 `STOEL` 23 × 120 | 12 900 |
+| 8 `RCLSEQ` 23 × 120 | 12 500 |
+| 9 `J+` 23 × 120 | 6 200 |
+| 10 `INDEX` twice | 350 |
+
+**The copy is the cost**: a read on BD's 14 × 120 costs 9 times one on 1 × 120, a write 10 times; even `J+` copies the
+matrix, and `RCLSEQ` is `RCLEL` + `J+`. `INDEX` is cheap (about 175 us). (The empty loop: 360 us in v0.1, 200 in v0.2:
+compare times within one run; USB power or battery may change the clock.)
+
+CHESS47's search (5 positions at level 2, the simulator): 32 790 matrix commands, all on BD (14 × 120): the board
+17 908 reads and 1 092 writes, PT and UN 5 262 / 1 512, the state row 2 976 / 530, the castling masks 1 008, the
+move lists 833 / 295, the square bits 704 / 320, the knight masks 350. With these timings (14 × 120: 5 000 a read or
+STOIJ, 7 950 a write; 1 × 120: 550-800):
+
+| | the matrix commands of the 5 positions | |
+|---|---|---|
+| v0.7.0, one BD 14 × 120 | about 175 s | 1 x |
+| BD split: the board, the state, each other row its own 1 × 120 matrix, PT 6 × 120, INDEX switches | about 35-40 s | about 4-5 x faster |
+| the same with PT in six 1 × 78 matrices (or white's table 1 × 468) | about 28-30 s | about 6 x |
+| the firmware without the copy (`callByIndexedMatrix` linking) | about 13-16 s (at about 400-500 us an element command) | about 11-13 x |
+
+The absolute seconds do not match the README's 6-11 s a move (measured on the calculator with v0.5-v0.6), so the
+ratios matter, not the seconds: a move of CHESS47 timed on the calculator before and after will tell.
