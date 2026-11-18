@@ -441,9 +441,68 @@ def main():
     check(c.reg.get('20') == 1 and S.board(c)[36] == 1, 'e2-e5 refused: the pawn stays, white to move')
     chess960_tests(prog)
     level3_tests(prog)
+    kirk_tests()
     variant_tests()
     print('\n%s' % ('ALL OK' if not FAIL else '%d FAILED' % len(FAIL)))
     return 1 if FAIL else 0
+
+
+def kirk_tests():
+    """÷ 1701, the Easter egg as chess47.pg5's: the C47 keeps its king and pawns (pg5's FENs), no book, KIRK WINS."""
+    print('== Kirk (÷ 1 7 0 1): the Kobayashi Maru')
+    K = [55, 72, 52, 82, 72]                                     # ÷ 1 7 0 1
+    W = '4k3/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1'       # you white: black keeps its king and pawns
+    B = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/4K3 w kq - 0 1'       # you black: white the same
+    shots, c = S.run(K)
+    p = R.Pos.fen(W)
+    check(S.board(c)[22:100] == p.bd[22:100] and c.reg.get('22') == p.cr and c.reg.get('23') == p.sc
+          and int(c.reg['CHN']) // 100000 == 1702 and int(c.mats['ST'][0][6]) == 0,
+          '÷ 1701: %s, castling %d, SC %d (as chess47ref), CHN position 1701, not Chess960' % (W.split()[0], p.cr, p.sc))
+    shots, c = S.run(K + [S.PICK, S.UP, S.UP, S.PICK])
+    got = [int(x) for x in S.gh(c) if int(x)]
+    q = R.Pos.fen(W)
+    q.make(got[0], 3); q.undo.pop(3)
+    want, v, n = q.search(2)
+    q.make(got[1], 3); q.undo.pop(3)
+    check(len(got) == 2 and got[1] == want and S.board(c)[22:100] == q.bd[22:100] and c.reg.get('23') == q.sc,
+          'e2-e4: the C47 answers %s as chess47ref.search (no book: it has no knights)' % R.mname(want))
+    shots, c = S.run([S.HAND] + K)
+    p = R.Pos.fen(B)
+    want, v, n = p.search(2)
+    got = [int(x) for x in S.gh(c) if int(x)]
+    p.make(want, 3); p.undo.pop(3)
+    check(got == [want] and S.board(c)[22:100] == p.bd[22:100] and c.reg.get('22') == p.cr and c.reg.get('23') == p.sc,
+          '+ ÷ 1701: you black, white keeps its king and pawns (%s) and opens %s' % (B.split()[0], R.mname(want)))
+    shots, c = S.run(K + [S.PICK, S.UP, S.UP, S.PICK, S.END])
+    keep, gh = {k: c.reg[k] for k in ('CHN', 'TW', 'TB')}, c.mats['GH']
+    shots, c2 = S.run([], regs=keep, mats={'GH': gh})
+    q = R.Pos.fen(W)
+    for m in [int(x) for x in S.gh_row(gh) if int(x)]:
+        q.make(m, 3); q.undo.pop(3)
+    check(S.board(c2)[22:100] == q.bd[22:100] and c2.reg.get('23') == q.sc and c2.reg.get('22') == q.cr,
+          '0 and the next start: Kirk\'s game goes on (CHN %s)' % keep['CHN'])
+    shots, c = S.run([74] + K)
+    check(c.reg.get('27') == 2 and S.board(c)[22:30] == R.Pos.fen(W).bd[22:30] and S.board(c)[92:100] ==
+          R.Pos.fen(W).bd[92:100], '3 ÷ 1701 (two players): black keeps its king and pawns, as chess47.pg5')
+    keys, cur = [74] + K, (4, 1)                                 # two players; the cursor on e2
+    for mv in ('e2e3', 'e8f8', 'd1g4', 'd7d6', 'g4c8'):          # the shortest mate (python-chess)
+        for sq in (mv[:2], mv[2:]):
+            f, r = ord(sq[0]) - 97, int(sq[1]) - 1
+            keys += [S.RIGHT if f > cur[0] else S.LEFT] * abs(f - cur[0]) + [S.UP if r > cur[1] else S.DOWN] * abs(r - cur[1])
+            keys.append(S.PICK)
+            cur = (f, r)
+    texts, atext = [], c47sim.Calc.atext                        # the texts written (ATEXT) recorded
+    c47sim.Calc.atext = lambda self, t, *a, **k: (texts.append(t), atext(self, t, *a, **k))[1]
+    try:
+        shots, c = S.run(keys)
+    finally:
+        c47sim.Calc.atext = atext
+    hist = [x for x in (c.reg.get(str(r)) for r in range(73, 80)) if isinstance(x, str)]
+    check(hist[-1:] == ['3. Qc8#'] and c.reg.get('97') == 1 and any('KIRK WINS' in str(t) for t in texts)
+          and not any('CHECKMATE' in str(t) for t in texts),
+          'two players: 1. e3 Kf8 2. Qg4 d6 3. Qc8#: the game over, KIRK WINS (%s)' % ' '.join(hist))
+    shots, c = S.run([S.NEW] + K + [S.NEW])
+    check(S.board(c)[22:100] == R.Pos().bd[22:100] and int(c.reg['CHN']) // 100000 == 0, '7 after Kirk: normal chess again')
 
 
 def variant_tests():

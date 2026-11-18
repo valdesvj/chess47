@@ -202,7 +202,7 @@ DO
 WHILE
 ENDDO
 REM ---- the end: R20-R99 cleared (R-CLR 20.79: 20 + 79 stays below 100, a count 0 is refused; then R99), the matrices deleted, WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20, the screen; your stack back ----
-REM the game kept for the next start when it is not over: CHN = plies x 100 + level x 10 + your side + 2 with the
+REM the game kept for the next start when it is not over: CHN = its position x 100000 + plies x 100 + level x 10 + your side + 2 with the
 REM record GH and the clocks TW TB (the plies 2 (R96 - 1) + (1 - R20) / 2, at most 299); else only the level and side
 RCL 26
 10
@@ -211,12 +211,11 @@ RCL+ 27
 2
 +
 STO 69
-INDEX "BB"
-@ST
-7
-INDEX "ST"
-STO J
-RCLEL
+REM the position of the game (Chess960's n + 1, Kirk's 1702, 0 normal chess) kept from CHN
+RCL "CHN"
+100000
+÷
+IP
 100000
 ×
 STO+ 69
@@ -3311,12 +3310,26 @@ DO
 WHILE
 ENDDO
 REM Easter egg, 1701 (NCC-1701): Kirk's Kobayashi Maru, the no-win scenario reprogrammed (the C47 forum, who beat
-REM CHESS47 "under the James T Kirk rules"): a new game of normal chess, as 7, and the message
+REM CHESS47 "under the James T Kirk rules"), as chess47.pg5: a new game where the C47 keeps its king and pawns only
+REM (INIT: CHN with the position 1701, normal chess otherwise), the message; a mate is KIRK WINS (LBL :NOMOVE:)
 RCL 63
 1701
 X=Y?
 IF
-  XEQ :NEWG:
+  1702
+  100000
+  ×
+  RCL 26
+  10
+  ×
+  +
+  RCL+ 27
+  2
+  +
+  STO "CHN"
+  1
+  STO 99
+  XEQ :INIT:
   "KIRK RULES!"
   XEQ :STATUS:
   RTN
@@ -3584,7 +3597,18 @@ STO 97
 XEQ :INCHK:
 X≠0?
 IF
-  "CHECKMATE"
+  REM in Kirk's game (CHN's position 1701) a mate is KIRK WINS, as chess47.pg5
+  RCL "CHN"
+  100000
+  ÷
+  IP
+  1702
+  X=Y?
+  IF
+    "KIRK WINS"
+  ELSE
+    "CHECKMATE"
+  ENDIF
 ELSE
   "STALEMATE"
 ENDIF
@@ -3702,12 +3726,11 @@ LBL :BOOK:
 STO 62
 0
 STO 61
-INDEX "BB"
-@ST
-7
-INDEX "ST"
-STO J
-RCLEL
+REM no book in a Chess960 game or Kirk's (CHN's position not 0)
+RCL "CHN"
+100000
+÷
+IP
 X≠0?
 RTN
 RCL 96
@@ -5674,6 +5697,9 @@ RCL "CHN"
 100000
 ÷
 IP
+REM the position 1701 (Kirk, CHN's 1702) is normal chess here: 1702 MOD gives 0 (the others are below 961)
+1702
+MOD
 STOEL
 X≠0?
 XEQ :BACK9:
@@ -5817,6 +5843,72 @@ IF
   REM ==== IF DRAW
   XEQ :GLYPHS:
   REM ==== ENDIF
+ENDIF
+REM Kirk (CHN's position 1701, LBL :ASK960:): the C47's side c (R45: black, white when you play black, R27 -1) keeps its
+REM king and pawns: its back rank (R42: 57 - 35 c on) emptied, SC less their values (LBL :VAL:), the king put back
+REM (61 - 35 c, 6 c) with its value, its castling rights gone (R22 7.5 + 4.5 c: 0011#2 for black, 1100#2 for white)
+RCL "CHN"
+100000
+÷
+IP
+1702
+X=Y?
+IF
+  RCL 27
+  ENTER
+  ABS
+  ÷
+  CHS
+  STO 45
+  -35
+  ×
+  57
+  +
+  STO 42
+  DO
+    INDEX "BB"
+    RCL 42
+    STO J
+    RCLEL
+    XEQ :VAL:
+    STO- 23
+    INDEX "BB"
+    RCL 42
+    STO J
+    0
+    STOEL
+    1
+    STO+ 42
+    RCL 42
+    RCL 45
+    -35
+    ×
+    65
+    +
+    X>Y?
+  WHILE
+  ENDDO
+  RCL 45
+  -35
+  ×
+  61
+  +
+  STO 42
+  INDEX "BB"
+  STO J
+  RCL 45
+  6
+  ×
+  STOEL
+  XEQ :VAL:
+  STO+ 23
+  RCL 45
+  4.5
+  ×
+  7.5
+  +
+  STO 22
+  INDEX "BB"
 ENDIF
 REM the game record: the start's key at GH (1, 300) (key x 100000, no move); the clock (tenths of a second: TICKS).
 REM A record of v0.6.0 (two rows: the moves in row 1, the keys in row 2) is read the same way (the move MOD 100000)

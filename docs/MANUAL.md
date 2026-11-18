@@ -11,7 +11,7 @@ The release has CHESS47 twice; load the one you like (both are called CHESS47 an
 | | drawn pieces (`draw`) | letters only (`text`) |
 |---|---|---|
 | the pieces | drawn, or letters with **×** | letters of the calculator's font (K Q R B N P, k q r b n p) |
-| the program | 7 424 steps, about 22 KB | 6 271 steps, about 18 KB |
+| the program | 7 508 steps, about 22.7 KB | 6 355 steps, about 18.6 KB |
 | free memory to start | 43.8 KB (39.0 KB with a saved game) | 31.8 KB (27.0 KB) |
 
 The letters version has no key **×** and no drawings: it is for a calculator that has less memory free.
@@ -124,6 +124,10 @@ The squares between them must be empty and the king may not be in check, pass th
 *Chess960 No 123 (NQRNBKRB): 2 6 5 6 5, the king f1 onto its rook g1: O-O, the king on g1, the rook on f1.*
 
 0 keeps a Chess960 game with its number; **÷** or **7** goes back to normal chess (a new game).
+
+Starfleet cadets may try the number 1701.
+
+![1701](manual/12_kirk.png)
 
 ## What it changes on your calculator
 

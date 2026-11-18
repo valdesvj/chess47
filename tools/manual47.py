@@ -35,6 +35,7 @@ def main():
     shot('9_letters', [65, P, U, U, P], '×: the pieces as letters of the firmware\'s font; e2-e4 and the C47\'s reply')
     shot('10_level5', [S.LEVEL, S.LEVEL, S.LEVEL], 'the key 1 three times: level 5 (level 3 with up to 9 minutes)')
     shot('11_text', [P, U, U, P], 'the text build (build/text/): e2-e4 and the C47\'s reply', TEXT)
+    shot('12_kirk', [DIV, 72, 52, 82, 72, S.PICK, S.UP, S.UP, S.PICK], '÷ 1 7 0 1: the Kobayashi Maru (as chess47.pg5)')
     shot('8_960', [DIV, 72, 73, 74, D, R, P, R, P], '÷ 1 2 3: Chess960 No 123; 2 6 5 6 5: castling O-O, the king onto its rook')
 
 

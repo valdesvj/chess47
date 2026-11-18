@@ -449,3 +449,10 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   43.8 KB. tests: the same game in both, GL only in the drawn one.
 - Where the time goes now (5 positions, estimated): MAKE 17 %, DELTA 14 %, ATT 11 %, GENSQ 8 %: PT (7 x 78)'s reads
   in MAKE and DELTA. #B was not needed (no bit count here; v0.9.0's influence has POPC).
+- Release v0.8.1 (Nov 19): ÷ 1701 as chess47.pg5's Easter egg (Victor): CHN keeps the position 1701 as 1702 x 100000;
+  INIT reads it as normal chess (1702 MOD) and then takes the C47's back rank but the king (R45 c = -R27 / |R27|:
+  black, white when you play black; SC by LBL :VAL:, castling 7.5 + 4.5 c); BOOK skips when CHN's position is not 0
+  (Chess960 and Kirk); the end keeps CHN's position (was BD (ST, 7), lost for Kirk); NOMOVE says KIRK WINS. IF 251 of
+  255 (draw), 248 (text). No sound (no tone command run on a C47 yet). tests: kirk_tests (pg5's FENs, the twin's
+  replies, the saved game, a mate). tools/speed47.py: level 3's 12.7 answers a second, the budgets of tools/elo47.py's
+  levels 3, 4, 5 (Victor runs the ladder).
