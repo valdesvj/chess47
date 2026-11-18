@@ -134,7 +134,8 @@ LADDER = [('Stockfish 1320', ('sf', {'UCI_LimitStrength': True, 'UCI_Elo': 1320}
           ('Stockfish skill 0, 0.1 s', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 0.1)),
           ('Stockfish skill 0, depth 3', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 'd3')),
           ('Stockfish skill 0, depth 1', ('sf', {'UCI_LimitStrength': False, 'Skill Level': 0}, 'd1')),
-          ('CHESS47 level 3', ('c47', 3)), ('CHESS47 level 3, 60 s', ('c47', 3, 750)), ('CHESS47 level 2', ('c47', 2)), ('CHESS47 level 1', ('c47', 1)),
+          ('CHESS47 level 3', ('c47', 3)), ('CHESS47 level 5, 9 min', ('c47', 3, 6860)),
+          ('CHESS47 level 4, 3 min', ('c47', 3, 2290)), ('CHESS47 level 3, 60 s', ('c47', 3, 760)), ('CHESS47 level 2', ('c47', 2)), ('CHESS47 level 1', ('c47', 1)),
           ('material 2 plies', ('mat',))]
 
 
@@ -149,7 +150,7 @@ def ladder_game(engine, white, black, secs, maxply, rnd):
             h = hist[b.turn] if hist[b.turn] is not None and len(b.move_stack) <= 10 else None
             if h is not None:
                 h[:] = [mb(m.from_square) * 1000 + mb(m.to_square) for m in b.move_stack]
-            R.Pos.budget = spec[2] if len(spec) > 2 else None      # level 3 on the C47: about 750 answers in 60 s
+            R.Pos.budget = spec[2] if len(spec) > 2 else None      # level 3 on the C47: about 12.7 answers a second (v0.8.1, python/time47.py)
             mv = to_move(b, chess47_move(b, h, spec[1], rnd))
             R.Pos.budget = None
             if mv not in b.legal_moves:

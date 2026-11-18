@@ -557,6 +557,18 @@ class Calc:
             if op == '→REC':                       # Y angle, X radius -> Y = r sin, X = r cos (C47 →RECT, Free42 →REC)
                 r, t = self.s[0], self.s[1]
                 self.s[0] = r * self.trig(math.cos, t); self.s[1] = r * self.trig(math.sin, t); self.lift = True; continue
+            if op in ('STO', 'RCL') and arg in ('I', 'J'):
+                # chess47 v0.8.1: the registers I and J (109, 110) are the matrix index: STOIJ copies Y into I and X
+                # into J (store.c storeIjReal), RCLEL and the others read them (callByIndexedMatrix: getI/JRegister
+                # AsInt); STO J sets the column without STOIJ's copy of the matrix (to be copied to Almanac 47)
+                if op == 'STO':
+                    v = self.s[0]
+                    if not isinstance(v, (D, int)) or v != int(v):
+                        raise ValueError('STO %s of %r: the matrix index must be a whole number here' % (arg, v))
+                    setattr(self, arg, int(v)); self.lift = True
+                else:
+                    self.push(D(getattr(self, arg)))
+                continue
             if op == 'STO' and arg.startswith('IND '):
                 arg = self.regkey(arg)                              # STO IND: the register / variable it names
             if op == 'STO' and isinstance(self.s[0], Mat):          # a variable holds one value: a matrix now
@@ -667,6 +679,10 @@ class Calc:
                 self.unary(lambda x: x * k if op == 'deg→rad' else x / k); continue
             if op == 'DELITM':                                        # delete a variable (fnDeleteVariable)
                 self.reg.pop(arg, None); self.mats.pop(arg, None); continue
+            if op in ('STOEL', 'RCLEL', 'RCLSEQ', 'STOSEQ'):          # callByIndexedMatrix: I, J inside the matrix
+                m = self.mats[self.cur]
+                if not (1 <= self.I <= len(m) and 1 <= self.J <= len(m[0])):
+                    raise ValueError('%s: element (%d, %d) out of range for %s %dx%d' % (op, self.I, self.J, self.cur, len(m), len(m[0])))
             if op == 'STOEL':                            # real34 kept (C47 real matrix); a complex number kept too
                 x = self.s[0]
                 if isinstance(x, SI):                    # chess47: a short integer into a real matrix (Victor's C47, Oct 26)

@@ -20,7 +20,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :NINIT:    17  row SB of BD, the bit of each square (LBL :NUPD: reads it), and the knight words from the 
 :KT960:    18  Chess960's castling R41 (the king) -> R42 (its rook) of the colour R45: R48 the king's tar
 :ROOKS:    19  the rook of a castling R41 -> R42: R48 its square, R49 where it goes (h -> f or a -> d)
-:UNMK:     20  the macro :CRSQ: (was LBL :CRSQ:, inlined in MAKE) X = a square: a move from or to it keep
+:UNMK:     20  the macro :BUDG: (v0.8.1) level 3's budget from the level R26 into ST (1, 18), tenths of a
 :THINK:    21  ======== the search ========
 :THINK3:   22  level 3, after level 2 (R62 its move, R61 its value; both kept in BD (ST, 12) and (ST, 16)
 :TIME3:    23  X = 1 when level 3's time is over (R47 the tenths since BD (ST, 15), not below the budget 
@@ -82,7 +82,7 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :SETME:    79  X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board
 :STATE:    80  the status line of the position: CHECK or whose move it is
 :CURS:     81  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
-:DRAWSQ:   82  X = a square: drawn (GRMOD 1: each column written as it is) from the row of GL of its piec
+:DRAWSQ:   82  the macro :SQW: (v0.8.1) a column word of the square being drawn (DRAWSQ: R33 = 24 ... 1, 
 :INIT:     83  ======== the start ========
 :BACK9:    84  X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
 :NTH:      85  X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the sq

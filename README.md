@@ -12,13 +12,13 @@ biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, 
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
 see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
-that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose).
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose). v0.8.0: about 4 times faster on the calculator (estimated): the firmware copies a whole matrix at each element command, so BD became eight small matrices. v0.8.1: levels 4 and 5 (level 3 with 3 and 9 min), about 20 % faster again (`STO J` instead of `STOIJ`), and two builds: `build/draw/` (the pieces drawn, as before) and `build/text/` (the pieces as letters only: about 18 KB, the start needs 31.8 KB instead of 43.8 KB). ÷ 1701 is now chess47.pg5's Kobayashi Maru (the C47 keeps its king and pawns, KIRK WINS), no longer a normal game with a message.
 
 | | |
 |---|---|
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
-| Size | 7 525 steps, about 23 KB (.p47, estimated); while it runs the matrices BD (14 × 120), GL (32 × 24), GH (1 × 300), OB (14 × 2): about 2 800 numbers (v0.6.0: 4 300), and the variables NW NB. The start needs 47 800 bytes free (43 000 with a saved game; v0.6.0: 71 600 / 62 000) |
+| Size | drawn (`build/draw/CHESS47.txt`, also `build/CHESS47.txt`): 7 508 steps, about 22.7 KB (.p47, estimated), the start needs 43 800 bytes free (39 000 with a saved game); text (`build/text/CHESS47.txt`, the pieces as letters, no matrix GL, no key ×): 6 355 steps, about 18.6 KB, 31 800 bytes (27 000). While it runs: BB ML ST PT UN KN SB CR (about 1 420 numbers), GL (32 × 24, drawn only), GH (1 × 300), OB (14 × 2), the variables NW NB |
 | At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; CHF kept only when the letters are chosen; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 **The manual, with pictures: [docs/MANUAL.md](docs/MANUAL.md).**
@@ -38,7 +38,7 @@ that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to no
 | **7** | a new game of normal chess (the level and your side kept; about 7 s, the glyphs and the tables kept) |
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. **In a Chess960 game, ÷ goes back to normal chess** (a new game, as 7). The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
 | **×** | the pieces as **letters** of the firmware's font (K Q R B N P white, k q r b n p black; the piece picked white on black), or drawn again. Kept for the next games and the next start (the variable CHF). Ready for the chess font proposed for the C47 firmware |
-| **1** | the level, in turn: 2 (2 plies, about 6-11 s a move), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **3** (level 2 first, then 3 plies for at most 60 s more: the deeper move when it is found in time, else the best found so far or level 2's) |
+| **1** | the level, in turn: 2 (2 plies, about 11 s a move, estimated), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **5**, **4**, **3** (level 2 first, then 3 plies for at most 9 min, 3 min or 60 s more: the deeper move when it is found in time, else the best found so far or level 2's; v0.8.1: levels 4 and 5 give the 3 plies the time they need, about 1-5 min in the middle game) |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
@@ -63,7 +63,10 @@ perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games
 Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE): level 3 searched to the end about
 **1100** (95 %: 980-1200), level 3 with the C47's 60 s about **1010**, level 2 about **980** (an earlier run: 1110),
 level 1 about 670. Head to head level 3 beat level 2 7-1 to the end, 4.5-3.5 with 60 s: the 60 s let it finish only
-the quieter positions. 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
+the quieter positions. v0.8.1, estimated before its ladder: level 3 averages 12.7 answers a second on the C47
+(`tools/speed47.py`, `python/time47.py`), so 60 s is about 760 answers, level 4 (3 min) 2 290 and level 5 (9 min)
+6 860; the middle-game test positions need 160-2 760 to the end, so level 4 should be about 1 070-1 090 and level 5
+about level 3 to the end, 1 100 (the ladder has the three now: `python3 tools/elo47.py --ladder`). 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
 misses deeper tactics. The matches against an independent player in the simulator: `docs/MATCHES.md`.
 
 ![crazy](docs/CHESS47_crazy.png)
@@ -86,18 +89,21 @@ random games (castling included).
 
 ## How it works
 
-- **One matrix BD (14 × 120)** holds everything the search reads, so it never switches INDEX (its rows have names in
-  the source, `@ST` `@PT` `@UN` `@KN` `@SB` `@CR`, filled in by the build from `python/layout.py`):
-  - row 1, the board: the 10 × 12 mailbox (a1 = 22 … h8 = 99, the border 8). A piece is 1-6 (pawn, knight, bishop,
-    rook, queen, king), positive for white and negative for black. A move is from × 1000 + to;
-  - rows 2-4, the move lists (the root, the replies, the moves played);
-  - row 5, the state (the killer move, the Chess960 squares, level 3's search), zeros on the squares: the empty piece;
-  - rows 6-11, the score table PT: white's value of each piece on each square (material + a piece-square table).
-    The piece-square values are the same on both wings, so black's table is white's turned round: value(-t, s) =
-    -value(t, 121 - s), read at the column 60.5 + c (s - 60.5) for the colour c = ±1 (v0.6.0 kept 13 rows, both
-    colours). Each move updates SC from three or four lookups, and SC is never recomputed;
-  - the undo data of each ply in the columns 1-6 of rows 6-8 (those columns are never a square);
-  - rows 12-14, the knight masks, the bit of each square (below) and the masks of the castling rights.
+- **Small matrices, each its own** (v0.8.0, `python/layout.py` MATS). On the C47 every element command (`STOIJ`,
+  `RCLEL`, `STOEL`, `STOSEQ`, `RCLSEQ`, even `J+`) copies the whole indexed matrix, and back for a write (`STOIJ`
+  counts as one): LOCT47 measured `RCLEL` at 550 µs on a 1 × 120 matrix and 5 000 µs on 14 × 120, while `INDEX` costs
+  175 µs (docs/DEVOPT.md). So the one matrix BD of v0.4-v0.7 is now eight; each `STOIJ` has the `INDEX` of its matrix
+  before it, and the board's is the default:
+  - BB (1 × 120), the board: the 10 × 12 mailbox (a1 = 22 … h8 = 99, the border 8). A piece is 1-6 (pawn, knight,
+    bishop, rook, queen, king), positive for white and negative for black. A move is from × 1000 + to;
+  - ML (3 × 120), the move lists (the root, the replies, the moves played);
+  - ST (1 × 18), the state (the killer move, the Chess960 squares, level 3's search);
+  - PT (7 × 78), the score table: white's value of each piece on each square (material + a piece-square table), row
+    1 the empty piece's zeros, column the square - 21. The piece-square values are the same on both wings, so
+    black's table is white's turned round: value(-t, s) = -value(t, 121 - s), read at the column 39.5 + c (s - 60.5)
+    for the colour c = ±1. Each move updates SC from three or four lookups, and SC is never recomputed;
+  - UN (3 × 6), the undo data of each ply;
+  - KN, SB, CR (1 × 120 each), the knight masks, the bit of each square (below) and the masks of the castling rights.
 - **The search:** 2 plies with alpha-beta cuts. The moves come out of the generator ordered: the captures by the
   value taken, queen first (an insertion as they are added), then the others. A move that lets the king be taken
   scores about -20000, so the search never chooses one. A checking move after which the other side has no legal
@@ -112,11 +118,11 @@ random games (castling included).
     (WSIZE 32); the keys of the game find the threefold repetition: the record GH holds key × 100 000 + move in one
     number a ply (one row; a saved game of v0.6.0, two rows, is read the same way and written again as it is replayed);
   - the knights of each side are a 64-bit word (NW, NB: bit 8 (rank - 1) + file - 1), kept by every move and its
-    take-back with `XOR`; "is this square attacked by a knight" is one `AND` with the square's knight mask (row 12 of BD)
+    take-back with `XOR`; "is this square attacked by a knight" is one `AND` with the square's knight mask (the matrix KN)
     instead of eight probes.
 - **The other matrices:** the glyphs GL, the game record GH, the opening book OB (five book moves to a number).
 - **The build** writes out the macros of the source (`DEF :NAME:` … `ENDDEF`, used with `USE :NAME:`) where they are
-  used, so code inlined for speed is still written once, and the constants `@NAME` (the rows of BD, the memory the
+  used, so code inlined for speed is still written once, and the constants `@NAME` (the rows, offsets and sizes of the matrices, the memory the
   start checks).
 - **Not used:** EIGEN and the 34-digit precision don't make a chess engine stronger, so they are not forced in.
   The plans are in `DEVELOPMENT_NOTES.md`.
@@ -131,7 +137,7 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 | v0.2 | 872 000 | 46-55 s |
 | the replies valued as generated, from their own side, the cut at the first refutation | 296 000 | |
 | the capture replies valued without being played; a tighter ray loop for the attack test | 283 000 | |
-| one matrix BD for the board, the lists, PT and the undo data (no INDEX switching) | 279 000 | |
+| one matrix BD for the board, the lists, PT and the undo data (no INDEX switching) | 279 000 | (fewer steps, but slower on the C47: undone in v0.8.0) |
 | the knight attack test with bitboards (`AND`), the square bits read from a table | 270 000 | |
 | the scan of the squares counted with `DSE` (the end test one step instead of nine) | 262 000 | |
 | **v0.3** (h8's bit kept signed, below) | **263 000** | **13-19 s** |
@@ -140,6 +146,8 @@ middle-game positions at level 2 (0.17 ms a step on the C47):
 
 | **v0.5.0**: ADD reads the target through the index its caller set and checks the list's room only in the list modes; GEN tests an own piece with one `X>0?`; DELTA takes from and to from R30 R33; VAL inlined in DELTA and MAKE; ATT's diagonals and lines in two loops; GPAWN, GSLIDE and 8 other routines inlined (10 local labels freed) | 15 positions: 901 000 -> 839 000 (93 %) | **6-11 s** |
 
+| **v0.8.1**: `STO J` (and `STO I`) instead of `STOIJ` (the firmware's STOIJ copies the whole matrix back), the knights' masks with `STOSEQ`, INDEX out of 8 board-only loops | estimated 13.7 s → 11.0 s a move; 7 742 → 7 424 steps | about 20 % faster (to be confirmed: `STO J` on the C47) |
+| **v0.8.0**: BD split into eight small matrices (the firmware copies the whole matrix at each element command) | 5 positions: 314 000 steps (+5 %: the INDEX steps); the time estimated with LOCT47's costs (`python/time47.py`): 53.5 s → 13.7 s a move | about 4 x faster (to be timed on the C47) |
 | **v0.7.0**: BD 23 → 14 rows (PT white's only, the undo data in PT's free columns), GH one row, OB packed: 23.8 KB less at the start; DELTA and MAKE read the column of the target once | 22 positions: 1 443 000 -> 1 505 000 (+4.3 %) | about the same |
 
 The killer move over 15 positions (these three, two of the tests, ten of random games): 1 407 000 steps -> 915 000
@@ -176,7 +184,9 @@ the local register R.09. The simulator now refuses SINT out of range as the C47 
 
 `AND`, `OR`, `NOT`, `XOR`, `BS?` ran on the calculator in Logic 47, `UNSIGN` / `2COMPL` on Victor's C47; `→REAL`,
 `1COMPL` and `SIGNMT` are still to be confirmed there. `0 STO+ "CHN"` (it creates the variable the first time) ran in
-Almanac 47's MOON47. New in v0.7.0, still to be confirmed on the C47: the opening book's numbers of up to 25 digits
+Almanac 47's MOON47. New in v0.8.1, still to be confirmed on the C47: `STO J` / `STO I` as the matrix index (instead of `STOIJ`: the
+firmware's `RCLEL` reads the registers I and J, so it should; LBL :BUDG:'s `Y^X` for levels 4 and 5).
+New in v0.7.0, still to be confirmed on the C47: the opening book's numbers of up to 25 digits
 as program steps (five moves to a number; each is stored with `STOSEQ` into the real matrix OB, as v0.6.0's
 five-digit moves were). New in v0.6.0, still to be confirmed on the C47: `MEM#` (the free RAM, checked at
 the start) and `ATEXT` with `GRMOD 2` (the halo of the letters on the dark squares, the key ×).
@@ -193,6 +203,7 @@ the start) and `ATEXT` with `GRMOD 2` (the halo of the letters on the dark squar
 | `python/layout.py` | the board's place, the piece glyphs, the crazy face (the build writes their words into the program) |
 | `python/book.py` | the opening book (the build writes it into the matrix OB) |
 | `tools/elo47.py` | the rating: CHESS47's engine (the twin: the calculator's moves) against Stockfish at fixed strengths (UCI_Elo), refereed by python-chess; the rating by maximum likelihood with its 95 % interval, `docs/ELO.md` and the games in `docs/ELO_games.pgn` |
+| `tools/speed47.py` | level 3's answers a second on the C47 (the simulator and `python/time47.py`): the budgets of levels 3, 4, 5 in `tools/elo47.py` |
 | `tools/match47.py` | matches in the simulator against a python-chess player, written to `docs/MATCHES.md` |
 | `tools/selfplay47.py` | the rules check (python-chess): the C47 against itself, 5 games at each level by default; every move legal, the board after it, every end of game (mate, stalemate, repetition, material, time-out) as the rules say; `docs/SELFPLAY.md` |
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |

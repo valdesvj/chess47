@@ -1,27 +1,26 @@
-REM LOCT47 v0.1.0 - a test for Victor's C47 (branch claude/chess47-dev-opt): can CHESS47 keep its board in local
-REM registers (RCL IND, one step a square instead of four), and what does a step cost on the calculator?
-REM The firmware's source says no for the first: every XEQ starts a new subroutine level with no local registers
-REM (src/c47/programming/lblGtoXeq.c fnExecute: currentNumberOfLocalRegisters = 0), and RCL IND 112 + n reaches
-REM R.nn of the running level only (registers.c isValidIndirectRegisterParam). CHESS47 reads its board in XEQ'd
-REM routines (GEN, ATT, MAKE, DELTA). LOCT47 shows it on the calculator, and times on the way (10 000 times each,
-REM TICKS in tenths of a second, the empty loop taken off; microseconds a time):
-REM   A  a matrix element: 1 RCL R.02 STOIJ RCLEL (CHESS47's board read, four steps)
-REM   B  RCL IND of a global register (R00 read, not changed)
-REM   C  RCL IND of a local register of this level (R.05: 117 = 112 + 5)
-REM   D  RCL R.05 (a local register, direct)
-REM   E  XEQ of an empty routine (XEQ and RTN: the firmware allocates and frees a subroutine level)
-REM Then (a key) a routine called with XEQ reads R.05: the C47 should stop with an error (local register .05 not
-REM defined). That is the answer: the local registers of CHESS47 are not seen by its subroutines.
-REM Uses R20 (the text) and R98 (KEY?); a matrix TM while it runs (deleted). About 1 minute.
+REM LOCT47 v0.2.0 - the cost of the matrix commands on Victor's C47 (branch claude/chess47-loct2).
+REM v0.1 (Nov 18, 2026, on the C47): the empty loop 360 us, 1 RCL R.02 STOIJ RCLEL 1 630 us on a 1 x 120 matrix,
+REM RCL IND global 120, RCL IND local 130, RCL R.05 110, XEQ + RTN 670; a subroutine reading the caller's R.05:
+REM "Out of range" (each XEQ level has its own local registers).
+REM The question of v0.2: in the firmware (src/c47/mathematics/matrix.c callByIndexedMatrix) every STOIJ, RCLEL,
+REM STOEL, RCLSEQ, STOSEQ copies the whole indexed matrix into a new one (and back for a write): does the time grow
+REM with the size of the matrix? CHESS47's BD was 23 x 120 (v0.6.0), it is 14 x 120 (v0.7.0).
+REM Each test 2 000 times, TICKS (tenths of a second): microseconds a time = (T - the empty loop) x 50:
+REM   1-3  RCLEL, STOIJ, STOEL on a 1 x 120 matrix (I, J set before the loop)
+REM   4-5  RCLEL, STOEL on 14 x 120          6-7  RCLEL, STOEL on 23 x 120
+REM   8    RCLSEQ on 23 x 120 (RCLEL and J+)  9  J+ on 23 x 120
+REM   10   INDEX twice (a 1 x 1 matrix and the 23 x 120 one)
+REM Uses R20 (the text); the matrices TM and TS while it runs (deleted). About 2 minutes. The results stay in
+REM R.20-R.30 of LOCT47 until it ends.
 LBL "LOCT47"
-LocR 20
+LocR 31
 STOS R.10
 CLLCD
 10
 GRFNT
 DROP
-"LOCT47: TIMING A B C D E (ABOUT 1 MIN)"
-220
+"LOCT47 V0.2: 10 TESTS, ABOUT 2 MIN"
+222
 4
 ATEXT Z
 1
@@ -30,179 +29,366 @@ NEWMAT
 STO "TM"
 DROP
 INDEX "TM"
-50
-STO R.02
-0
-STO R.03
-117
-STO R.04
-47
-STO R.05
-REM ---- the empty loop (R.06) ----
-10000
+REM ---- the empty loop (R.20) ----
+2000
 STO R.01
+DROP
 TICKS
 STO R.00
+DROP
 DO
   DSE R.01
 WHILE
 ENDDO
 TICKS
 RCL- R.00
-STO R.06
-REM ---- A: a matrix element (R.07) ----
-10000
+STO R.20
+REM ---- 1: RCLEL, 1 x 120 (R.21) ----
+2000
 STO R.01
+DROP
 TICKS
 STO R.00
+DROP
+1
+50
+STOIJ
 DO
-  1
-  RCL R.02
-  STOIJ
   RCLEL
   DSE R.01
 WHILE
 ENDDO
 TICKS
 RCL- R.00
-STO R.07
-REM ---- B: RCL IND of a global register (R.08) ----
-10000
+STO R.21
+REM ---- 2: STOIJ, 1 x 120 (R.22) ----
+2000
 STO R.01
+DROP
 TICKS
 STO R.00
-DO
-  RCL IND R.03
-  DSE R.01
-WHILE
-ENDDO
-TICKS
-RCL- R.00
-STO R.08
-REM ---- C: RCL IND of a local register of this level (R.09) ----
-10000
-STO R.01
-TICKS
-STO R.00
-DO
-  RCL IND R.04
-  DSE R.01
-WHILE
-ENDDO
-TICKS
-RCL- R.00
-STO R.09
-REM ---- D: RCL of a local register, direct (R.18) ----
-10000
-STO R.01
-TICKS
-STO R.00
-DO
-  RCL R.05
-  DSE R.01
-WHILE
-ENDDO
-TICKS
-RCL- R.00
-STO R.18
-REM ---- E: XEQ and RTN of an empty routine (R.19) ----
-10000
-STO R.01
-TICKS
-STO R.00
-DO
-  XEQ :EMPTY:
-  DSE R.01
-WHILE
-ENDDO
-TICKS
-RCL- R.00
-STO R.19
-DELITM "TM"
-REM ---- the results: (T - the empty loop) x 10 = microseconds a time (T in tenths of a second, 10 000 times) ----
-"LOOP ALONE "
-STO 20
-RCL R.06
-10
-×
-αIP 20
-" US A TIME"
-x→α 20
-RCL 20
-200
-4
-ATEXT Z
-"A MATRIX READ (4 STEPS) "
-STO 20
-RCL R.07
-RCL- R.06
-10
-×
-αIP 20
-" US"
-x→α 20
-RCL 20
-180
-4
-ATEXT Z
-"B RCL IND GLOBAL "
-STO 20
-RCL R.08
-RCL- R.06
-10
-×
-αIP 20
-" US"
-x→α 20
-RCL 20
-160
-4
-ATEXT Z
-"C RCL IND LOCAL (THIS LEVEL) "
-STO 20
-RCL R.09
-RCL- R.06
-10
-×
-αIP 20
-" US"
-x→α 20
-RCL 20
-140
-4
-ATEXT Z
-"D RCL R.05 "
-STO 20
-RCL R.18
-RCL- R.06
-10
-×
-αIP 20
-" US"
-x→α 20
-RCL 20
-120
-4
-ATEXT Z
-"E XEQ + RTN "
-STO 20
-RCL R.19
-RCL- R.06
-10
-×
-αIP 20
-" US"
-x→α 20
-RCL 20
-100
-4
-ATEXT Z
-"ANY KEY: A SUBROUTINE READS R.05 (47)"
-70
-4
-ATEXT Z
-"AN ERROR THEN = IT CANNOT SEE IT"
+DROP
+1
 50
+DO
+  STOIJ
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.22
+REM ---- 3: STOEL, 1 x 120 (R.23) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+50
+STOIJ
+7
+DO
+  STOEL
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.23
+REM ---- 14 x 120 (the old matrix TM freed by the new one) ----
+14
+120
+NEWMAT
+STO "TM"
+DROP
+INDEX "TM"
+REM ---- 4: RCLEL, 14 x 120 (R.24) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+50
+STOIJ
+DO
+  RCLEL
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.24
+REM ---- 5: STOEL, 14 x 120 (R.25) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+50
+STOIJ
+7
+DO
+  STOEL
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.25
+REM ---- 23 x 120 ----
+23
+120
+NEWMAT
+STO "TM"
+DROP
+INDEX "TM"
+REM ---- 6: RCLEL, 23 x 120 (R.26) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+50
+STOIJ
+DO
+  RCLEL
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.26
+REM ---- 7: STOEL, 23 x 120 (R.27) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+50
+STOIJ
+7
+DO
+  STOEL
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.27
+REM ---- 8: RCLSEQ, 23 x 120 (2 000 of its 2 760 elements in turn) (R.28) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+1
+STOIJ
+DO
+  RCLSEQ
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.28
+REM ---- 9: J+, 23 x 120 (R.29) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+1
+1
+STOIJ
+DO
+  J+
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.29
+1
+1
+NEWMAT
+STO "TS"
+DROP
+REM ---- 10: INDEX twice (R.30) ----
+2000
+STO R.01
+DROP
+TICKS
+STO R.00
+DROP
+DO
+  INDEX "TS"
+  INDEX "TM"
+  DSE R.01
+WHILE
+ENDDO
+TICKS
+RCL- R.00
+STO R.30
+DELITM "TM"
+DELITM "TS"
+REM ---- the results, microseconds a time: (T - the empty loop) x 50 ----
+"LOOP ALONE: "
+STO 20
+RCL R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+204
+4
+ATEXT Z
+"1 RCLEL 1X120: "
+STO 20
+RCL R.21
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+187
+4
+ATEXT Z
+"2 STOIJ 1X120: "
+STO 20
+RCL R.22
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+170
+4
+ATEXT Z
+"3 STOEL 1X120: "
+STO 20
+RCL R.23
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+153
+4
+ATEXT Z
+"4 RCLEL 14X120: "
+STO 20
+RCL R.24
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+136
+4
+ATEXT Z
+"5 STOEL 14X120: "
+STO 20
+RCL R.25
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+119
+4
+ATEXT Z
+"6 RCLEL 23X120: "
+STO 20
+RCL R.26
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+102
+4
+ATEXT Z
+"7 STOEL 23X120: "
+STO 20
+RCL R.27
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+85
+4
+ATEXT Z
+"8 RCLSEQ 23X120: "
+STO 20
+RCL R.28
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+68
+4
+ATEXT Z
+"9 J+ 23X120: "
+STO 20
+RCL R.29
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+51
+4
+ATEXT Z
+"10 2 INDEX: "
+STO 20
+RCL R.30
+RCL- R.20
+50
+×
+αIP 20
+" US"
+x→α 20
+RCL 20
+34
+4
+ATEXT Z
+"ANY KEY: THE END (PHOTO FIRST)"
+16
 4
 ATEXT Z
 DO
@@ -217,20 +403,5 @@ ENDDO
 GRFNT
 DROP
 RCLS R.10
-REM ---- the answer: a routine called with XEQ reads R.05 (the firmware: an error, local register .05 not defined) ----
-XEQ :SUBR:
-"SUBROUTINE SAW R.05 = "
-STO 20
-X<>Y
-αIP 20
-RCL 20
-30
-4
-ATEXT Z
-RTN
-LBL :EMPTY:
-RTN
-LBL :SUBR:
-RCL R.05
 RTN
 END

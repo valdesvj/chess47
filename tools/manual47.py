@@ -9,8 +9,11 @@ OUT = os.path.join(ROOT, 'docs', 'manual')
 DIV, TWO = 55, 74                                                # ÷ (Chess960), 3 (two players)
 
 
-def shot(name, keys, what):
-    shots, c = S.run(keys)
+TEXT = os.path.join(ROOT, 'build', 'text', 'CHESS47.txt')     # the text build (the pieces as letters only)
+
+
+def shot(name, keys, what, prog=S.PROG):
+    shots, c = S.run(keys, prog=prog)
     S.png(os.path.join(OUT, name + '.png'), shots[-1])
     hist = [x for x in (c.reg.get(str(r)) for r in range(73, 80)) if isinstance(x, str)]
     print('docs/manual/%s.png: %s (%s)' % (name, what, ' '.join(hist)))
@@ -30,6 +33,9 @@ def main():
     shot('6_crazy', [S.LEVEL, S.LEVEL, P, U, U, P], 'level CRAZY (1 1): the face by the title')
     shot('7_ask960', [DIV, 72, 73], '÷ 1 2: the number of the Chess960 position asked')
     shot('9_letters', [65, P, U, U, P], '×: the pieces as letters of the firmware\'s font; e2-e4 and the C47\'s reply')
+    shot('10_level5', [S.LEVEL, S.LEVEL, S.LEVEL], 'the key 1 three times: level 5 (level 3 with up to 9 minutes)')
+    shot('11_text', [P, U, U, P], 'the text build (build/text/): e2-e4 and the C47\'s reply', TEXT)
+    shot('12_kirk', [DIV, 72, 52, 82, 72, S.PICK, S.UP, S.UP, S.PICK], '÷ 1 7 0 1: the Kobayashi Maru (as chess47.pg5)')
     shot('8_960', [DIV, 72, 73, 74, D, R, P, R, P], '÷ 1 2 3: Chess960 No 123; 2 6 5 6 5: castling O-O, the king onto its rook')
 
 
