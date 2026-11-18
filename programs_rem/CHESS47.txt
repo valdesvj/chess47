@@ -1121,9 +1121,24 @@ RCL+ 46
 STO 49
 RCL 22
 STO IND 49
+REM SC: the column of to for the colour c, T = 60.5 + c (to - 60.5), into R49 (the piece taken's: 121 - T); W = c x a
+REM value (white's table)
 RCL 42
+60.5
+-
+RCL× 45
+60.5
++
+STO 49
 RCL 44
-USE :PTX:
+RCL× 45
+@PT
+X<>Y
+-
+121
+RCL- 49
+STOIJ
+RCLEL
 RCL× 45
 STO+ 23
 RCL 41
@@ -1193,9 +1208,13 @@ RCL 42
 STOIJ
 RCL 43
 STOEL
-RCL 42
 RCL 43
-USE :PTW:
+RCL× 45
+@PT
++
+RCL 49
+STOIJ
+RCLEL
 RCL× 45
 STO+ 23
 RCL 43
@@ -1327,9 +1346,9 @@ IF
   ENDIF
 ENDIF
 RCL 41
-XEQ :CRSQ:
+USE :CRSQ:
 RCL 42
-XEQ :CRSQ:
+USE :CRSQ:
 RCL 20
 CHS
 STO 20
@@ -1529,9 +1548,9 @@ RCL 41
 -
 STO 49
 RTN
-REM ---- LBL :CRSQ: X = a square: a move from or to it keeps the castling rights of its mask (row CR of BD, LBL :CSQ:: 15,
-REM the kings' and rooks' first squares less their rights) (AND) ----
-LBL :CRSQ:
+REM ---- the macro :CRSQ: (was LBL :CRSQ:, inlined in MAKE) X = a square: a move from or to it keeps the castling rights
+REM of its mask (row CR of BD, LBL :CSQ:: 15, the kings' and rooks' first squares less their rights) (AND) ----
+DEF :CRSQ:
 @CR
 X<>Y
 STOIJ
@@ -1540,7 +1559,7 @@ SINT
 RCL 22
 AND
 STO 22
-RTN
+ENDDEF
 REM ---- LBL :UNMK: takes back the move of the ply R46 (its row of UN, the castling word R56 + R46) ----
 LBL :UNMK:
 RCL 46
@@ -2602,8 +2621,9 @@ ENDIF
 RTN
 REM ---- LBL :DELTA: the reply R40 (no castling at this ply): R71 = R60 x (SC + its change), the change as LBL :MAKE:
 REM makes it: - the piece taken - the piece on from + the piece (a queen on the last row) on to, - the pawn taken
-REM en passant. The colour's values come from white's table (the macros :PTW: :PTX: give c x the value): R71 adds them
-REM to c SC, and the end multiplies by c R60 (c = R45 = +-1, so c c = 1) ----
+REM en passant. The colour's values come from white's table (W = c x the value): R71 adds them to c SC, and the end
+REM multiplies by c R60 (c = R45 = +-1, so c c = 1). R44 the column of to for c (T = 60.5 + c (to - 60.5); the piece
+REM taken's is 121 - T) ----
 LBL :DELTA:
 RCL 30
 STO 41
@@ -2617,14 +2637,27 @@ STO 43
 SIGN
 STO 45
 RCL 23
-RCL× 45
+×
 STO 71
 RCL 42
+60.5
+-
+RCL× 45
+60.5
++
+STO 44
 1
 RCL 42
 STOIJ
 RCLEL
-USE :PTX:
+RCL× 45
+@PT
+X<>Y
+-
+121
+RCL- 44
+STOIJ
+RCLEL
 STO+ 71
 RCL 41
 RCL 43
@@ -2668,9 +2701,13 @@ IF
     STO 43
   ENDIF
 ENDIF
-RCL 42
 RCL 43
-USE :PTW:
+RCL× 45
+@PT
++
+RCL 44
+STOIJ
+RCLEL
 STO+ 71
 RCL 60
 RCL× 45
