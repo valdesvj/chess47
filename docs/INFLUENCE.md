@@ -65,5 +65,5 @@ play it, for example:
 | `8/4B3/8/8/7Q/4P1K1/5q2/4k3 w - - 0 1` | Kg3xf2 (next to Ke1) |
 | `1R6/3b4/6N1/5k1K/8/8/8/7B b - - 0 1` | Kf5-g4 (next to Kh5) |
 
-The fix (both twins): no recapture bonus when the reply took the king. `python/influence.py` has it already; the
-engine itself is not changed on this branch.
+The fix: no recapture bonus when the reply took the king. Done in v0.7.1 (branch claude/chess47-kingrecap, LBL :RECAP:
+and the twin), merged into this branch; `python/influence.py` had it already, so the results above are unchanged.

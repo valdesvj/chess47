@@ -374,6 +374,25 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
    error on the calculator and times a matrix read, a register read and an XEQ / RTN) is on the branch
    claude/chess47-dev-opt (build/dev-opt/).
 
+## Nov 18, 2026 - dev-opt: LOCT47, the test for the board in local registers (branch claude/chess47-dev-opt)
+
+- Step 4 of the plan of Nov 18 (the board in local registers, `RCL IND`) cannot work in CHESS47: the firmware gives
+  each `XEQ` level its own local registers (none until its own `LocR`), see v0.7.0 above and docs/DEVOPT.md.
+- Instead: programs_rem/LOCT47.txt, built by tools/build_devopt.py into build/dev-opt/ (LOCT47.txt for rejig,
+  LOCT47_doc.txt the listing): it times a matrix read, `RCL IND` global and local, `RCL R.nn`, `XEQ`/`RTN` on the
+  calculator, then shows the error of a subroutine reading the caller's R.05. tests/test_devopt.py runs it in the
+  simulator (213 steps; the timings, then "no local register R.05 at level 1").
+- Waiting for Victor's numbers: they decide the next speed work (inlining, registers instead of matrix reads).
+
+## Nov 18, 2026 - v0.7.1: a king never moves next to the other king (branch claude/chess47-kingrecap)
+
+- Found by the influence test (claude/chess47-influence): the recapture rule added the taking king's 20 000 when
+  the reply took S's king, so a king move next to the other king, onto a square S defends, looked legal (the twin
+  and the C47 program: Ka5-b6 next to Kc6 in 2n5/3B4/2K5/k1N5/8/8/8/Q7 b, and two more).
+- LBL :RECAP: (levels 2 and 3: CEVAL, ACEVAL) returns when the target is a king (7 steps); the twin's search and
+  answers the same. The tests: the three positions (legal, as the twin); 1 500 random positions with the kings two
+  squares apart at most: no illegal move at levels 2 and 3 (before: 3 in about 1 350 at level 2).
+
 ## Nov 18, 2026 - influence maps, a Python test (branch claude/chess47-influence)
 
 - Victor: an 8 x 8 "influence matrix" engine, stronger? Measured first in Python: python/influence.py (the twin plus
@@ -382,5 +401,5 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   1060 on docs/ELO.md's scale; plain level 3 beats it by 170. On the C47 it would cost 5-6 times the time of a level-2
   move (about 30 maps of about 10 000 steps each): about what level 3 costs, for less than half its gain. Not ported.
 - Found: the recapture rule adds the taking king's 20 000 when the reply took S's king, so the engine can play a king
-  move next to the other king (three positions in docs/INFLUENCE.md, the C47 program in the simulator too). Fix to be
-  made on its own branch (twin and program).
+  move next to the other king (three positions in docs/INFLUENCE.md, the C47 program in the simulator too). Fixed in
+  v0.7.1 (claude/chess47-kingrecap, merged into this branch).

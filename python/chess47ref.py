@@ -332,7 +332,7 @@ class Pos:
             self.make(a, 3)
             n += 1
             w = S * self.sc
-            if cap and self.attacked(t, -S):
+            if cap and abs(y) != 6 and self.attacked(t, -S):     # not when the answer took the king (v0.7.1)
                 w -= abs(value(self.bd[t], t))
             if w > amax and not self.attacked(self.king(S), -S):
                 amax = w
@@ -412,7 +412,9 @@ class Pos:
                         self.make(r, 2)
                         w = S * self.sc
                         nodes += 1
-                        if cap and 'recap' in self.opts and self.attacked(r % 1000, S):
+                        if cap and abs(y) != 6 and 'recap' in self.opts and self.attacked(r % 1000, S):
+                            # (v0.7.1: not when the reply took S's king: the taking king's 20 000 made a king move
+                            # next to the other king look legal)
                             w += abs(value(self.bd[r % 1000], r % 1000))
                         self.unmake(2)
                         if w < v:
