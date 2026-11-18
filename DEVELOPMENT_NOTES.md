@@ -403,3 +403,11 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
 - Found: the recapture rule adds the taking king's 20 000 when the reply took S's king, so the engine can play a king
   move next to the other king (three positions in docs/INFLUENCE.md, the C47 program in the simulator too). Fixed in
   v0.7.1 (claude/chess47-kingrecap, merged into this branch).
+
+## Nov 18, 2026 - LOCT47 v0.2: the matrix commands against the matrix's size (branch claude/chess47-loct2)
+
+- LOCT47 v0.1 on Victor's C47: the empty loop 360 us, a matrix read (1 RCL STOIJ RCLEL, 1 x 120) 1 630, RCL IND global
+  120, local 130, RCL R.05 110, XEQ + RTN 670; the subroutine reading the caller's R.05: "Out of range" (docs/DEVOPT.md).
+- The firmware copies the whole indexed matrix at every STOIJ / RCLEL / STOEL / RCLSEQ / STOSEQ (and back for a
+  write): matrix.c callByIndexedMatrix. LOCT47 v0.2 times them on 1 x 120, 14 x 120 and 23 x 120 matrices, RCLSEQ, J+
+  and INDEX, to know whether one big BD is the slow choice.

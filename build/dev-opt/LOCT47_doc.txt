@@ -1,27 +1,26 @@
-      ; LOCT47 v0.1.0 - a test for Victor's C47 (branch claude/chess47-dev-opt): can CHESS47 keep its board in local
-      ; registers (RCL IND, one step a square instead of four), and what does a step cost on the calculator?
-      ; The firmware's source says no for the first: every XEQ starts a new subroutine level with no local registers
-      ; (src/c47/programming/lblGtoXeq.c fnExecute: currentNumberOfLocalRegisters = 0), and RCL IND 112 + n reaches
-      ; R.nn of the running level only (registers.c isValidIndirectRegisterParam). CHESS47 reads its board in XEQ'd
-      ; routines (GEN, ATT, MAKE, DELTA). LOCT47 shows it on the calculator, and times on the way (10 000 times each,
-      ; TICKS in tenths of a second, the empty loop taken off; microseconds a time):
-      ; A  a matrix element: 1 RCL R.02 STOIJ RCLEL (CHESS47's board read, four steps)
-      ; B  RCL IND of a global register (R00 read, not changed)
-      ; C  RCL IND of a local register of this level (R.05: 117 = 112 + 5)
-      ; D  RCL R.05 (a local register, direct)
-      ; E  XEQ of an empty routine (XEQ and RTN: the firmware allocates and frees a subroutine level)
-      ; Then (a key) a routine called with XEQ reads R.05: the C47 should stop with an error (local register .05 not
-      ; defined). That is the answer: the local registers of CHESS47 are not seen by its subroutines.
-      ; Uses R20 (the text) and R98 (KEY?); a matrix TM while it runs (deleted). About 1 minute.
+      ; LOCT47 v0.2.0 - the cost of the matrix commands on Victor's C47 (branch claude/chess47-loct2).
+      ; v0.1 (Nov 18, 2026, on the C47): the empty loop 360 us, 1 RCL R.02 STOIJ RCLEL 1 630 us on a 1 x 120 matrix,
+      ; RCL IND global 120, RCL IND local 130, RCL R.05 110, XEQ + RTN 670; a subroutine reading the caller's R.05:
+      ; "Out of range" (each XEQ level has its own local registers).
+      ; The question of v0.2: in the firmware (src/c47/mathematics/matrix.c callByIndexedMatrix) every STOIJ, RCLEL,
+      ; STOEL, RCLSEQ, STOSEQ copies the whole indexed matrix into a new one (and back for a write): does the time grow
+      ; with the size of the matrix? CHESS47's BD was 23 x 120 (v0.6.0), it is 14 x 120 (v0.7.0).
+      ; Each test 2 000 times, TICKS (tenths of a second): microseconds a time = (T - the empty loop) x 50:
+      ; 1-3  RCLEL, STOIJ, STOEL on a 1 x 120 matrix (I, J set before the loop)
+      ; 4-5  RCLEL, STOEL on 14 x 120          6-7  RCLEL, STOEL on 23 x 120
+      ; 8    RCLSEQ on 23 x 120 (RCLEL and J+)  9  J+ on 23 x 120
+      ; 10   INDEX twice (a 1 x 1 matrix and the 23 x 120 one)
+      ; Uses R20 (the text); the matrices TM and TS while it runs (deleted). About 2 minutes. The results stay in
+      ; R.20-R.30 of LOCT47 until it ends.
    1  LBL "LOCT47"
-   2  LocR 20
+   2  LocR 31
    3  STOS R.10
    4  CLLCD
    5  10
    6  GRFNT
    7  DROP
-   8  "LOCT47: TIMING A B C D E (ABOUT 1 MIN)"
-   9  220
+   8  "LOCT47 V0.2: 10 TESTS, ABOUT 2 MIN"
+   9  222
   10  4
   11  ATEXT Z
   12  1
@@ -30,207 +29,379 @@
   15  STO "TM"
   16  DROP
   17  INDEX "TM"
-  18  50
-  19  STO R.02
-  20  0
-  21  STO R.03
-  22  117
-  23  STO R.04
-  24  47
-  25  STO R.05
-      ; ---- the empty loop (R.06) ----
-  26  10000
-  27  STO R.01
+      ; ---- the empty loop (R.20) ----
+  18  2000
+  19  STO R.01
+  20  DROP
+  21  TICKS
+  22  STO R.00
+  23  DROP
+  24  DO    (01)
+  25    DSE R.01
+  26  WHILE    (01)
+  27  ENDDO    (01)
   28  TICKS
-  29  STO R.00
-  30  DO    (01)
-  31    DSE R.01
-  32  WHILE    (01)
-  33  ENDDO    (01)
+  29  RCL- R.00
+  30  STO R.20
+      ; ---- 1: RCLEL, 1 x 120 (R.21) ----
+  31  2000
+  32  STO R.01
+  33  DROP
   34  TICKS
-  35  RCL- R.00
-  36  STO R.06
-      ; ---- A: a matrix element (R.07) ----
-  37  10000
-  38  STO R.01
-  39  TICKS
-  40  STO R.00
-  41  DO    (02)
-  42    1
-  43    RCL R.02
-  44    STOIJ
-  45    RCLEL
-  46    DSE R.01
-  47  WHILE    (02)
-  48  ENDDO    (02)
-  49  TICKS
-  50  RCL- R.00
-  51  STO R.07
-      ; ---- B: RCL IND of a global register (R.08) ----
-  52  10000
-  53  STO R.01
-  54  TICKS
-  55  STO R.00
+  35  STO R.00
+  36  DROP
+  37  1
+  38  50
+  39  STOIJ
+  40  DO    (02)
+  41    RCLEL
+  42    DSE R.01
+  43  WHILE    (02)
+  44  ENDDO    (02)
+  45  TICKS
+  46  RCL- R.00
+  47  STO R.21
+      ; ---- 2: STOIJ, 1 x 120 (R.22) ----
+  48  2000
+  49  STO R.01
+  50  DROP
+  51  TICKS
+  52  STO R.00
+  53  DROP
+  54  1
+  55  50
   56  DO    (03)
-  57    RCL IND R.03
+  57    STOIJ
   58    DSE R.01
   59  WHILE    (03)
   60  ENDDO    (03)
   61  TICKS
   62  RCL- R.00
-  63  STO R.08
-      ; ---- C: RCL IND of a local register of this level (R.09) ----
-  64  10000
+  63  STO R.22
+      ; ---- 3: STOEL, 1 x 120 (R.23) ----
+  64  2000
   65  STO R.01
-  66  TICKS
-  67  STO R.00
-  68  DO    (04)
-  69    RCL IND R.04
-  70    DSE R.01
-  71  WHILE    (04)
-  72  ENDDO    (04)
-  73  TICKS
-  74  RCL- R.00
-  75  STO R.09
-      ; ---- D: RCL of a local register, direct (R.18) ----
-  76  10000
-  77  STO R.01
-  78  TICKS
-  79  STO R.00
-  80  DO    (05)
-  81    RCL R.05
-  82    DSE R.01
-  83  WHILE    (05)
-  84  ENDDO    (05)
-  85  TICKS
-  86  RCL- R.00
-  87  STO R.18
-      ; ---- E: XEQ and RTN of an empty routine (R.19) ----
-  88  10000
+  66  DROP
+  67  TICKS
+  68  STO R.00
+  69  DROP
+  70  1
+  71  50
+  72  STOIJ
+  73  7
+  74  DO    (04)
+  75    STOEL
+  76    DSE R.01
+  77  WHILE    (04)
+  78  ENDDO    (04)
+  79  TICKS
+  80  RCL- R.00
+  81  STO R.23
+      ; ---- 14 x 120 (the old matrix TM freed by the new one) ----
+  82  14
+  83  120
+  84  NEWMAT
+  85  STO "TM"
+  86  DROP
+  87  INDEX "TM"
+      ; ---- 4: RCLEL, 14 x 120 (R.24) ----
+  88  2000
   89  STO R.01
-  90  TICKS
-  91  STO R.00
-  92  DO    (06)
-  93    XEQ :EMPTY:    (00)
-  94    DSE R.01
-  95  WHILE    (06)
-  96  ENDDO    (06)
-  97  TICKS
-  98  RCL- R.00
-  99  STO R.19
- 100  DELITM "TM"
-      ; ---- the results: (T - the empty loop) x 10 = microseconds a time (T in tenths of a second, 10 000 times) ----
- 101  "LOOP ALONE "
- 102  STO 20
- 103  RCL R.06
- 104  10
- 105  ×
- 106  αIP 20
- 107  " US A TIME"
- 108  x→α 20
- 109  RCL 20
- 110  200
- 111  4
- 112  ATEXT Z
- 113  "A MATRIX READ (4 STEPS) "
- 114  STO 20
- 115  RCL R.07
- 116  RCL- R.06
- 117  10
- 118  ×
- 119  αIP 20
- 120  " US"
- 121  x→α 20
- 122  RCL 20
- 123  180
- 124  4
- 125  ATEXT Z
- 126  "B RCL IND GLOBAL "
- 127  STO 20
- 128  RCL R.08
- 129  RCL- R.06
- 130  10
- 131  ×
- 132  αIP 20
- 133  " US"
- 134  x→α 20
- 135  RCL 20
- 136  160
- 137  4
- 138  ATEXT Z
- 139  "C RCL IND LOCAL (THIS LEVEL) "
- 140  STO 20
- 141  RCL R.09
- 142  RCL- R.06
- 143  10
- 144  ×
- 145  αIP 20
- 146  " US"
- 147  x→α 20
- 148  RCL 20
- 149  140
- 150  4
- 151  ATEXT Z
- 152  "D RCL R.05 "
- 153  STO 20
- 154  RCL R.18
- 155  RCL- R.06
- 156  10
- 157  ×
- 158  αIP 20
- 159  " US"
- 160  x→α 20
- 161  RCL 20
- 162  120
- 163  4
- 164  ATEXT Z
- 165  "E XEQ + RTN "
- 166  STO 20
- 167  RCL R.19
- 168  RCL- R.06
- 169  10
- 170  ×
- 171  αIP 20
- 172  " US"
- 173  x→α 20
- 174  RCL 20
- 175  100
- 176  4
- 177  ATEXT Z
- 178  "ANY KEY: A SUBROUTINE READS R.05 (47)"
- 179  70
- 180  4
- 181  ATEXT Z
- 182  "AN ERROR THEN = IT CANNOT SEE IT"
- 183  50
- 184  4
- 185  ATEXT Z
- 186  DO    (07)
- 187    0
- 188    PAUSE 10
- 189    KEY? 98
- 190    1
- 191    X≠0?
- 192  WHILE    (07)
- 193  ENDDO    (07)
- 194  20
- 195  GRFNT
- 196  DROP
- 197  RCLS R.10
-      ; ---- the answer: a routine called with XEQ reads R.05 (the firmware: an error, local register .05 not defined) ----
- 198  XEQ :SUBR:    (01)
- 199  "SUBROUTINE SAW R.05 = "
- 200  STO 20
- 201  X<>Y
- 202  αIP 20
- 203  RCL 20
- 204  30
- 205  4
- 206  ATEXT Z
- 207  RTN
- 208  LBL :EMPTY:    (00)
- 209  RTN
- 210  LBL :SUBR:    (01)
- 211  RCL R.05
- 212  RTN
- 213  END
+  90  DROP
+  91  TICKS
+  92  STO R.00
+  93  DROP
+  94  1
+  95  50
+  96  STOIJ
+  97  DO    (05)
+  98    RCLEL
+  99    DSE R.01
+ 100  WHILE    (05)
+ 101  ENDDO    (05)
+ 102  TICKS
+ 103  RCL- R.00
+ 104  STO R.24
+      ; ---- 5: STOEL, 14 x 120 (R.25) ----
+ 105  2000
+ 106  STO R.01
+ 107  DROP
+ 108  TICKS
+ 109  STO R.00
+ 110  DROP
+ 111  1
+ 112  50
+ 113  STOIJ
+ 114  7
+ 115  DO    (06)
+ 116    STOEL
+ 117    DSE R.01
+ 118  WHILE    (06)
+ 119  ENDDO    (06)
+ 120  TICKS
+ 121  RCL- R.00
+ 122  STO R.25
+      ; ---- 23 x 120 ----
+ 123  23
+ 124  120
+ 125  NEWMAT
+ 126  STO "TM"
+ 127  DROP
+ 128  INDEX "TM"
+      ; ---- 6: RCLEL, 23 x 120 (R.26) ----
+ 129  2000
+ 130  STO R.01
+ 131  DROP
+ 132  TICKS
+ 133  STO R.00
+ 134  DROP
+ 135  1
+ 136  50
+ 137  STOIJ
+ 138  DO    (07)
+ 139    RCLEL
+ 140    DSE R.01
+ 141  WHILE    (07)
+ 142  ENDDO    (07)
+ 143  TICKS
+ 144  RCL- R.00
+ 145  STO R.26
+      ; ---- 7: STOEL, 23 x 120 (R.27) ----
+ 146  2000
+ 147  STO R.01
+ 148  DROP
+ 149  TICKS
+ 150  STO R.00
+ 151  DROP
+ 152  1
+ 153  50
+ 154  STOIJ
+ 155  7
+ 156  DO    (08)
+ 157    STOEL
+ 158    DSE R.01
+ 159  WHILE    (08)
+ 160  ENDDO    (08)
+ 161  TICKS
+ 162  RCL- R.00
+ 163  STO R.27
+      ; ---- 8: RCLSEQ, 23 x 120 (2 000 of its 2 760 elements in turn) (R.28) ----
+ 164  2000
+ 165  STO R.01
+ 166  DROP
+ 167  TICKS
+ 168  STO R.00
+ 169  DROP
+ 170  1
+ 171  1
+ 172  STOIJ
+ 173  DO    (09)
+ 174    RCLSEQ
+ 175    DSE R.01
+ 176  WHILE    (09)
+ 177  ENDDO    (09)
+ 178  TICKS
+ 179  RCL- R.00
+ 180  STO R.28
+      ; ---- 9: J+, 23 x 120 (R.29) ----
+ 181  2000
+ 182  STO R.01
+ 183  DROP
+ 184  TICKS
+ 185  STO R.00
+ 186  DROP
+ 187  1
+ 188  1
+ 189  STOIJ
+ 190  DO    (10)
+ 191    J+
+ 192    DSE R.01
+ 193  WHILE    (10)
+ 194  ENDDO    (10)
+ 195  TICKS
+ 196  RCL- R.00
+ 197  STO R.29
+ 198  1
+ 199  1
+ 200  NEWMAT
+ 201  STO "TS"
+ 202  DROP
+      ; ---- 10: INDEX twice (R.30) ----
+ 203  2000
+ 204  STO R.01
+ 205  DROP
+ 206  TICKS
+ 207  STO R.00
+ 208  DROP
+ 209  DO    (11)
+ 210    INDEX "TS"
+ 211    INDEX "TM"
+ 212    DSE R.01
+ 213  WHILE    (11)
+ 214  ENDDO    (11)
+ 215  TICKS
+ 216  RCL- R.00
+ 217  STO R.30
+ 218  DELITM "TM"
+ 219  DELITM "TS"
+      ; ---- the results, microseconds a time: (T - the empty loop) x 50 ----
+ 220  "LOOP ALONE: "
+ 221  STO 20
+ 222  RCL R.20
+ 223  50
+ 224  ×
+ 225  αIP 20
+ 226  " US"
+ 227  x→α 20
+ 228  RCL 20
+ 229  204
+ 230  4
+ 231  ATEXT Z
+ 232  "1 RCLEL 1X120: "
+ 233  STO 20
+ 234  RCL R.21
+ 235  RCL- R.20
+ 236  50
+ 237  ×
+ 238  αIP 20
+ 239  " US"
+ 240  x→α 20
+ 241  RCL 20
+ 242  187
+ 243  4
+ 244  ATEXT Z
+ 245  "2 STOIJ 1X120: "
+ 246  STO 20
+ 247  RCL R.22
+ 248  RCL- R.20
+ 249  50
+ 250  ×
+ 251  αIP 20
+ 252  " US"
+ 253  x→α 20
+ 254  RCL 20
+ 255  170
+ 256  4
+ 257  ATEXT Z
+ 258  "3 STOEL 1X120: "
+ 259  STO 20
+ 260  RCL R.23
+ 261  RCL- R.20
+ 262  50
+ 263  ×
+ 264  αIP 20
+ 265  " US"
+ 266  x→α 20
+ 267  RCL 20
+ 268  153
+ 269  4
+ 270  ATEXT Z
+ 271  "4 RCLEL 14X120: "
+ 272  STO 20
+ 273  RCL R.24
+ 274  RCL- R.20
+ 275  50
+ 276  ×
+ 277  αIP 20
+ 278  " US"
+ 279  x→α 20
+ 280  RCL 20
+ 281  136
+ 282  4
+ 283  ATEXT Z
+ 284  "5 STOEL 14X120: "
+ 285  STO 20
+ 286  RCL R.25
+ 287  RCL- R.20
+ 288  50
+ 289  ×
+ 290  αIP 20
+ 291  " US"
+ 292  x→α 20
+ 293  RCL 20
+ 294  119
+ 295  4
+ 296  ATEXT Z
+ 297  "6 RCLEL 23X120: "
+ 298  STO 20
+ 299  RCL R.26
+ 300  RCL- R.20
+ 301  50
+ 302  ×
+ 303  αIP 20
+ 304  " US"
+ 305  x→α 20
+ 306  RCL 20
+ 307  102
+ 308  4
+ 309  ATEXT Z
+ 310  "7 STOEL 23X120: "
+ 311  STO 20
+ 312  RCL R.27
+ 313  RCL- R.20
+ 314  50
+ 315  ×
+ 316  αIP 20
+ 317  " US"
+ 318  x→α 20
+ 319  RCL 20
+ 320  85
+ 321  4
+ 322  ATEXT Z
+ 323  "8 RCLSEQ 23X120: "
+ 324  STO 20
+ 325  RCL R.28
+ 326  RCL- R.20
+ 327  50
+ 328  ×
+ 329  αIP 20
+ 330  " US"
+ 331  x→α 20
+ 332  RCL 20
+ 333  68
+ 334  4
+ 335  ATEXT Z
+ 336  "9 J+ 23X120: "
+ 337  STO 20
+ 338  RCL R.29
+ 339  RCL- R.20
+ 340  50
+ 341  ×
+ 342  αIP 20
+ 343  " US"
+ 344  x→α 20
+ 345  RCL 20
+ 346  51
+ 347  4
+ 348  ATEXT Z
+ 349  "10 2 INDEX: "
+ 350  STO 20
+ 351  RCL R.30
+ 352  RCL- R.20
+ 353  50
+ 354  ×
+ 355  αIP 20
+ 356  " US"
+ 357  x→α 20
+ 358  RCL 20
+ 359  34
+ 360  4
+ 361  ATEXT Z
+ 362  "ANY KEY: THE END (PHOTO FIRST)"
+ 363  16
+ 364  4
+ 365  ATEXT Z
+ 366  DO    (12)
+ 367    0
+ 368    PAUSE 10
+ 369    KEY? 98
+ 370    1
+ 371    X≠0?
+ 372  WHILE    (12)
+ 373  ENDDO    (12)
+ 374  20
+ 375  GRFNT
+ 376  DROP
+ 377  RCLS R.10
+ 378  RTN
+ 379  END
