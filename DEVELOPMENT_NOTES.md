@@ -403,3 +403,20 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
 - Found: the recapture rule adds the taking king's 20 000 when the reply took S's king, so the engine can play a king
   move next to the other king (three positions in docs/INFLUENCE.md, the C47 program in the simulator too). Fixed in
   v0.7.1 (claude/chess47-kingrecap, merged into this branch).
+
+## Nov 18, 2026 - v0.8.0: BD split into small matrices (branch claude/chess47-split)
+
+- LOCT47 v0.2 on Victor's DM42n (docs/DEVOPT.md): every element command copies the whole indexed matrix (and back
+  for a write; STOIJ counts as one: store.c storeIjReal returns true): RCLEL 550 us on 1 x 120, 5 000 on 14 x 120,
+  6 100 on 23 x 120; STOEL / STOIJ 800 / 7 950 / 12 900; J+ 6 200 on 23 x 120; INDEX 175. One matrix BD (v0.4: fewer
+  steps, no INDEX switching) was the slow choice on the calculator.
+- BD (14 x 120) -> BB the board (1 x 120, indexed by default), ML (3 x 120, rows 1-3: R38 and MLK's callers 1-3),
+  ST (1 x 18), PT (7 x 78: row |p| + 1, column s - 21; the constants PM 39.5 and PX 79 for the mirrored columns), UN
+  (3 x 6), KN SB CR (1 x 120). Every STOIJ on them has the INDEX of its matrix right before it (inserted by a script
+  that read the row from the steps before it; :PTX: fixed by hand; INDEX sets I = J = 1, so the only element command
+  that uses its caller's I, J, ADD's first RCLEL, always follows its caller's STOIJ on BB). INIT makes ML ST UN again
+  for a kept game; the start frees and the end deletes the eight. The KNIGHTS marker indexes KN.
+- python/time47.py: the time of a run with LOCT47's costs. 5 positions at level 2: v0.7.1 267.5 s (53.5 a move:
+  STOIJ 119 s, RCLEL 63, other steps 31), v0.8.0 68.5 s (13.7 a move: STOIJ 17, RCLEL 10, INDEX 2.6). The seconds
+  are an estimate (the README's 6-11 s came from 0.17 ms a step); Victor times a move on the C47.
+- The start's memory: 39 000 + 4 800 bytes (v0.7.0 43 000 + 4 800).
