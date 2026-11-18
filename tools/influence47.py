@@ -8,7 +8,7 @@ queen; a game is a draw at the rules' draws or after --maxply plies. The result:
 its 95 % interval (from the paired games), and the rating on the scale of docs/ELO.md (level 2: 981).
 Also the cost a C47 port would pay: the leaves valued and the maps built a move.
 
-    python3 tools/influence47.py                       -> docs/INFLUENCE.md
+    python3 tools/influence47.py                       -> docs/INFLUENCE_RUN.md (docs/INFLUENCE.md is the summary)
     python3 tools/influence47.py --random 40 --maxply 200 --variant leaf --jobs 2"""
 import argparse, math, os, random, sys, time
 from multiprocessing import Pool
@@ -104,7 +104,7 @@ def main():
     ap.add_argument('--variant', default='leaf')
     ap.add_argument('--opp', type=int, default=2, help='the level of the plain twin (2, or 3: level 3 searched to the end)')
     ap.add_argument('--weights', default='', help='changes to influence.WEIGHTS, e.g. C_ALL=2,T_FORK=1')
-    ap.add_argument('--out', default=os.path.join(ROOT, 'docs', 'INFLUENCE.md'))
+    ap.add_argument('--out', default=os.path.join(ROOT, 'docs', 'INFLUENCE_RUN.md'))   # not the summary INFLUENCE.md
     a = ap.parse_args()
     for kv in filter(None, a.weights.split(',')):
         k, v = kv.split('=')
