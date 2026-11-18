@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Build the CHESS47 files from the commented source programs_rem/CHESS47.txt (as Logic 47, Zones 47, Elements 47):
-the markers REM ==== GLYPHS and FACE (python/layout.py), BOOK and BOOKN (python/book.py) filled, named labels LBL :NAME: get free local numbers, the STRUCT
+the markers REM ==== GLYPHS and FACE (python/layout.py), BOOK and BOOKN (python/book.py) filled, the macros
+(DEF :NAME: ... ENDDEF, written out where USE :NAME: stands) and the constants @NAME (the rows of BD, python/layout.py BD)
+filled, named labels LBL :NAME: get free local numbers, the STRUCT
 commands are checked as the firmware's VALID does and numbered (255 a program: C47, R47, DM42n), the REM lines and the indentation go.
 Files: programs/CHESS47.txt, build/CHESS47.txt (the calculator file, to convert with rejig),
 listings/CHESS47_doc.txt (numbered steps with comments), listings/CHESS47_labels.txt.
@@ -170,6 +172,73 @@ def fill(lines):
     return out
 
 
+CONST_RE = re.compile(r'@([A-Z]+)$')
+MACRO_RE = re.compile(r'(DEF|USE) :([A-Za-z0-9]{1,7}):$')
+
+
+def macros(lines):
+    """The macros: a block DEF :NAME: ... ENDDEF (its REM lines kept as comments) is taken out of the source and
+    written out, with the indentation of the line, where USE :NAME: stands (a REM line marks it in the listing).
+    A macro keeps the steps the same in every place it is used (the engine's inner loops are inlined for speed)."""
+    defs, out, cur = {}, [], None
+    for ln in lines:
+        st = ln.strip()
+        m = MACRO_RE.match(st)
+        if m and m.group(1) == 'DEF':
+            if cur is not None:
+                raise SystemExit('DEF :%s: inside DEF :%s:' % (m.group(2), cur))
+            cur = m.group(2)
+            if cur in defs:
+                raise SystemExit('macro :%s: defined twice' % cur)
+            defs[cur] = []
+        elif st == 'ENDDEF':
+            if cur is None:
+                raise SystemExit('ENDDEF without DEF')
+            cur = None
+        elif cur is not None:
+            defs[cur].append(st)
+        else:
+            out.append(ln)
+    if cur is not None:
+        raise SystemExit('DEF :%s: without ENDDEF' % cur)
+    res = []
+    for ln in out:
+        m = MACRO_RE.match(ln.strip())
+        if m:
+            if m.group(2) not in defs:
+                raise SystemExit('USE of the macro :%s:, not defined' % m.group(2))
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            res.append(ind + 'REM (macro :%s:)' % m.group(2))
+            res += [ind + b for b in defs[m.group(2)]]
+        else:
+            res.append(ln)
+    return res
+
+
+NUMBER = 16                    # bytes a number of a real matrix (an estimate: real34, to be checked with MEM#)
+
+
+def constants():
+    """The constants @NAME: the rows of BD (python/layout.py BD); MEM the bytes the start checks with MEM# (BD, GL,
+    OB at NUMBER bytes a number, 3 000 to spare, up to the thousand), GHM the game record GH's."""
+    sys.path.insert(0, os.path.join(ROOT, 'python'))
+    import layout, book
+    c = {k: str(v) for k, v in layout.BD.items()}
+    need = (layout.BD['BD'] * 120 + layout.GL_SIZE + book.ob_size()) * NUMBER + 3000
+    c['MEM'] = str(-(-need // 1000) * 1000)
+    c['GHM'] = str(layout.GH_SIZE * NUMBER)
+    return c
+
+
+def const_steps(steps):
+    """The steps with each constant @NAME replaced by its number."""
+    c = constants()
+    bad = sorted({s for s in steps if CONST_RE.match(s) and s[1:] not in c})
+    if bad:
+        raise SystemExit('constants not defined: %s' % ', '.join(bad))
+    return [c[s[1:]] if CONST_RE.match(s) else s for s in steps]
+
+
 def labels_text(lines, num):
     out = ['CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt), what it does', '']
     for i, ln in enumerate(lines):
@@ -186,9 +255,9 @@ def labels_text(lines, num):
 
 def build():
     src = os.path.join(ROOT, 'programs_rem', NAME + '.txt')
-    lines = fill([ln.rstrip() for ln in open(src, encoding='utf-8')])
+    lines = macros(fill([ln.rstrip() for ln in open(src, encoding='utf-8')]))
     steps = source_steps(lines)
-    numeric, num = resolve(steps)
+    numeric, num = resolve(const_steps(steps))
     numeric = structures(numeric)
     if [s for s in steps if s.startswith('LBL "')] != ['LBL "%s"' % NAME] or steps.count('END') != 1:
         raise SystemExit('one program, %s' % NAME)
@@ -200,7 +269,8 @@ def build():
         if ln.lstrip().startswith('REM'):
             listing.append('      ' + ind + '; ' + ln.lstrip()[3:].strip())
         else:
-            extra = '' if numeric[n] == steps[n] else '    (%s)' % numeric[n].split(' ', 1)[1]
+            extra = '' if numeric[n] == steps[n] else '    (%s)' % (
+                numeric[n] if CONST_RE.match(steps[n]) else numeric[n].split(' ', 1)[1])
             listing.append('%4d  %s' % (n + 1, ind + steps[n] + extra))
             n += 1
     for d in ('programs', 'build', 'listings'):

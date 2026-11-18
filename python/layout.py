@@ -287,8 +287,20 @@ if __name__ == '__main__':
     print(len(glyph_steps()), 'steps')
 
 
+# The rows of the matrix BD (the program reads them as the constants @NAME, filled in by tools/build_chess47.py):
+# BD the rows of BD; ST the state row (also the empty piece's row of PT: zeros on the squares 22-99); PT the offset of
+# PT (white's values: the row of a piece t = 1-6 is t + PT; black's are white's turned round, CHESS47's macros :PTW:
+# :PTX:); UN the offset of the undo data (the ply n: columns 1-6 of the row n + UN, a row of PT whose squares are
+# 22-99); KN the knights' masks, SB the square bits, CR the masks of the castling rights (all by the square s).
+# v0.6.0: 23 rows (PT 13 rows, both colours, rows 5-17; UN rows 18-20).
+BD = {'BD': 14, 'ST': 5, 'PT': 5, 'UN': 5, 'KN': 12, 'SB': 13, 'CR': 14}
+BD['UNP'] = BD['UN'] + 3                # the undo row of the played move (ply 3)
+GL_SIZE = 32 * 24                         # the glyph matrix GL (numbers)
+GH_SIZE = 300                             # the game record GH (numbers: one row since v0.7.0)
+
+
 def knight_steps():
-    """The steps of the marker REM ==== KNIGHTS: row 21 of BD, column s (a square of the board): the 64-bit mask of
+    """The steps of the marker REM ==== KNIGHTS: row KN of BD, column s (a square of the board): the 64-bit mask of
     the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as a real (INDEX "BD" set); the program runs in
     UNSIGN, so bit 63 (h8) is a plain positive value."""
     out = []
@@ -299,5 +311,5 @@ def knight_steps():
             for dr, df in ((1, 2), (2, 1), (-1, 2), (-2, 1), (1, -2), (2, -1), (-1, -2), (-2, -1)):
                 if 0 <= r + dr < 8 and 0 <= f + df < 8:
                     m |= 1 << (8 * (r + dr) + f + df)
-            out += ['21', str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
+            out += [str(BD['KN']), str(s), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
     return out

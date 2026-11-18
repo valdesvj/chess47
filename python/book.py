@@ -1,6 +1,7 @@
 """book.py - the opening book of CHESS47: main lines of the usual openings, up to 10 plies each (SAN). The build
 (tools/build_chess47.py) writes them into the marker REM ==== BOOK as the rows of the matrix OB (the moves as
-from x 1000 + to, the squares of the 10 x 12 mailbox); the C47 plays from it while the game so far is the start of a
+from x 1000 + to, the squares of the 10 x 12 mailbox, five to a number since v0.7.0: the ply k of a row is
+IP(OB(row, IP((k + 4) / 5)) / 100000^((k - 1) MOD 5)) MOD 100000, read in turn by CHESS47's LBL :OBNX:); the C47 plays from it while the game so far is the start of a
 line (one of the lines that fit, at random), then it thinks.
   lines()      the lines as move codes (checked legal with python-chess)
   candidates(history)   the book moves after a list of move codes"""
@@ -20,7 +21,8 @@ LINES = [
     'c4 e5 Nc3 Nf6 Nf3 Nc6 g3 d5 cxd5 Nxd5',         # English
     'Nf3 d5 g3 Nf6 Bg2 e6 O-O Be7 d3 O-O',           # Reti
 ]
-WIDTH = 11                                           # the columns of OB: 10 moves and a 0
+PER = 5                                              # moves a number (5 digits each: 25 of the 34)
+WIDTH = 2                                            # the columns of OB: the 10 plies of a line, five to a number
 
 
 def code(uci):
@@ -47,12 +49,23 @@ def candidates(history):
     return [row[n] for row in lines() if len(row) > n and row[:n] == list(history)]
 
 
+def packed(row):
+    """The numbers of a line in OB: five moves to a number, the first in the lowest five digits."""
+    assert len(row) <= PER * WIDTH and all(0 < m < 100000 for m in row)
+    return [sum(m * 100000 ** j for j, m in enumerate(row[i:i + PER])) for i in range(0, PER * WIDTH, PER)]
+
+
 def steps():
-    """The steps of the marker REM ==== BOOK: OB (rows x 11, zeros) and its rows (INDEX "OB" set)."""
+    """The steps of the marker REM ==== BOOK: OB (rows x 2, zeros) and its rows (INDEX "OB" set)."""
     L = lines()
     out = [str(len(L)), str(WIDTH), 'NEWMAT', 'STO "OB"', 'DROP', 'INDEX "OB"']
     for r, row in enumerate(L):
         out += [str(r + 1), '1', 'STOIJ', 'DROP', 'DROP']
-        for c in row:
+        for c in packed(row):
             out += [str(c), 'STOSEQ', 'DROP']
     return out
+
+
+def ob_size():
+    """The numbers of the matrix OB (the start's memory check)."""
+    return len(LINES) * WIDTH

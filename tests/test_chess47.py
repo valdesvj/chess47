@@ -29,6 +29,7 @@ import c47sim                                                    # noqa: E402
 import chess47ref as R                                           # noqa: E402
 import chess47sim as S                                           # noqa: E402
 import layout as L                                               # noqa: E402
+ST, CR = L.BD['ST'] - 1, L.BD['CR'] - 1                          # the state row and the castling masks' row of BD (0-based)
 FAIL = []
 
 
@@ -137,13 +138,17 @@ def letters_tests():
 
 def memory_tests():
     print('== the memory check at the start (MEM)')
-    shots, c = S.run([], mem=50000)
-    check(not c.ended and 'BD' not in c.mats, 'MEM 50 000: "NOT ENOUGH MEMORY", no matrix made, a key awaited')
-    shots, c = S.run([S.PICK], mem=50000)
+    import build_chess47 as B
+    k = B.constants()
+    need = int(k['MEM']) + int(k['GHM'])                       # BD GL OB, 3 000 to spare, and GH (no saved game)
+    shots, c = S.run([], mem=need - 100)
+    check(not c.ended and 'BD' not in c.mats, 'MEM %d: "NOT ENOUGH MEMORY", no matrix made, a key awaited' % (need - 100))
+    shots, c = S.run([S.PICK], mem=need - 100)
     check(c.ended and not [k for k in ('BD', 'GL', 'OB') if k in c.mats or k in c.reg],
           'a key: the end, BD GL OB deleted')
-    shots, c = S.run([], mem=71700)
-    check('BD' in c.mats, 'MEM 71 700: the game starts (62 000 + 9 600 for GH needed)')
+    shots, c = S.run([], mem=need)
+    check('BD' in c.mats, 'MEM %d: the game starts (%s + %s for GH needed; v0.6.0: 62 000 + 9 600)'
+          % (need, k['MEM'], k['GHM']))
 
 
 def play_tests():
@@ -157,23 +162,23 @@ def play_tests():
           '5 on d2: the pawn picked shown inverted on a light square (white on black) with the frame in white')
     shots, c = S.run([S.HAND])
     p = R.Pos()
-    p.make(int(c.mats['GH'][0][0]), 3)
+    p.make(int(S.gh(c)[0]), 3)
     mockb = {(x, 239 - y) for x, y in L.mock(flipped(p.bd))}
     check(c.reg.get('27') == -1 and int(c.reg.get('28')) == 86 and onboard(shots[-1]) == mockb | frame(3, 1),
           '+ at the start: you play black, the board turned (black at the bottom), the cursor on e7, after %s'
-          % R.mname(int(c.mats['GH'][0][0])))
+          % R.mname(int(S.gh(c)[0])))
     shots, c = S.run([S.AUTO] + [None] * 5)
-    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    got = [int(v) for v in S.gh(c) if int(v)]
     check(len(got) == 6 and c.reg.get('27') == 0, '9: the C47 plays both sides (6 plies, no key): %s'
           % ' '.join(R.mname(m) for m in got))
     shots, c = S.run([S.AUTO, None, None, S.PICK])
-    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    got = [int(v) for v in S.gh(c) if int(v)]
     check(len(got) == 3 and c.reg.get('27') == -1 == c.reg.get('20'),
           '9, then a key after 3 plies: you take the side to move (black)')
     shots, c = S.run([S.PICK, S.UP, S.UP, S.PICK, S.END])
     keep = {k: c.reg[k] for k in ('CHN', 'TW', 'TB')}
     gh = c.mats['GH']
-    got = [int(v) for v in gh[0] if int(v)]
+    got = [int(v) for v in S.gh_row(gh) if int(v)]
     p, sans = R.Pos(), []
     for m in got:
         sans.append(R.san(p, m))
@@ -186,14 +191,19 @@ def play_tests():
           and onboard(shots[-1]) == {(x, 239 - y) for x, y in L.mock(p.bd)} | frame(4, 1),
           'the next start: the game played again (the board, SC, white to move, move 2, the list, the screen): '
           '%d steps (%.1f s)' % (c2.at_steps[0], S.secs(c2.at_steps[0])))
+    old = [[D(m) for m in got] + [D(0)] * (300 - len(got)), [D(0)] * 300]   # a record of v0.6.0: moves, keys in two rows
+    shots, c9 = S.run([], regs=keep, mats={'GH': old})
+    check(S.board(c9)[22:100] == p.bd[22:100] and S.gh(c9)[:3] == got + [0]
+          and all(int(v) // 100000 > 0 for v in c9.mats['GH'][0][:2]),
+          'a saved game of v0.6.0 (GH 2 x 300: moves, keys): played again, its record written as key x 100000 + move')
     shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
-    check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in c3.mats['GH'][0])
+    check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in S.gh(c3))
           and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
     check(keep['TW'] > 3000 and keep['TB'] == 3000, 'the clock: 5 minutes each (3000 tenths), 10 s a move for you; the '
           'C47\'s (black) does not run: W %s, B %s' % (keep['TW'], keep['TB']))
     low = dict(keep, TW=D(5))
     shots, c4 = S.run([None] * 300 + [S.PICK], regs=low, mats={'GH': gh})
-    check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(c4.mats['GH'][0][2]) == 0,
+    check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(S.gh(c4)[2]) == 0,
           'white\'s time runs out while it thinks: WHITE LOST ON TIME, the game over, no move played')
     # the squares drawn after a move: R47 (en passant / castling) must be MAKE's, not the piece count of :HASH:
     lab = labels()
@@ -209,12 +219,12 @@ def play_tests():
     check(not stray, 'h2-h3 with a rook and a pawn left: nothing drawn off the board (was a rook glyph by h3: %d pixels)'
           % len(stray))
     shots, c7 = S.run([74, S.PICK, S.UP, S.UP, S.PICK, S.UP, S.UP, S.UP, S.PICK, S.DOWN, S.DOWN, S.PICK])
-    check(c7.reg.get('27') == 2 and [int(v) for v in c7.mats['GH'][0][:3]] == [36056, 86066, 0]
+    check(c7.reg.get('27') == 2 and [int(v) for v in S.gh(c7)[:3]] == [36056, 86066, 0]
           and c7.reg['TW'] > 3000 and c7.reg['TB'] > 3000,
           '3: two players: e2-e4 and e7-e5 keyed, no move of the C47, both clocks run (10 s a move)')
     low = dict(keep, TB=D(1))                                    # the C47 (black) with 0.1 s left: it plays on
     shots, c8 = S.run([S.LEFT, S.PICK, S.UP, S.UP, S.PICK], regs=low, mats={'GH': [list(r) for r in gh]})
-    check(c8.reg.get('97', 0) == 0 and int(c8.mats['GH'][0][3]) != 0 and c8.reg.get('TB') == 1,
+    check(c8.reg.get('97', 0) == 0 and int(S.gh(c8)[3]) != 0 and c8.reg.get('TB') == 1,
           'the C47 with 0.1 s left thinks and moves: its clock does not run, it never loses on time')
     # the time-out rule (FIDE 6.9): :TMAT: as python-chess's has_insufficient_material, random positions of few pieces
     import chess, random
@@ -348,7 +358,7 @@ def main():
     print('== a game: the C47 plays both sides (%d moves; the book first, then the search)' % n)
     import book
     shots, c = S.run([S.HAND] * n)
-    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    got = [int(v) for v in S.gh(c) if int(v)]
     p = R.Pos()
     good, hist_ok, texts, num, inbook = True, [], [], 1, 0
     for k, m in enumerate(got):
@@ -391,7 +401,7 @@ def main():
     print('== CRAZY (level 0): random legal moves')
     import chess
     shots, c = S.run([S.LEVEL, S.LEVEL] + [S.HAND] * 20)
-    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    got = [int(v) for v in S.gh(c) if int(v)]
     b, ok = chess.Board(), True
     for m in got:
         f, t = m // 1000, m % 1000
@@ -407,9 +417,9 @@ def main():
     print('== your moves with the keys')
     # e2-e4 (the cursor starts on e2): 5, 8 8, 5; then the C47's reply
     shots, c = S.run([S.PICK, S.UP, S.UP, S.PICK])
-    reply = int(c.mats['GH'][0][1])
+    reply = int(S.gh(c)[1])
     p = R.Pos(); p.make(36056, 3); p.make(reply, 3)
-    check(int(c.mats['GH'][0][0]) == 36056 and reply in book.candidates([36056]) and S.board(c)[22:100] == p.bd[22:100],
+    check(int(S.gh(c)[0]) == 36056 and reply in book.candidates([36056]) and S.board(c)[22:100] == p.bd[22:100],
           'e2-e4 with 5 8 8 5, then the C47 from its book: %s, the board' % R.mname(reply))
     # an illegal move: e2-e5 (5 8 8 8 5)
     shots, c = S.run([S.PICK, S.UP, S.UP, S.UP, S.PICK])
@@ -429,7 +439,7 @@ def level3_tests(prog):
         shots, c = S.run([], prog=prog)
         setpos(c, p)
         c.reg['26'] = D(3)
-        c.mats['BD'][10][17] = D(10 ** 9)                      # no time limit
+        c.mats['BD'][L.BD['ST'] - 1][17] = D(10 ** 9)                      # no time limit
         c.steps = 0
         c.run('TTH3', maxsteps=10 ** 10)
         m, v, n = copy.deepcopy(p).search(3)
@@ -455,12 +465,12 @@ def setpos960(c, p, n):
     and the castling rooks' first squares, n + 1) and the masks of the castling rights (row 23), as INIT's LBL :CSQ:."""
     setpos(c, p)
     m = c.mats['BD']
-    m[10][3], m[10][4], m[10][5], m[10][6] = D(p.home[1]), D(p.rook[1][1]), D(p.rook[1][2]), D(n + 1)
+    m[ST][3], m[ST][4], m[ST][5], m[ST][6] = D(p.home[1]), D(p.rook[1][1]), D(p.rook[1][2]), D(n + 1)
     for s in range(22, 100):
-        m[22][s - 1] = D(15)
+        m[CR][s - 1] = D(15)
     for s, v in ((p.home[1], 12), (p.rook[1][1], 14), (p.rook[1][2], 13), (p.home[-1], 3), (p.rook[-1][4], 11),
                  (p.rook[-1][8], 7)):
-        m[22][s - 1] = D(v)
+        m[CR][s - 1] = D(v)
 
 
 def chess960_tests(prog):
@@ -473,10 +483,10 @@ def chess960_tests(prog):
     for n in (518, 0, 959, 123, 66, 300, 440, 777):
         shots, c = S.run([], regs={'CHN': D((n + 1) * 100000 + 23)})
         p, m = C.Pos960(n), c.mats['BD']
-        masks = {s: int(m[22][s - 1]) for s in range(22, 100) if int(m[22][s - 1]) != 15}
+        masks = {s: int(m[CR][s - 1]) for s in range(22, 100) if int(m[CR][s - 1]) != 15}
         want = {p.home[1]: 12, p.rook[1][1]: 14, p.rook[1][2]: 13, p.home[-1]: 3, p.rook[-1][4]: 11, p.rook[-1][8]: 7}
         if not (S.board(c)[22:100] == p.bd[22:100] and c.reg['24'] == p.kw and c.reg['25'] == p.kb and masks == want
-                and [int(m[10][k]) for k in (3, 4, 5, 6)] == [p.home[1], p.rook[1][1], p.rook[1][2], n + 1]):
+                and [int(m[ST][k]) for k in (3, 4, 5, 6)] == [p.home[1], p.rook[1][1], p.rook[1][2], n + 1]):
             bad.append(n)
     check(not bad, 'the back ranks of 8 positions (518 normal chess, 0, 959 ...) as chess960.start, the kings, the castling '
           'rooks, the masks of the castling rights%s' % ('' if not bad else ' BAD %s' % bad))
@@ -525,11 +535,11 @@ def chess960_tests(prog):
     print('== Chess960 with the keys: ÷ and the number, castling (king, then its rook), C47 vs C47, 0 and back')
     shots, c = S.run([DIV, 72, 73, 74, S.DOWN, S.RIGHT, S.PICK, S.RIGHT, S.PICK])
     b = S.board(c)
-    check(b[28] == 6 and b[27] == 4 and c.reg.get('78') == '1. O-O' and int(c.mats['BD'][10][6]) == 124,
+    check(b[28] == 6 and b[27] == 4 and c.reg.get('78') == '1. O-O' and int(c.mats['BD'][L.BD['ST'] - 1][6]) == 124,
           '÷ 1 2 3: No 123 (NQRNBKRB); 2 6 5 6 5: the king f1 onto its rook g1: O-O, the king on g1, the rook on f1')
     n = 16
     shots, c = S.run([DIV, 72, 73, 74] + [S.HAND] * n)
-    got = [int(v) for v in c.mats['GH'][0] if int(v)]
+    got = [int(v) for v in S.gh(c) if int(v)]
     p, ok, texts = C.Pos960(123), True, []
     for m in got:
         want, v, nodes = p.search(2)
@@ -541,19 +551,19 @@ def chess960_tests(prog):
           'C47 vs C47 in No 123: %d plies as chess960.Pos960.search (no book): %s' % (len(got), ' '.join(texts)))
     shots, c = S.run([DIV, 72, 73, 74, S.HAND, S.HAND, S.HAND, S.END])
     keep, gh = {k: c.reg[k] for k in ('CHN', 'TW', 'TB')}, c.mats['GH']
-    got = [int(v) for v in gh[0] if int(v)]
+    got = [int(v) for v in S.gh_row(gh) if int(v)]
     shots, c2 = S.run([], regs=keep, mats={'GH': gh})
     p = C.Pos960(123)
     for m in got:
         p.make(m, 3)
-    check(keep['CHN'] == 12400321 and S.board(c2)[22:100] == p.bd[22:100] and int(c2.mats['BD'][10][6]) == 124,
+    check(keep['CHN'] == 12400321 and S.board(c2)[22:100] == p.bd[22:100] and int(c2.mats['BD'][L.BD['ST'] - 1][6]) == 124,
           '0 after 3 plies: CHN %s (No 123, 3 plies, level 2, white); the next start goes on in No 123' % keep['CHN'])
     shots, c = S.run([DIV, 54, 54, 54])
-    check(int(c.mats['BD'][10][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '÷ 9 9 9: refused (960: 000 TO 959)')
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '÷ 9 9 9: refused (960: 000 TO 959)')
     shots, c = S.run([DIV, DIV])
-    check(int(c.mats['BD'][10][6]) > 0, '÷ ÷: a random position (No %d)' % (int(c.mats['BD'][10][6]) - 1))
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) > 0, '÷ ÷: a random position (No %d)' % (int(c.mats['BD'][L.BD['ST'] - 1][6]) - 1))
     shots, c = S.run([DIV, 72, 73, 74, S.NEW])
-    check(int(c.mats['BD'][10][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '7: a new game of normal chess')
+    check(int(c.mats['BD'][L.BD['ST'] - 1][6]) == 0 and S.board(c)[22:30] == R.Pos().bd[22:30], '7: a new game of normal chess')
 
 
 if __name__ == '__main__':
