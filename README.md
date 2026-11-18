@@ -63,7 +63,10 @@ perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games
 Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE): level 3 searched to the end about
 **1100** (95 %: 980-1200), level 3 with the C47's 60 s about **1010**, level 2 about **980** (an earlier run: 1110),
 level 1 about 670. Head to head level 3 beat level 2 7-1 to the end, 4.5-3.5 with 60 s: the 60 s let it finish only
-the quieter positions. 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
+the quieter positions. v0.8.1, estimated before its ladder: level 3 averages 12.7 answers a second on the C47
+(`tools/speed47.py`, `python/time47.py`), so 60 s is about 760 answers, level 4 (3 min) 2 290 and level 5 (9 min)
+6 860; the middle-game test positions need 160-2 760 to the end, so level 4 should be about 1 070-1 090 and level 5
+about level 3 to the end, 1 100 (the ladder has the three now: `python3 tools/elo47.py --ladder`). 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
 misses deeper tactics. The matches against an independent player in the simulator: `docs/MATCHES.md`.
 
 ![crazy](docs/CHESS47_crazy.png)
@@ -200,6 +203,7 @@ the start) and `ATEXT` with `GRMOD 2` (the halo of the letters on the dark squar
 | `python/layout.py` | the board's place, the piece glyphs, the crazy face (the build writes their words into the program) |
 | `python/book.py` | the opening book (the build writes it into the matrix OB) |
 | `tools/elo47.py` | the rating: CHESS47's engine (the twin: the calculator's moves) against Stockfish at fixed strengths (UCI_Elo), refereed by python-chess; the rating by maximum likelihood with its 95 % interval, `docs/ELO.md` and the games in `docs/ELO_games.pgn` |
+| `tools/speed47.py` | level 3's answers a second on the C47 (the simulator and `python/time47.py`): the budgets of levels 3, 4, 5 in `tools/elo47.py` |
 | `tools/match47.py` | matches in the simulator against a python-chess player, written to `docs/MATCHES.md` |
 | `tools/selfplay47.py` | the rules check (python-chess): the C47 against itself, 5 games at each level by default; every move legal, the board after it, every end of game (mate, stalemate, repetition, material, time-out) as the rules say; `docs/SELFPLAY.md` |
 | `python/chess47ref.py` | the engine in Python, step for step as the program, and perft |

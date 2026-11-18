@@ -2,7 +2,23 @@
 
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
 the number keys, all the rules of chess, a 5-minute clock, two players or the C47 against itself, and Chess960.
-Version 0.6.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+Version 0.8.1. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+
+## Two versions
+
+The release has CHESS47 twice; load the one you like (both are called CHESS47 and play the same moves):
+
+| | drawn pieces (`draw`) | letters only (`text`) |
+|---|---|---|
+| the pieces | drawn, or letters with **×** | letters of the calculator's font (K Q R B N P, k q r b n p) |
+| the program | 7 424 steps, about 22 KB | 6 271 steps, about 18 KB |
+| free memory to start | 43.8 KB (39.0 KB with a saved game) | 31.8 KB (27.0 KB) |
+
+The letters version has no key **×** and no drawings: it is for a calculator that has less memory free.
+
+![the letters version](manual/11_text.png)
+
+*The letters version: e2-e4 and the C47's reply.*
 
 ## Starting
 
@@ -53,9 +69,18 @@ The moves are listed in standard algebraic notation, as in a book: `e4`, `Nf3`, 
 
 *Left: + at the start, you play black (the board turned). Right: the CRAZY level, its face by the title.*
 
+Levels 3, 4 and 5 search three moves ahead (your move, its answer, your reply). Level 3 stops after about a minute
+and plays the best move found so far; level 4 has 3 minutes and level 5 9 minutes, so they finish the search far
+more often (in middle-game positions the full search takes about 1 to 4 minutes). It thinks the full time only when
+it needs it.
+
+![level 5](manual/10_level5.png)
+
+*1 three times: level 5.*
+
 ## The pieces as letters
 
-**×** shows the pieces as letters of the calculator's own font instead of the drawings: **K Q R B N P** are the white
+In the drawn-pieces version, **×** shows the pieces as letters of the calculator's own font instead of the drawings: **K Q R B N P** are the white
 pieces, **k q r b n p** the black ones (as in a FEN). **×** again brings the drawings back. The piece picked is
 white on black. The choice is kept for the next games and the next start.
 
