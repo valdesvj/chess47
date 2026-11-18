@@ -161,8 +161,12 @@ def fill(lines):
             out.append(ind + str(len(book.LINES)))
         elif ln.strip() == 'REM ==== KNIGHTS':
             ind = ln[:len(ln) - len(ln.lstrip())]
-            out.append(ind + 'REM the knights\' masks of python/layout.py into row 21 of BD (written by the build)')
+            out.append(ind + 'REM the knights\' masks of python/layout.py into the matrix KN (written by the build)')
             out += [ind + st for st in layout.knight_steps()]
+        elif ln.strip() == 'REM ==== KINGS':
+            ind = ln[:len(ln) - len(ln.lstrip())]
+            out.append(ind + 'REM the kings\' masks and the influence term\'s masks of python/layout.py into KG (written by the build)')
+            out += [ind + st for st in layout.king_steps()]
         elif ln.strip() == 'REM ==== FACE':
             ind = ln[:len(ln) - len(ln.lstrip())]
             out.append(ind + 'REM the face of python/layout.py, one column a word (written by the build)')
@@ -201,18 +205,23 @@ def macros(lines):
             out.append(ln)
     if cur is not None:
         raise SystemExit('DEF :%s: without ENDDEF' % cur)
-    res = []
-    for ln in out:
-        m = MACRO_RE.match(ln.strip())
-        if m:
-            if m.group(2) not in defs:
-                raise SystemExit('USE of the macro :%s:, not defined' % m.group(2))
-            ind = ln[:len(ln) - len(ln.lstrip())]
-            res.append(ind + 'REM (macro :%s:)' % m.group(2))
-            res += [ind + b for b in defs[m.group(2)]]
-        else:
-            res.append(ln)
-    return res
+    for depth in range(8):                                        # a macro may use another (written out again)
+        res, more = [], False
+        for ln in out:
+            m = MACRO_RE.match(ln.strip())
+            if m:
+                if m.group(2) not in defs:
+                    raise SystemExit('USE of the macro :%s:, not defined' % m.group(2))
+                ind = ln[:len(ln) - len(ln.lstrip())]
+                res.append(ind + 'REM (macro :%s:)' % m.group(2))
+                res += [ind + b for b in defs[m.group(2)]]
+                more = True
+            else:
+                res.append(ln)
+        out = res
+        if not more:
+            return res
+    raise SystemExit('macros used too deep (a macro using itself?)')
 
 
 NUMBER = 16                    # bytes a number of a real matrix (an estimate: real34, to be checked with MEM#)

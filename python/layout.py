@@ -295,7 +295,10 @@ if __name__ == '__main__':
 # SB the square bits, CR the masks of the castling rights (column: the square). The constants @NAME (BD, the rows and
 # offsets) and @XR @XC (the sizes) are filled in by tools/build_chess47.py.
 MATS = {'BB': (1, 120), 'ML': (3, 120), 'ST': (1, 18), 'PT': (7, 78), 'UN': (3, 6), 'KN': (1, 120), 'SB': (1, 120),
-        'CR': (1, 120)}
+        'CR': (1, 120), 'KG': (1, 120)}
+# KG (v0.9.0, the influence term LBL :INFL:): column s the king's mask (the squares around s), columns 1-4 the masks
+# not-file-a, not-file-h, the centre d4 e4 d5 e5, the 12 squares around the centre (bit 8 (row - 2) + col - 1), 5-7
+# the bit count's masks (LBL :POPC:).
 # v0.7.0: one matrix BD 14 x 120 (row 1 the board, 2-4 ML, 5 ST, 6-11 PT and UN, 12-14 KN SB CR).
 BD = {'ST': 1, 'PT': 1, 'UN': 0, 'KN': 1, 'SB': 1, 'CR': 1, 'PC': 21, 'PM': 39.5, 'PX': 79}
 BD['UNP'] = BD['UN'] + 3                # the undo row of the played move (ply 3)
@@ -303,6 +306,34 @@ BD['UNP'] = BD['UN'] + 3                # the undo row of the played move (ply 3
 # colour's column for the same square is PX - (PM + c (s - 60.5))
 GL_SIZE = 32 * 24                         # the glyph matrix GL (numbers)
 GH_SIZE = 300                             # the game record GH (numbers: one row since v0.7.0)
+
+
+def bit(s):
+    """The bit of the square s of the mailbox (a1 22 -> 0 ... h8 99 -> 63)."""
+    return 8 * ((s - 1) // 10 - 2) + (s - 1) % 10 - 1
+
+
+def king_masks():
+    """KG's columns: {column: value}: the four masks (1-4) and the king's mask of each square (22-99)."""
+    sq = [s for s in range(22, 100) if 1 <= (s - 1) % 10 <= 8]
+    centre = {55, 56, 65, 66}
+    wide = {s for s in sq if 3 <= (s - 1) % 10 <= 6 and 4 <= (s - 1) // 10 <= 7} - centre
+    out = {1: sum(1 << bit(s) for s in sq if (s - 1) % 10 != 1),          # not file a
+           2: sum(1 << bit(s) for s in sq if (s - 1) % 10 != 8),          # not file h
+           3: sum(1 << bit(s) for s in centre), 4: sum(1 << bit(s) for s in wide),
+           5: 0x5555555555555555, 6: 0x3333333333333333, 7: 0x0F0F0F0F0F0F0F0F}   # LBL :POPC:'s masks
+    for s in sq:
+        out[s] = sum(1 << bit(s + d) for d in (-11, -10, -9, -1, 1, 9, 10, 11) if s + d in sq)
+    return out
+
+
+def king_steps():
+    """The steps of the marker REM ==== KINGS: the matrix KG (king_masks), as reals (INDEX "KG" set here, "BB" again
+    at the end)."""
+    out = ['INDEX "KG"']
+    for col, m in sorted(king_masks().items()):
+        out += ['1', str(col), 'STOIJ', 'DROP', 'DROP', str(m), 'STOEL', 'DROP']
+    return out + ['INDEX "BB"']
 
 
 def knight_steps():

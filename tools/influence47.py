@@ -63,7 +63,11 @@ def game(args):
     leaves = maps = moves = 0
     while not b.is_game_over(claim_draw=True) and b.ply() < maxply:
         mine = (b.turn == chess.WHITE) == inf_white
-        if mine:
+        if mine and variant == 'twin':                 # the twin itself (v0.9.0: 'infl' in ENGINE)
+            q = R.Pos.fen(b.fen())
+            m, v, n = q.search(2)
+            leaves += n; moves += 1
+        elif mine:
             p = I.InfPos.fen(b.fen())
             p.variant = variant
             before = I.InfPos.maps_built
@@ -72,7 +76,7 @@ def game(args):
         else:
             q = R.Pos.fen(b.fen())
             q.budget = None
-            m, v, n = q.search(opp)
+            m, v, n = q.search(opp, [o for o in R.ENGINE if o != 'infl'])
         mv = to_move(b, m)
         if mv not in b.legal_moves:                    # an illegal move loses the game (counted apart)
             s = 0.0 if mine else 1.0

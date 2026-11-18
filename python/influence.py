@@ -121,6 +121,28 @@ def influence(b, S, w=None, skip=0, tomove=True):
     return x + w['C_ALL'] * ctl
 
 
+def bits_term(b, S, w=None):
+    """The bitboard version (what CHESS47 can compute with 64-bit words): A[c] the squares colour c attacks at all (no
+    counts); a square counts for S when only S attacks it. 2 x (the squares only S attacks - those only -S attacks,
+    the centre 3 more, the 12 around it 1 more, the squares around the other king 5 more (each side)). Kings off the
+    board (a king taken) give no zone."""
+    w = w or WEIGHTS
+    cnt, low = maps(b)
+    cap = int(w.get('CAP', 1))                 # counts kept up to cap (bit-sliced words: >= 1, >= 2, ...)
+    cS = {s: min(n, cap) for s, n in cnt[S].items()}
+    cX = {s: min(n, cap) for s, n in cnt[-S].items()}
+    sq = set(cS) | set(cX)
+    oS = {s for s in sq if cS.get(s, 0) > cX.get(s, 0)}
+    oX = {s for s in sq if cX.get(s, 0) > cS.get(s, 0)}
+    zone = {}
+    for c in (1, -1):
+        k = b.index(6 * c) if 6 * c in b else 0
+        zone[c] = {k + d for d in KAROUND if k and b[k + d] != R.OFF}
+    t = (len(oS) - len(oX)) + (w['C_CENTRE'] - 1) * (len(oS & CENTRE) - len(oX & CENTRE)) \
+        + (w['C_WIDE'] - 1) * (len(oS & WIDE) - len(oX & WIDE)) + w['C_KING'] * (len(oS & zone[-S]) - len(oX & zone[S]))
+    return w['C_ALL'] * t
+
+
 class InfPos(R.Pos):
     """The twin with the influence term at the leaves of level 2 (the search is copied from R.Pos.search, depth 2,
     with the one change marked)."""
@@ -147,6 +169,9 @@ class InfPos(R.Pos):
                 if self.variant == 'root':
                     rootterm = influence(self.bd, S, self.weights, tomove=False)
                     InfPos.maps_built += 1
+                elif self.variant == 'bits':
+                    rootterm = bits_term(self.bd, S, self.weights)
+                    InfPos.maps_built += 1
                 replies = self.gen(-S, castle=False)
                 if not replies:
                     v = S * self.sc
@@ -166,7 +191,7 @@ class InfPos(R.Pos):
                             w += abs(R.value(self.bd[r % 1000], r % 1000))
                             skip = r % 1000
                         if abs(w) < 10000:                 # the change: the influence term (no king taken)
-                            if self.variant == 'root':
+                            if self.variant in ('root', 'bits'):
                                 w += rootterm
                             else:
                                 w += influence(self.bd, S, self.weights, skip)

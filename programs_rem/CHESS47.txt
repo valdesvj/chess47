@@ -1,4 +1,4 @@
-REM CHESS47 v0.8.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.9.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -68,6 +68,7 @@ STO "UN"
 STO "KN"
 STO "SB"
 STO "CR"
+STO "KG"
 STO "GL"
 STO "OB"
 STO+ "CHN"
@@ -142,6 +143,7 @@ IF
   DELITM "KN"
   DELITM "SB"
   DELITM "CR"
+  DELITM "KG"
   DELITM "GL"
   DELITM "OB"
   20
@@ -264,6 +266,7 @@ DELITM "UN"
 DELITM "KN"
 DELITM "SB"
 DELITM "CR"
+DELITM "KG"
 DELITM "GL"
 DELITM "OB"
 DELITM "TK"
@@ -1767,6 +1770,401 @@ CHS
 STO 20
 RTN
 REM ======== the search ========
+REM ---- the macro :IKGM: X = a column of KG: X = its word (SINT) ----
+DEF :IKGM:
+1
+X<>Y
+INDEX "KG"
+STOIJ
+RCLEL
+SINT
+ENDDEF
+REM ---- the macro :ICNT: X = a mask (SINT): X = the bits of S's squares AND it - those of -S's (a real; the first
+REM count kept in R36, not on the stack: POPC uses three levels) ----
+DEF :ICNT:
+STO 55
+RCL 43
+AND
+XEQ :POPC:
+STO 36
+RCL 44
+RCL 55
+AND
+XEQ :POPC:
+RCL 36
+X<>Y
+-
+ENDDEF
+REM ---- the macro :IPWN: Z = KG's column (1 not file a, 2 not file h), Y = the pawns' bits (a real), X = the factor:
+REM the word of their attacks that way into the colour's A1 A2 (R54 R56) ----
+DEF :IPWN:
+STO 47
+DROP
+SINT
+STO 45
+DROP
+USE :IKGM:
+RCL 45
+AND
+→REAL
+RCL× 47
+SINT
+XEQ :IADD:
+ENDDEF
+REM ---- LBL :INFL: (v0.9.0) X = the influence term T of the board after S's root move, from S's side (S = R60):
+REM for each colour the squares it attacks once or more (A1) and twice or more (A2), 64-bit words (WSIZE 64, UNSIGN):
+REM white's R50 R51, black's R52 R53 (the word base 51 - c). Each piece's attack word X (LBL :IADD:): A2 = A2 OR (A1
+REM AND X), A1 = A1 OR X (a count kept up to 2: the order of the pieces does not matter). The pieces: one pass over the
+REM board (R30 the square): a pawn's bit into R41 (white) or R42 (black) (all the pawns' attacks at the end: two words
+REM a colour, the bits times 128 and 512 (white) or divided (black), the edge files masked), a knight's word from KN, a
+REM king's from KG, a sliding piece's (LBL :ISLID:) by walking its rays. Then the squares S controls, (A1s AND NOT
+REM A1x) OR (A2s AND NOT A2x) (R43; -S's R44), counted (LBL :POPC:): T = 2 x (all of them, + 3 x the centre's, + the 12
+REM around it, + 5 x those around the other king; S's less -S's). The registers R30-R37 R39 R41-R45 R47 R50-R56 are
+REM free here (REPLY's GEN, MAKE and ATT set them again), with R48 R49 R72 (POPC's masks); python/chess47ref.py infl
+REM is the same ----
+LBL :INFL:
+5
+USE :IKGM:
+STO 48
+6
+USE :IKGM:
+STO 49
+7
+USE :IKGM:
+STO 72
+0
+STO 41
+STO 42
+SINT
+STO 50
+STO 51
+STO 52
+STO 53
+22
+STO 30
+DO
+  1
+  RCL 30
+  INDEX "BB"
+  STOIJ
+  RCLEL
+  STO 31
+  X≠0?
+  XEQ :IPIECE:
+  1
+  STO+ 30
+  99
+  RCL 30
+  X≤Y?
+WHILE
+ENDDO
+REM the pawns: white's from R41 (up-left: not file a, x 128; up-right: not file h, x 512), black's from R42 (/ 128, / 512)
+50
+STO 54
+51
+STO 56
+1
+RCL 41
+128
+USE :IPWN:
+2
+RCL 41
+512
+USE :IPWN:
+52
+STO 54
+53
+STO 56
+2
+RCL 42
+0.0078125
+USE :IPWN:
+1
+RCL 42
+0.001953125
+USE :IPWN:
+REM S's squares R43, -S's R44 (the word bases 51 - S, 51 + S)
+51
+RCL- 60
+STO 54
+1
++
+STO 56
+51
+RCL+ 60
+STO 33
+1
++
+STO 34
+RCL IND 33
+NOT
+RCL IND 54
+AND
+RCL IND 34
+NOT
+RCL IND 56
+AND
+OR
+STO 43
+RCL IND 54
+NOT
+RCL IND 33
+AND
+RCL IND 56
+NOT
+RCL IND 34
+AND
+OR
+STO 44
+REM T: all (NOT 0), the centre (KG column 3) x 3, the 12 around (column 4), then the kings' squares x 5
+0
+SINT
+NOT
+USE :ICNT:
+STO 71
+3
+USE :IKGM:
+USE :ICNT:
+3
+×
+STO+ 71
+4
+USE :IKGM:
+USE :ICNT:
+STO+ 71
+REM the other king's square (R24 white's, R25 black's: 24.5 + S / 2) with S's squares, S's king's with -S's
+24.5
+RCL 60
+2
+÷
++
+STO 33
+24.5
+RCL 60
+2
+÷
+-
+STO 34
+RCL IND 33
+USE :IKGM:
+RCL 43
+AND
+XEQ :POPC:
+STO 36
+RCL IND 34
+USE :IKGM:
+RCL 44
+AND
+XEQ :POPC:
+RCL 36
+X<>Y
+-
+5
+×
+RCL+ 71
+2
+×
+INDEX "BB"
+RTN
+REM ---- LBL :POPC: X = a word (SINT): X = the bits set in it (a real), with AND only (no #B: a step starting with #
+REM is a comment for rejig): a = w - (w/2 AND M1), b = (a AND M2) + (a/4 AND M2), c = (b + b/16) AND M4, the count
+REM = c MOD 255 (c's bytes, each at most 8, added: 256 = 1 MOD 255). M1 M2 M4 (0x55.., 0x33.., 0x0F..) in R48 R49
+REM R72 (from KG's columns 5-7, LBL :INFL:); R35 work ----
+LBL :POPC:
+→REAL
+STO 35
+2
+÷
+IP
+SINT
+RCL 48
+AND
+→REAL
+STO- 35
+RCL 35
+SINT
+RCL 49
+AND
+→REAL
+RCL 35
+4
+÷
+IP
+SINT
+RCL 49
+AND
+→REAL
++
+STO 35
+16
+÷
+IP
+RCL+ 35
+SINT
+RCL 72
+AND
+→REAL
+255
+MOD
+RTN
+REM ---- LBL :IPIECE: R31 = the piece on R30 (not 0): its attack word into its colour's A1 A2 (none for the border 8) ----
+LBL :IPIECE:
+8
+X=Y?
+RTN
+RCL 31
+SIGN
+STO 32
+51
+X<>Y
+-
+STO 54
+1
++
+STO 56
+RCL 31
+ABS
+STO 43
+1
+X=Y?
+GTO :IPAWN:
+RCL 43
+2
+X=Y?
+GTO :IKNI:
+RCL 43
+6
+X=Y?
+GTO :IKING:
+GTO :ISLID:
+REM ---- a pawn: its bit (SB) into R41 (white) or R42 (black): 41.5 - c / 2 ----
+LBL :IPAWN:
+1
+RCL 30
+INDEX "SB"
+STOIJ
+RCLEL
+41.5
+RCL 32
+2
+÷
+-
+STO 44
+DROP
+STO+ IND 44
+RTN
+LBL :IKNI:
+1
+RCL 30
+INDEX "KN"
+STOIJ
+RCLEL
+SINT
+GTO :IADD:
+LBL :IKING:
+RCL 30
+USE :IKGM:
+GTO :IADD:
+REM ---- LBL :ISLID: a bishop (3), rook (4) or queen (5) on R30: its rays, the directions R88-R91 (diagonals) and
+REM R92-R95 (lines): R37 from 88 + 4 (t - 3) (5 - t), R39 to 91 + 4 IP((t - 2) / 2); each ray from R30's bit (R45),
+REM times 2^(d - 2 IP(d / 9)) a square (R47: the bit's step for the mailbox step d), its bits summed in R35 up to the
+REM first piece or the border ----
+LBL :ISLID:
+1
+RCL 30
+INDEX "SB"
+STOIJ
+RCLEL
+STO 45
+0
+STO 35
+RCL 43
+3
+-
+5
+RCL- 43
+×
+4
+×
+88
++
+STO 37
+RCL 43
+2
+-
+2
+÷
+IP
+4
+×
+91
++
+STO 39
+DO
+  RCL IND 37
+  STO 36
+  RCL 36
+  9
+  ÷
+  IP
+  2
+  ×
+  -
+  2
+  X<>Y
+  Y^X
+  STO 47
+  RCL 30
+  STO 33
+  RCL 45
+  STO 34
+  INDEX "BB"
+  REM the ray: each square's bit added (the bit times R47) up to the border (8: not added) or a piece (added); the
+  REM loop goes on while the square was empty (X = its piece, 0). BB stays indexed in the loop (no INDEX a square)
+  DO
+    RCL 36
+    STO+ 33
+    1
+    RCL 33
+    STOIJ
+    RCLEL
+    STO 44
+    8
+    X≠Y?
+    IF
+      RCL 47
+      STO× 34
+      RCL 34
+      STO+ 35
+      RCL 44
+    ELSE
+      1
+    ENDIF
+    X=0?
+  WHILE
+  ENDDO
+  1
+  STO+ 37
+  RCL 39
+  RCL 37
+  X≤Y?
+WHILE
+ENDDO
+RCL 35
+SINT
+REM ---- LBL :IADD: X = an attack word (SINT): A2 = A2 OR (A1 AND X), A1 = A1 OR X (R54 A1's register, R56 A2's) ----
+LBL :IADD:
+STO 55
+RCL IND 54
+AND
+RCL IND 56
+OR
+STO IND 56
+RCL IND 54
+RCL 55
+OR
+STO IND 54
+RTN
 REM ---- LBL :THINK: the best move of the side to move at the level R26: R62 (0 none), its value R61 (below
 REM -10000: no legal move). The root moves (castling too) in the row 1 of ML, in its order (the captures by the
 REM value taken, then the others); level 1: LBL :LEGAL1:; level 2: a mate (LBL :MATEQ:) or the replies ----
@@ -1819,7 +2217,18 @@ DO
   ELSE
     XEQ :MATEQ:
     X=0?
-    XEQ :REPLY:
+    IF
+      REM v0.9.0: the influence term T of the position after the root move (LBL :INFL:), the same for all its
+      REM replies: they are searched against R61 - T (R98 holds T: no key is read while the C47 thinks), then T is
+      REM added to their least R65 (the twin: chess47ref's search adds T to each leaf)
+      XEQ :INFL:
+      STO 98
+      STO- 61
+      XEQ :REPLY:
+      RCL 98
+      STO+ 61
+      STO+ 65
+    ENDIF
   ENDIF
   1
   STO 46
@@ -5261,6 +5670,7 @@ IF
   STO "KN"
   STO "SB"
   STO "CR"
+  STO "KG"
   STO "GL"
   DROP
   REM the matrices of the game, each its own (python/layout.py MATS): an element command copies the whole indexed
@@ -5305,6 +5715,11 @@ IF
   NEWMAT
   STO "CR"
   DROP
+  @KGR
+  @KGC
+  NEWMAT
+  STO "KG"
+  DROP
   32
   24
   NEWMAT
@@ -5347,6 +5762,8 @@ IF
 ENDIF
 INDEX "BB"
 REM ==== KNIGHTS
+REM the kings' masks and the influence term's four masks into KG (python/layout.py king_masks, written by the build)
+REM ==== KINGS
 REM the old book freed first (0 STO), as BD and GL: made again over a matrix left by a stop (an error, EXIT) or by
 REM 7 and ÷, NEWMAT needed the memory of both
 0

@@ -57,7 +57,7 @@ def value(p, s):
     return c * (V[abs(p)] + pst(abs(p), s, c))
 
 
-ENGINE = ('mate', 'recap', 'mvv', 'killer')      # v0.3.4's search (v0.2: no killer; v0.1: none of them)
+ENGINE = ('mate', 'recap', 'mvv', 'killer', 'infl')   # v0.9.0: + the influence term (v0.3.4: no infl; v0.2: no killer)
 
 
 class Pos:
@@ -375,6 +375,10 @@ class Pos:
             caps = [m for k in (6, 5, 4, 3, 2, 1) for m in caps if abs(self.bd[m % 1000]) == k]
         return caps + [m for m in moves if self.bd[m % 1000] == 0]
 
+    def infl(self, S):
+        """The influence term of the position from S's side (the module's infl; the kings R24 R25)."""
+        return infl(self.bd, S, {1: self.kw, -1: self.kb})
+
     def search(self, depth, opts=None):
         """opts: 'mate' (level 2: a checking move after which the other side has no legal move scores 29000),
         'recap' (level 2: a capture reply on a square S attacks is answered by its recapture: + the value of the
@@ -400,9 +404,10 @@ class Pos:
                     and not self.has_legal(-S):
                 v = 29000
             else:
+                T = self.infl(S) if 'infl' in self.opts else 0      # v0.9.0: the same for all the replies
                 replies = self.gen(-S, castle=False)
                 if not replies:
-                    v = S * self.sc
+                    v = S * self.sc + T
                 else:
                     v = 30000
                     first = [self.killer[0]] if 'killer' in self.opts and self.killer_ok() else []
@@ -416,6 +421,7 @@ class Pos:
                             # (v0.7.1: not when the reply took S's king: the taking king's 20 000 made a king move
                             # next to the other king look legal)
                             w += abs(value(self.bd[r % 1000], r % 1000))
+                        w += T
                         self.unmake(2)
                         if w < v:
                             v = w
@@ -426,6 +432,55 @@ class Pos:
             if v > best:
                 best, bm = v, m
         return bm, best, nodes
+
+CENTRE = {55, 56, 65, 66}                                  # d4 e4 d5 e5
+WIDE = {s for s in range(22, 100) if 3 <= (s - 1) % 10 <= 6 and 4 <= (s - 1) // 10 <= 7} - CENTRE   # the 12 around
+
+
+def attacks(bd, s):
+    """The squares the piece on s attacks (its own pieces included; a sliding piece up to the first piece)."""
+    p = bd[s]
+    c, k = (1 if p > 0 else -1), abs(p)
+    if k == 1:
+        return [s + c * d for d in (9, 11) if bd[s + c * d] != OFF]
+    if k == 2:
+        return [s + d for d in NOFF if 0 < s + d <= 120 and bd[s + d] != OFF]
+    if k == 6:
+        return [s + d for d in DIRS if bd[s + d] != OFF]
+    out = []
+    for d in (BDIR if k == 3 else RDIR if k == 4 else DIRS):
+        t = s + d
+        while bd[t] != OFF:
+            out.append(t)
+            if bd[t] != 0:
+                break
+            t += d
+    return out
+
+
+def infl(bd, S, kings):
+    """The influence term (v0.9.0, CHESS47's LBL :INFL:), from S's side, S having just moved: for each colour the
+    squares it attacks once (A1) and twice or more (A2) (64-bit words in CHESS47: A2 |= A1 & X, A1 |= X for the
+    attack word X of each piece); a square counts for S when S's count, kept up to 2, is above -S's: (A1s & ~A1x) |
+    (A2s & ~A2x). 2 x (S's squares - -S's, the centre's 3 more, the 12 around it 1 more, the squares around the other
+    king 5 more). python/influence.py measured it (variant bits, CAP 2): +86 at level 2 (docs/INFLUENCE.md)."""
+    a1 = {1: set(), -1: set()}
+    a2 = {1: set(), -1: set()}
+    for s in range(22, 100):
+        p = bd[s]
+        if p == 0 or p == OFF:
+            continue
+        c = 1 if p > 0 else -1
+        x = set(attacks(bd, s))
+        a2[c] |= a1[c] & x
+        a1[c] |= x
+    oS = (a1[S] - a1[-S]) | (a2[S] - a2[-S])
+    oX = (a1[-S] - a1[S]) | (a2[-S] - a2[S])
+    zone = {c: {kings[c] + d for d in DIRS if bd[kings[c] + d] != OFF} for c in (1, -1)}
+    t = (len(oS) - len(oX)) + 3 * (len(oS & CENTRE) - len(oX & CENTRE)) + (len(oS & WIDE) - len(oX & WIDE)) \
+        + 5 * (len(oS & zone[-S]) - len(oX & zone[S]))
+    return 2 * t
+
 
 def perft(p, depth):
     if depth == 0:
