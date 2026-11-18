@@ -373,3 +373,12 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
    the mailbox has 120 squares. c47sim already models it (locals per level). A test program for Victor (it shows the
    error on the calculator and times a matrix read, a register read and an XEQ / RTN) is on the branch
    claude/chess47-dev-opt (build/dev-opt/).
+
+## Nov 18, 2026 - v0.7.1: a king never moves next to the other king (branch claude/chess47-kingrecap)
+
+- Found by the influence test (claude/chess47-influence): the recapture rule added the taking king's 20 000 when
+  the reply took S's king, so a king move next to the other king, onto a square S defends, looked legal (the twin
+  and the C47 program: Ka5-b6 next to Kc6 in 2n5/3B4/2K5/k1N5/8/8/8/Q7 b, and two more).
+- LBL :RECAP: (levels 2 and 3: CEVAL, ACEVAL) returns when the target is a king (7 steps); the twin's search and
+  answers the same. The tests: the three positions (legal, as the twin); 1 500 random positions with the kings two
+  squares apart at most: no illegal move at levels 2 and 3 (before: 3 in about 1 350 at level 2).

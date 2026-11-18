@@ -12,7 +12,7 @@ biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, 
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
 see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
-that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves.
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose).
 
 | | |
 |---|---|
