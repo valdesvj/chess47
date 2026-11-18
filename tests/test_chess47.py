@@ -462,15 +462,21 @@ def level3_tests(prog):
         check(got == (m, v), '%s: %s %d (%.0f s on the C47 to the end)%s' % (
             f[:40], R.mname(got[0]), got[1], S.secs(c.steps), '' if got == (m, v) else ' WANT %s %d' % (R.mname(m), v)))
     p = R.Pos.fen(FENS[1])
+    shots, c = S.run([], prog=prog)                             # level 2 alone first: level 3's 60 s come after it
+    setpos(c, p)
+    c.reg['26'] = D(2)
+    c.steps = 0
+    c.run('TTHK', maxsteps=10 ** 10)
+    secs2 = S.secs(c.steps)
     shots, c = S.run([], prog=prog)
     setpos(c, p)
     c.reg['26'] = D(3)
     c.steps = 0
     c.run('TTH3', maxsteps=10 ** 10)
     secs = S.secs(c.steps)
-    check(int(c.reg['62']) in p.legal() and secs < 60 + 25 and c.reg.get('29') == 0,
-          '%s with the 60 s budget: %s, %.0f s in all (level 2 first; the time over: the best found so far), R29 '
-          'back to 0' % (FENS[1][:30], R.mname(int(c.reg['62'])), secs))
+    check(int(c.reg['62']) in p.legal() and secs < secs2 + 60 + 10 and c.reg.get('29') == 0,
+          '%s with the 60 s budget: %s, %.0f s in all (level 2 first, %.0f s; then at most 60 s; the time over: the '
+          'best found so far), R29 back to 0' % (FENS[1][:30], R.mname(int(c.reg['62'])), secs, secs2))
     shots, c = S.run([S.LEVEL, S.LEVEL, S.LEVEL])
     check(c.reg.get('26') == 3, 'the key 1 three times: level 2 -> 1 -> CRAZY -> 3')
 
