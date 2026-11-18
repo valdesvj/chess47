@@ -1,0 +1,236 @@
+      ; LOCT47 v0.1.0 - a test for Victor's C47 (branch claude/chess47-dev-opt): can CHESS47 keep its board in local
+      ; registers (RCL IND, one step a square instead of four), and what does a step cost on the calculator?
+      ; The firmware's source says no for the first: every XEQ starts a new subroutine level with no local registers
+      ; (src/c47/programming/lblGtoXeq.c fnExecute: currentNumberOfLocalRegisters = 0), and RCL IND 112 + n reaches
+      ; R.nn of the running level only (registers.c isValidIndirectRegisterParam). CHESS47 reads its board in XEQ'd
+      ; routines (GEN, ATT, MAKE, DELTA). LOCT47 shows it on the calculator, and times on the way (10 000 times each,
+      ; TICKS in tenths of a second, the empty loop taken off; microseconds a time):
+      ; A  a matrix element: 1 RCL R.02 STOIJ RCLEL (CHESS47's board read, four steps)
+      ; B  RCL IND of a global register (R00 read, not changed)
+      ; C  RCL IND of a local register of this level (R.05: 117 = 112 + 5)
+      ; D  RCL R.05 (a local register, direct)
+      ; E  XEQ of an empty routine (XEQ and RTN: the firmware allocates and frees a subroutine level)
+      ; Then (a key) a routine called with XEQ reads R.05: the C47 should stop with an error (local register .05 not
+      ; defined). That is the answer: the local registers of CHESS47 are not seen by its subroutines.
+      ; Uses R20 (the text) and R98 (KEY?); a matrix TM while it runs (deleted). About 1 minute.
+   1  LBL "LOCT47"
+   2  LocR 20
+   3  STOS R.10
+   4  CLLCD
+   5  10
+   6  GRFNT
+   7  DROP
+   8  "LOCT47: TIMING A B C D E (ABOUT 1 MIN)"
+   9  220
+  10  4
+  11  ATEXT Z
+  12  1
+  13  120
+  14  NEWMAT
+  15  STO "TM"
+  16  DROP
+  17  INDEX "TM"
+  18  50
+  19  STO R.02
+  20  0
+  21  STO R.03
+  22  117
+  23  STO R.04
+  24  47
+  25  STO R.05
+      ; ---- the empty loop (R.06) ----
+  26  10000
+  27  STO R.01
+  28  TICKS
+  29  STO R.00
+  30  DO    (01)
+  31    DSE R.01
+  32  WHILE    (01)
+  33  ENDDO    (01)
+  34  TICKS
+  35  RCL- R.00
+  36  STO R.06
+      ; ---- A: a matrix element (R.07) ----
+  37  10000
+  38  STO R.01
+  39  TICKS
+  40  STO R.00
+  41  DO    (02)
+  42    1
+  43    RCL R.02
+  44    STOIJ
+  45    RCLEL
+  46    DSE R.01
+  47  WHILE    (02)
+  48  ENDDO    (02)
+  49  TICKS
+  50  RCL- R.00
+  51  STO R.07
+      ; ---- B: RCL IND of a global register (R.08) ----
+  52  10000
+  53  STO R.01
+  54  TICKS
+  55  STO R.00
+  56  DO    (03)
+  57    RCL IND R.03
+  58    DSE R.01
+  59  WHILE    (03)
+  60  ENDDO    (03)
+  61  TICKS
+  62  RCL- R.00
+  63  STO R.08
+      ; ---- C: RCL IND of a local register of this level (R.09) ----
+  64  10000
+  65  STO R.01
+  66  TICKS
+  67  STO R.00
+  68  DO    (04)
+  69    RCL IND R.04
+  70    DSE R.01
+  71  WHILE    (04)
+  72  ENDDO    (04)
+  73  TICKS
+  74  RCL- R.00
+  75  STO R.09
+      ; ---- D: RCL of a local register, direct (R.18) ----
+  76  10000
+  77  STO R.01
+  78  TICKS
+  79  STO R.00
+  80  DO    (05)
+  81    RCL R.05
+  82    DSE R.01
+  83  WHILE    (05)
+  84  ENDDO    (05)
+  85  TICKS
+  86  RCL- R.00
+  87  STO R.18
+      ; ---- E: XEQ and RTN of an empty routine (R.19) ----
+  88  10000
+  89  STO R.01
+  90  TICKS
+  91  STO R.00
+  92  DO    (06)
+  93    XEQ :EMPTY:    (00)
+  94    DSE R.01
+  95  WHILE    (06)
+  96  ENDDO    (06)
+  97  TICKS
+  98  RCL- R.00
+  99  STO R.19
+ 100  DELITM "TM"
+      ; ---- the results: (T - the empty loop) x 10 = microseconds a time (T in tenths of a second, 10 000 times) ----
+ 101  "LOOP ALONE "
+ 102  STO 20
+ 103  RCL R.06
+ 104  10
+ 105  ×
+ 106  αIP 20
+ 107  " US A TIME"
+ 108  x→α 20
+ 109  RCL 20
+ 110  200
+ 111  4
+ 112  ATEXT Z
+ 113  "A MATRIX READ (4 STEPS) "
+ 114  STO 20
+ 115  RCL R.07
+ 116  RCL- R.06
+ 117  10
+ 118  ×
+ 119  αIP 20
+ 120  " US"
+ 121  x→α 20
+ 122  RCL 20
+ 123  180
+ 124  4
+ 125  ATEXT Z
+ 126  "B RCL IND GLOBAL "
+ 127  STO 20
+ 128  RCL R.08
+ 129  RCL- R.06
+ 130  10
+ 131  ×
+ 132  αIP 20
+ 133  " US"
+ 134  x→α 20
+ 135  RCL 20
+ 136  160
+ 137  4
+ 138  ATEXT Z
+ 139  "C RCL IND LOCAL (THIS LEVEL) "
+ 140  STO 20
+ 141  RCL R.09
+ 142  RCL- R.06
+ 143  10
+ 144  ×
+ 145  αIP 20
+ 146  " US"
+ 147  x→α 20
+ 148  RCL 20
+ 149  140
+ 150  4
+ 151  ATEXT Z
+ 152  "D RCL R.05 "
+ 153  STO 20
+ 154  RCL R.18
+ 155  RCL- R.06
+ 156  10
+ 157  ×
+ 158  αIP 20
+ 159  " US"
+ 160  x→α 20
+ 161  RCL 20
+ 162  120
+ 163  4
+ 164  ATEXT Z
+ 165  "E XEQ + RTN "
+ 166  STO 20
+ 167  RCL R.19
+ 168  RCL- R.06
+ 169  10
+ 170  ×
+ 171  αIP 20
+ 172  " US"
+ 173  x→α 20
+ 174  RCL 20
+ 175  100
+ 176  4
+ 177  ATEXT Z
+ 178  "ANY KEY: A SUBROUTINE READS R.05 (47)"
+ 179  70
+ 180  4
+ 181  ATEXT Z
+ 182  "AN ERROR THEN = IT CANNOT SEE IT"
+ 183  50
+ 184  4
+ 185  ATEXT Z
+ 186  DO    (07)
+ 187    0
+ 188    PAUSE 10
+ 189    KEY? 98
+ 190    1
+ 191    X≠0?
+ 192  WHILE    (07)
+ 193  ENDDO    (07)
+ 194  20
+ 195  GRFNT
+ 196  DROP
+ 197  RCLS R.10
+      ; ---- the answer: a routine called with XEQ reads R.05 (the firmware: an error, local register .05 not defined) ----
+ 198  XEQ :SUBR:    (01)
+ 199  "SUBROUTINE SAW R.05 = "
+ 200  STO 20
+ 201  X<>Y
+ 202  αIP 20
+ 203  RCL 20
+ 204  30
+ 205  4
+ 206  ATEXT Z
+ 207  RTN
+ 208  LBL :EMPTY:    (00)
+ 209  RTN
+ 210  LBL :SUBR:    (01)
+ 211  RCL R.05
+ 212  RTN
+ 213  END
