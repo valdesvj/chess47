@@ -1,4 +1,4 @@
-      ; CHESS47 v0.8.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+      ; CHESS47 v0.9.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
       ; You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
       ; The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
       ; queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).

@@ -2,7 +2,7 @@
 
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
 the number keys, all the rules of chess, a 5-minute clock, two players or the C47 against itself, and Chess960.
-Version 0.8.1. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+Version 0.9.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
 
 ## Two versions
 
@@ -19,6 +19,12 @@ The letters version has no key **×** and no drawings: it is for a calculator th
 ![the letters version](manual/11_text.png)
 
 *The letters version: e2-e4 and the C47's reply.*
+
+## On the DM42 / DM42n (Free42)
+
+The same game also runs on the DM42's own firmware (Free42): `CHESS47.raw`, loaded as a program, then
+`XEQ "CHESS47"`. The keys, the screens and the moves are the same as here. It is experimental: see
+[FREE42.md](FREE42.md).
 
 ## Starting
 

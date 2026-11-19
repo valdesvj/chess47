@@ -218,7 +218,7 @@ def macros(lines):
 NUMBER = 16                    # bytes a number of a real matrix (an estimate: real34, to be checked with MEM#)
 
 
-VARIANTS = ('draw', 'text')     # v0.8.1: the drawn pieces (GL, the key ×) and the letters only (no GL): build/draw/
+VARIANTS = ('draw', 'text')     # v0.8.1 (f42, v0.9.0, the Free42 build, is built apart): the drawn pieces (GL, the key ×) and the letters only (no GL): build/draw/
                                 # and build/text/; build/CHESS47.txt, programs/ and listings/ are the drawn one
 
 

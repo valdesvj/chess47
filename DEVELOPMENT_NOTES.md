@@ -456,3 +456,13 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   255 (draw), 248 (text). No sound (no tone command run on a C47 yet). tests: kirk_tests (pg5's FENs, the twin's
   replies, the saved game, a mate). tools/speed47.py: level 3's 12.7 answers a second, the budgets of tools/elo47.py's
   levels 3, 4, 5 (Victor runs the ladder).
+- v0.9.0 (Nov 19): the Free42 version (DM42 / DM42n stock firmware). tools/build_chess47.py builds a third variant,
+  f42 (build/f42/: the drawn build with the source's REM ==== IF F42 sections: DRAWSQ calls zSQ); tools/build_free42.py
+  converts it (STRUCT -> opposite test + GTO, each routine a global label in its own program, STOIJ, helpers z* for
+  ATEXT / AGRAPH / keys / pauses / R-CLR / strings, the fonts and glyphs as AGRAPH strings in R100-R1299). tools/f42:
+  the DM42's Free42 core with Intel's decimal library, headless (f42run; a stop command, a GETKEYA hook so polling
+  hands back to the script). tests/test_free42.py: every step pasted, level 2 and 3 = chess47ref, the screens = the C47
+  simulator (but the clock, a few pixels). C47: 1 in Y before the four one-row STO J that had none (STOIJ in Free42).
+  Not on a DM42 yet: memory (about 110-120 KB estimated) and speed unknown; the pg5 rules (promotion choice, 50 moves,
+  draw offers) not yet.
+
