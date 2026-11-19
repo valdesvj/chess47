@@ -5867,12 +5867,14 @@ IF
   STO 42
   DO
     INDEX "BB"
+    1
     RCL 42
     STO J
     RCLEL
     XEQ :VAL:
     STO- 23
     INDEX "BB"
+    1
     RCL 42
     STO J
     0
@@ -5895,6 +5897,8 @@ IF
   +
   STO 42
   INDEX "BB"
+  1
+  X<>Y
   STO J
   RCL 45
   6

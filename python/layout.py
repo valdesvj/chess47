@@ -310,7 +310,7 @@ def knight_steps():
     square, the border squares 0): the 64-bit mask of the squares a knight on s attacks (bit 8 (row - 2) + col - 1), as
     a real (INDEX "KN" set here, "BB" again at the end); the program runs in UNSIGN, so bit 63 (h8) is a plain positive
     value. (v0.8.0: 1 s STOIJ DROP DROP m STOEL DROP, 8 steps a square.)"""
-    out = ['INDEX "KN"', '22', 'STO J']
+    out = ['INDEX "KN"', '1', '22', 'STO J']             # 1 in Y: STOIJ in the Free42 build
     for s in range(22, 100):
         r, f = (s - 1) // 10 - 2, (s - 1) % 10 - 1
         m = 0

@@ -5830,6 +5830,7 @@ ENDIF 232
 INDEX "BB"
 @ the knights' masks of python/layout.py into row 21 of BD (written by the build)
 INDEX "KN"
+1
 22
 STO J
 132096
@@ -6463,12 +6464,14 @@ IF 239
   STO 42
   DO 49
     INDEX "BB"
+    1
     RCL 42
     STO J
     RCLEL
     XEQ 12                      ; -> :VAL:
     STO- 23
     INDEX "BB"
+    1
     RCL 42
     STO J
     0
@@ -6491,6 +6494,8 @@ IF 239
   +
   STO 42
   INDEX "BB"
+  1
+  X<>Y
   STO J
   RCL 45
   6
