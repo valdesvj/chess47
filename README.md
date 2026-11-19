@@ -59,7 +59,7 @@ follows one of them, choosing at random among those that fit; then it thinks.
 ![a game](docs/CHESS47_game.png)
 
 **Strength:** v0.1 by my estimate about 800-1100 Elo; v0.2 beat v0.1 18.5-1.5 in 20 games (the Python twins), so
-perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games against Stockfish 1320, weakened
+perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`: against Stockfish 1320, weakened
 Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE). v0.8.1 (Nov 19, 440 games,
 Stockfish dev-20260930): level 3 searched to the end about **1325** (95 %: 1245-1412), level 5 (9 min) about **1307**,
 level 4 (3 min) about **1271**, level 3 with the C47's 60 s about **1262**, level 2 about **1071**, level 1 about 933.
