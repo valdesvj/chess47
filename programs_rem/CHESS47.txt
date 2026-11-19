@@ -1,4 +1,4 @@
-REM CHESS47 v0.8.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.9.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -5168,6 +5168,13 @@ IF
   1
   STO 32
 ENDIF
+REM ==== IF F42
+REM Free42 (tools/build_free42.py): the square drawn by zSQ from the glyph strings (three bands of 8 rows, AGRAPH)
+1
+GRMOD
+DROP
+XEQ "zSQ"
+REM ==== ELSE F42
 REM ==== IF DRAW
 INDEX "GL"
 RCL 36
@@ -5246,6 +5253,7 @@ ELSE
   WHILE
   ENDDO
 ENDIF
+REM ==== ENDIF F42
 REM the piece as a letter of the standard font (GRFNT 20, its 20-row box at x + 7, row + 2: inside the cursor's
 REM frame): the character from 75 81 82 66 78 80 (K Q R B N P; two digits a piece, divided by 100 |piece| times),
 REM + 32 for a black piece (lower case). On a dark square the letter gets a halo of 1 pixel: GRMOD 2 clears the
@@ -5867,12 +5875,14 @@ IF
   STO 42
   DO
     INDEX "BB"
+    1
     RCL 42
     STO J
     RCLEL
     XEQ :VAL:
     STO- 23
     INDEX "BB"
+    1
     RCL 42
     STO J
     0
@@ -5895,6 +5905,8 @@ IF
   +
   STO 42
   INDEX "BB"
+  1
+  X<>Y
   STO J
   RCL 45
   6
