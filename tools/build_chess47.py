@@ -223,9 +223,12 @@ VARIANTS = ('draw', 'text')     # v0.8.1: the drawn pieces (GL, the key ×) and 
 
 
 def variant(lines, name):
-    """The source for a variant: the lines between REM ==== IF DRAW and REM ==== ELSE (or ENDIF) kept for 'draw',
-    those between ELSE and ENDIF for 'text' (not nested)."""
-    out, mode = [], None
+    """The source for a variant: the lines between REM ==== IF DRAW and REM ==== ELSE (or ENDIF) kept for 'draw' (and
+    'f42', the Free42 build: the drawn pieces), those between ELSE and ENDIF for 'text'; between REM ==== IF F42 and
+    REM ==== ELSE F42 (or ENDIF F42) only for 'f42' (Free42 steps: tools/build_free42.py), the ELSE F42 part for the
+    others. Not nested within their own kind; an IF F42 section may sit inside an IF DRAW one."""
+    out, mode, f42 = [], None, None
+    base = 'draw' if name == 'f42' else name
     for ln in lines:
         st = ln.strip()
         if st == 'REM ==== IF DRAW':
@@ -236,10 +239,18 @@ def variant(lines, name):
             mode = 'text'
         elif st == 'REM ==== ENDIF' and mode is not None:
             mode = None
-        elif mode is None or mode == name:
+        elif st == 'REM ==== IF F42':
+            if f42 is not None:
+                raise SystemExit('IF F42 inside IF F42')
+            f42 = 'f42'
+        elif st == 'REM ==== ELSE F42' and f42 is not None:
+            f42 = 'c47'
+        elif st == 'REM ==== ENDIF F42' and f42 is not None:
+            f42 = None
+        elif (mode is None or mode == base) and (f42 is None or f42 == ('f42' if name == 'f42' else 'c47')):
             out.append(ln)
-    if mode is not None:
-        raise SystemExit('IF DRAW without ENDIF')
+    if mode is not None or f42 is not None:
+        raise SystemExit('IF DRAW / IF F42 without ENDIF')
     return out
 
 
@@ -256,7 +267,7 @@ def constants():
     for k, (r, n) in layout.MATS.items():
         c[k + 'R'], c[k + 'C'] = str(r), str(n)
     els = sum(r * n for r, n in layout.MATS.values())
-    need = (els + (layout.GL_SIZE if VAR['name'] == 'draw' else 0) + book.ob_size()) * NUMBER + 3000
+    need = (els + (layout.GL_SIZE if VAR['name'] in ('draw', 'f42') else 0) + book.ob_size()) * NUMBER + 3000
     c['MEM'] = str(-(-need // 1000) * 1000)
     c['GHM'] = str(layout.GH_SIZE * NUMBER)
     return c
@@ -314,6 +325,9 @@ def build(name='draw'):
         fh.write('\n'.join(numeric) + '\n')
     with open(os.path.join(vdir, NAME + '_doc.txt'), 'w', encoding='utf-8') as fh:
         fh.write('\n'.join(listing) + '\n')
+    if name == 'f42':                                         # its own local labels (the Free42 build's routines)
+        with open(os.path.join(vdir, NAME + '_labels.txt'), 'w', encoding='utf-8') as fh:
+            fh.write(labels_text(lines, num))
     if name != 'draw':
         return numeric
     for d in ('programs', 'build', 'listings'):
@@ -329,9 +343,12 @@ def build(name='draw'):
 
 
 if __name__ == '__main__':
-    for name in ('text', 'draw'):                             # the drawn one last: VAR and the files as before
+    for name in ('f42', 'text', 'draw'):                      # the drawn one last: VAR and the files as before
         st = build(name)
         k = constants()
+        if name == 'f42':
+            print('%s (f42)  %5d steps: build/f42/, for tools/build_free42.py (the Free42 build)' % (NAME, len(st)))
+            continue
         print('%s (%s) %5d steps, %2d local labels, about %d bytes (.p47, estimated); IF %d, DO %d; the start needs %d '
               'bytes (%d with a saved game)' % (
                   NAME, name, len(st), sum(1 for s in st if re.match(r'LBL \d\d', s)), estimate(st),

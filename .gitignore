@@ -3,3 +3,4 @@ __pycache__/
 *.p47
 tools/f42/src/
 tools/f42/f42run
+*.raw

@@ -5,7 +5,8 @@ python/chess47ref.py:
 
   1. the listing pasted into Free42 and listed back: every step there (Free42's Paste drops what it does not know);
   2. the start: CHESS47 runs to its first key wait, the start position in R20-R28;
-  3. level 2 (and level 3 on some): the same move and value as chess47ref.search on the test positions.
+  3. level 2 (and level 3 on some): the same move and value as chess47ref.search on the test positions;
+  4. the screens (start, Kirk, letters, level 5) against the C47 simulator's, pixel for pixel.
 
     python3 tests/test_free42.py          (python3 tools/build_free42.py first)"""
 import os, re, subprocess, sys, tempfile
@@ -45,6 +46,8 @@ def regs(out):
 
 
 def norm(x):
+    if x.startswith('XSTR "'):         # the data's strings (any byte, written as € and hex) list differently
+        return 'XSTR'
     return x.replace(' ', '').replace('ᴇ', 'E').replace('Y↑X', 'Y^X').replace('SIZE0100', 'SIZE100')
 
 
@@ -100,11 +103,37 @@ def think_tests():
                   'level %d %s: %s %s (chess47ref %s %d)' % (depth, f.split()[0], got[0], got[1], R.mname(want), v))
 
 
+def screen_tests():
+    """The Free42 screen against the C47 simulator's, pixel for pixel (f42run's 400 x 240 frame; the clock frozen)."""
+    print('== the screens: Free42 and the C47 simulator')
+    import chess47sim as S
+    inv = {}
+    for f in range(1, 38):
+        c = 20 + f if f <= 6 else 30 + f - 6 if f <= 12 else (4 + (f - 13) // 5) * 10 + (f - 13) % 5 + 1
+        inv[c] = f
+    d = tempfile.mkdtemp()
+    open(os.path.join(d, 'sf.txt'), 'w').write('LBL "TSF"\nSF 09\nEND\n')
+    for name, keys, most in (('the start', [], 10), ('÷ 1701 (Kirk)', [55, 72, 52, 82, 72], 0),
+                             ('× (the letters)', [65], 12), ('1 three times (level 5)', [72, 72, 72], 12)):
+        shot = os.path.join(d, 's.pbm')
+        cmds = ['paste ' + PROG, 'paste ' + os.path.join(d, 'sf.txt'), 'xeq TSF', 'xeq CHESS47']
+        cmds += ['key %d' % inv[k] for k in keys] + ['shot ' + shot]
+        env = dict(os.environ, F42_TIME='12000000')
+        subprocess.run([F42], input='\n'.join(cmds) + '\n', text=True, capture_output=True, env=env, timeout=1200)
+        rows = open(shot).read().split('\n')[2:242]
+        f42 = {(y, x) for y, r in enumerate(rows) for x, ch in enumerate(r) if ch == '1'}
+        shots, c = S.run(keys)
+        c47 = {(239 - y, x) for (y, x) in c.pix}
+        diff = len(f42 ^ c47)
+        check(diff <= most, '%s: %d pixels, %d different (at most %d: the clock)' % (name, len(f42), diff, most))
+
+
 def main():
     if not os.path.exists(F42):
         raise SystemExit('no tools/f42/f42run: sh tools/f42/setup.sh')
     paste_tests()
     think_tests()
+    screen_tests()
     print('\nALL OK' if not FAIL else '\n%d FAILED' % len(FAIL))
     sys.exit(1 if FAIL else 0)
 
