@@ -59,14 +59,14 @@ follows one of them, choosing at random among those that fit; then it thinks.
 ![a game](docs/CHESS47_game.png)
 
 **Strength:** v0.1 by my estimate about 800-1100 Elo; v0.2 beat v0.1 18.5-1.5 in 20 games (the Python twins), so
-perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`, 288 games against Stockfish 1320, weakened
-Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE): level 3 searched to the end about
-**1100** (95 %: 980-1200), level 3 with the C47's 60 s about **1010**, level 2 about **980** (an earlier run: 1110),
-level 1 about 670. Head to head level 3 beat level 2 7-1 to the end, 4.5-3.5 with 60 s: the 60 s let it finish only
-the quieter positions. v0.8.1, estimated before its ladder: level 3 averages 12.7 answers a second on the C47
-(`tools/speed47.py`, `python/time47.py`), so 60 s is about 760 answers, level 4 (3 min) 2 290 and level 5 (9 min)
-6 860; the middle-game test positions need 160-2 760 to the end, so level 4 should be about 1 070-1 090 and level 5
-about level 3 to the end, 1 100 (the ladder has the three now: `python3 tools/elo47.py --ladder`). 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
+perhaps 1100-1300. Measured (`tools/elo47.py --ladder`, `docs/ELO.md`: against Stockfish 1320, weakened
+Stockfish and a material player; Stockfish's UCI_Elo scale, engine blitz, not FIDE). v0.8.1 (Nov 19, 440 games,
+Stockfish dev-20260930): level 3 searched to the end about **1325** (95 %: 1245-1412), level 5 (9 min) about **1307**,
+level 4 (3 min) about **1271**, level 3 with the C47's 60 s about **1262**, level 2 about **1071**, level 1 about 933.
+The earlier ladder (another Stockfish build) put level 3 at 1100 and level 2 at 980: the scale moves with the build, the
+gaps between the levels are what to compare. Levels 4 and 5 are worth about 10 and 45 over level 3's 60 s: 3 and 9 minutes
+let it finish more of the middle-game positions (they need 160-2 760 answers, at about 12.7 answers a second on the C47:
+`tools/speed47.py`). 8 games a pair keep the intervals wide (+-100). It sees mates in one, one-move tactics and the recapture; it
 misses deeper tactics. The matches against an independent player in the simulator: `docs/MATCHES.md`.
 
 ![crazy](docs/CHESS47_crazy.png)
