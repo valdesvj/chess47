@@ -199,8 +199,8 @@ def play_tests():
     shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
     check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in S.gh(c3))
           and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
-    check(keep['TW'] > 3000 and keep['TB'] == 3000, 'the clock: 5 minutes each (3000 tenths), 10 s a move for you; the '
-          'C47\'s (black) does not run: W %s, B %s' % (keep['TW'], keep['TB']))
+    check(3000 < keep['TW'] < 3100 and 3000 < keep['TB'] < 3100, 'the clock: 5 minutes each (3000 tenths), 10 s a move, '
+          'the C47\'s (black) runs too (v0.10.0): W %s, B %s' % (keep['TW'], keep['TB']))
     low = dict(keep, TW=D(5))
     shots, c4 = S.run([None] * 300 + [S.PICK], regs=low, mats={'GH': gh})
     check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(S.gh(c4)[2]) == 0,
@@ -222,10 +222,11 @@ def play_tests():
     check(c7.reg.get('27') == 2 and [int(v) for v in S.gh(c7)[:3]] == [36056, 86066, 0]
           and c7.reg['TW'] > 3000 and c7.reg['TB'] > 3000,
           '3: two players: e2-e4 and e7-e5 keyed, no move of the C47, both clocks run (10 s a move)')
-    low = dict(keep, TB=D(1))                                    # the C47 (black) with 0.1 s left: it plays on
+    low = dict(keep, TB=D(1))                                    # the C47 (black) with 0.1 s left: it loses on time
     shots, c8 = S.run([S.LEFT, S.PICK, S.UP, S.UP, S.PICK], regs=low, mats={'GH': [list(r) for r in gh]})
-    check(c8.reg.get('97', 0) == 0 and int(S.gh(c8)[3]) != 0 and c8.reg.get('TB') == 1,
-          'the C47 with 0.1 s left thinks and moves: its clock does not run, it never loses on time')
+    check(c8.reg.get('97') == 1 and int(S.gh(c8)[3]) == 0 and c8.reg.get('TB') == 0 and 'TLV' not in c8.reg
+          and c8.reg.get('26') == 2, 'the C47 with 0.1 s left thinks: its clock runs (v0.10.0), BLACK LOST ON TIME, no '
+          'move played, its level back (2)')
     # the time-out rule (FIDE 6.9): :TMAT: as python-chess's has_insufficient_material, random positions of few pieces
     import chess, random
     P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l][:-1]
@@ -253,6 +254,99 @@ def play_tests():
                 diff.append(b.fen())
     check(not diff, 'a time-out: a draw exactly when the opponent cannot mate (python-chess has_insufficient_material, '
           '%d cases)%s' % (n, ' ' + diff[0] if diff else ''))
+
+
+MINUTES, SECONDS = (5, 3, 5, 10, 15, 90, 90, 0), (10, 2, 3, 5, 10, 30, 30, 0)
+
+
+def clock_tests():
+    """v0.10.0: the time controls (-), the clock off during the game (- -), the C47's clock and its budget."""
+    import chess960 as C
+    print('== the clock: the time controls (-), CLOCK OFF? (- -), the C47\'s time')
+    E4 = [S.PICK, S.UP, S.UP, S.PICK]
+    bad = []
+    for k in range(1, 9):
+        shots, c = S.run([S.CLOCK] * k)
+        t = k % 8
+        if (c.reg.get('TC'), c.reg.get('TOF'), c.reg.get('TW'), c.reg.get('TB')) != (t, int(t == 7), MINUTES[t] * 600,
+                                                                                     MINUTES[t] * 600):
+            bad.append((k, c.reg.get('TC'), c.reg.get('TOF'), c.reg.get('TW')))
+    check(not bad, '- before the first move, 1 to 8 times: 3+2, 5+3, 10+5, 15+10, 90+30, 90/40+30, NO CLOCK (TOF 1, '
+          'the clocks at 0), 5+10 again; both clocks set%s' % ('' if not bad else ' BAD %s' % bad))
+    shots, c = S.run([S.CLOCK, S.CLOCK, S.END])
+    tc = c.reg.get('TC')
+    shots, c0 = S.run([S.CLOCK] * 8 + [S.END])
+    shots, c2 = S.run([], regs={k: c.reg[k] for k in ('CHN', 'TC')})
+    check(tc == 2 and 'TC' not in c0.reg and c2.reg.get('TC') == 2 and c2.reg.get('TW') == 3000 == c2.reg.get('TB')
+          and 'TOF' not in c.reg, 'the control kept between starts (TC 2: 5+3; TC 0 deleted at the end) and set at '
+          'the next start: W %s' % c2.reg.get('TW'))
+    shots, c = S.run(E4 + [S.CLOCK, S.CLOCK, None])
+    tw, tb = c.reg.get('TW'), c.reg.get('TB')
+    check(c.reg.get('TOF') == 1 and c.reg.get('TC') == 0 and 0 <= tw < 30 and 0 <= tb < 30,
+          'after e4: - and - again: the clock off (TOF 1) for the game, the clocks counting up from 0 (W %s, B %s), '
+          'TC kept' % (tw, tb))
+    shots, c = S.run(E4 + [S.CLOCK, S.END, S.UP])
+    shots, cu = S.run(E4 + [S.UP])
+    check(not c.ended and c.reg.get('TOF') == 0 and c.reg.get('28') == cu.reg.get('28') and c.reg['TB'] > 3000,
+          'after e4: - and then 0: the clock stays on, the 0 does not end the program, the next key works as before')
+    shots, c = S.run(E4 + [S.CLOCK, S.CLOCK, S.END])
+    shots, c3 = S.run([S.UP], regs={k: c.reg[k] for k in ('CHN', 'TW', 'TB', 'TOF', 'TC') if k in c.reg},
+                      mats={'GH': c.mats['GH']})
+    check(c3.reg.get('TOF') == 1 and c3.reg['TW'] >= c.reg['TW'], 'the clock off kept with the saved game (TOF)')
+    shots, c = S.run(E4 + [S.CLOCK, S.PICK])
+    check(c.reg.get('TC') == 0 and c.reg.get('TOF') == 0, '- after the first move does not change the control')
+    # the C47's budget: Chess960 (no book), the C47 white (+); 3+2: 1800/30 + 20 = 8 s < 15 s: level 1 for the move;
+    # 5+10: 3000/30 + 100 = 20 s: level 2; NO CLOCK: level 2
+    n, secs = 123, {}
+    for tc, depth in ((1, 1), (0, 2), (7, 2)):
+        shots, c = S.run([S.HAND], regs={'CHN': D((n + 1) * 100000 + 23), 'TC': D(tc)})
+        want = C.Pos960(n).search(depth)[0]
+        got = int(S.gh(c)[0])
+        used = MINUTES[tc] * 600 + SECONDS[tc] * 10 - int(c.reg['TW']) if tc != 7 else int(c.reg['TW'])
+        secs[tc] = used / 10
+        check(got == want and c.reg.get('26') == 2 and 'TLV' not in c.reg and (tc != 0 or secs[1] < secs[0] / 2),
+              'Chess960 %d, the C47 white at level 2, %s: it thinks at level %d (%s, as chess960.search(%d)), %.1f s; '
+              'the level kept (+ turning the board is nobody\'s time)' % (n, {1: '3+2', 0: '5+10', 7: 'NO CLOCK'}[tc], depth,
+                                                                         R.mname(got), depth, used / 10))
+    # keys pressed while the C47 thinks (typed: the firmware keeps the last one for the next KEY?)
+    shots, c = S.run(E4 + [S.END], typed=[S.END])
+    shots, c1 = S.run(E4 + [S.UP, S.UP], typed=[S.END])
+    shots, cu = S.run(E4 + [S.UP])
+    check(c.ended and not c1.ended and c1.reg.get('28') == cu.reg.get('28'),
+          '0 pressed while the C47 thinks: END? 0 AGAIN; 0 again ends (the game kept), another key only says no')
+    shots, c = S.run(E4 + [S.CLOCK], typed=[S.CLOCK])
+    shots, c1 = S.run(E4 + [S.UP], typed=[S.PICK])
+    check(c.reg.get('TOF') == 1 and c1.reg.get('28') == cu.reg.get('28') and c1.reg.get('29') == 0,
+          '- pressed while it thinks: CLOCK OFF? (- again: off); 5 pressed while it thinks: dropped (nothing picked)')
+    n, used = 123, []
+    for typed in ([], [S.PICK]):
+        shots, c = S.run([S.LEVEL] * 5 + [S.HAND], regs={'CHN': D((n + 1) * 100000 + 23), 'TC': D(7)}, typed=typed)
+        used.append((int(c.reg['TW']), int(S.gh(c)[0]), c.reg.get('26')))
+    check(used[1][0] < used[0][0] / 3 and used[1][2] == 3 and used[1][1] == C.Pos960(n).search(2)[0],
+          'level 3, a key while it thinks: move now (LBL :TIME3:), %.1f s instead of %.1f s, level 2\'s move %s'
+          % (used[1][0] / 10, used[0][0] / 10, R.mname(used[1][1])))
+    # the budget of a move (LBL :TBUD:) for the controls
+    lab = labels()
+    P = [l for l in open(S.PROG, encoding='utf-8').read().split('\n') if l][:-1]
+    P += ['LBL "TBUD"', 'XEQ %s' % lab['TBUD'], 'RTN', 'END']
+    fn = os.path.join(tempfile.mkdtemp(), 'CHESS47B.txt')
+    open(fn, 'w', encoding='utf-8').write('\n'.join(P) + '\n')
+    shots, c = S.run([], prog=fn)
+    bad = []
+    for tc, tw, mv, side, want in ((0, 3000, 1, 1, 200), (1, 1800, 1, 1, 80), (5, 54000, 1, 1, 2100),
+                                   (6, 54000, 1, 1, 54000 // 42 + 300), (6, 54000, 40, -1, 13500), (6, 20000, 41, 1, 20000 // 30 + 300),
+                                   (4, 400, 30, 1, 100), (7, 999, 5, 1, 10 ** 9)):
+        c.reg.update({'TC': D(tc), 'TW': D(tw), 'TB': D(tw), 'TOF': D(int(tc == 7)), '96': D(mv), '20': D(side)})
+        c.run('TBUD', maxsteps=10 ** 7)
+        got = int(c.s[0])
+        if tc == 7:
+            ok = got >= 10 ** 9
+        else:
+            ok = got == want
+        if not ok:
+            bad.append((tc, tw, mv, got, want))
+    check(not bad, 'LBL :TBUD:: the time left / the moves to go (30; 90/40: 43 - the move number) + the seconds a move, '
+          'at most a quarter of the time left; 10^9 with the clock off%s' % ('' if not bad else ' BAD %s' % bad))
 
 
 def main():
@@ -404,12 +498,13 @@ def main():
     import c47sim
     for mode in ('2COMPL', 'UNSIGN'):                        # your integer mode back (CHESS47 runs in UNSIGN)
         cc = c47sim.load([S.PROG]); cc.s = [D(1)] * 4; cc.pix = []; cc.keys = [S.HAND, S.END]; cc.steps = 0
-        cc.frames = []; cc.signmode = mode
+        cc.frames = []; cc.signmode = mode; S.typeahead(cc)
         cc.run('CHESS47', maxsteps=10 ** 9)
         check(cc.signmode == mode, 'started in %s, ended in %s (the sim refuses SINT out of range, as the C47)'
               % (mode, cc.signmode))
 
     play_tests()
+    clock_tests()
     letters_tests()
     memory_tests()
 

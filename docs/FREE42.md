@@ -41,5 +41,8 @@ run headless. `python3 tests/test_free42.py`: every step pasted, level 2 and 3 a
 3. Copy `build/free42/CHESS47.raw` to the DM42's flash disk, load it (Setup ▸ Load program), `XEQ "CHESS47"`.
 
 Things to check on the DM42: that it loads (113 programs, about 13 000 steps, and 1 300 registers of data: the
-memory may be short), the speed of a level-2 move, the keys, and the clock. Not there yet: the rules of
+memory may be short), the speed of a level-2 move, the keys, and the clock. The clock (v0.10.0): `zTK` is the time
+of day (TIME), so CLOCK takes its difference MOD a day (a game across midnight keeps its time); the key − is GETKEY's
+code 32, the C47's 75 as before (zKM). The key dropped after the C47's move (`KEY? 99`) reads one key from Free42's
+key buffer (GETKEYA), so of several keys typed while it thought only the first is dropped. Not there yet: the rules of
 chess47.pg5 (promotion to rook / bishop / knight, the 50-move rule, draw offers and resigning).

@@ -94,7 +94,16 @@ void thell_start_show() {}
 void thell_edit_number(const char *, int, const char *, int) {}
 
 static long idle = 0;                        // GETKEYA polls in a row with no key: the program waits (KEY? loop)
-void f42_getkeya(int k) { if (k) idle = 0; else idle++; }
+// Only the waits count (zW: PAUSE, zKQ98: their KEY? 98): CHESS47's other key checks (zKQ47: move now inside the
+// search; zKQ99: the key dropped after the C47's move) run while it works, not while it waits.
+void f42_getkeya(int k) {
+    if (k) { idle = 0; return; }
+    for (int i = 0; i < labels_count; i++)
+        if (labels[i].prgm == current_prgm && labels[i].length == 5 && !strncmp(labels[i].name, "zKQ", 3)
+            && strncmp(labels[i].name + 3, "98", 2))
+            return;
+    idle++;
+}
 static int qkey = 0; static uint4 qtime = 0; static char qshot[512] = "";
 static void shotbuf(const char *a, unsigned char (*b)[400]) {
     FILE *f = fopen(a, "wb"); fprintf(f, "P1\n400 240\n");

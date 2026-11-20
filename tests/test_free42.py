@@ -87,7 +87,8 @@ def think_tests():
             want, v, n = p.search(depth)
             t = os.path.join(d, 't%d.txt' % k)
             prog = setp(R.Pos.fen(f)) + ['LBL "TT"', 'XEQ "NINIT"', 'XEQ "THINK"', 'RTN', 'END',
-                                          'LBL "TT3"', 'XEQ "NINIT"', 'XEQ "THINK"', 'XEQ "THINK3"', 'RTN', 'END']
+                                          'LBL "TT3"', '0', 'STO "zPK"', 'DROP', 'XEQ "NINIT"', 'XEQ "THINK"',
+                                          'XEQ "THINK3"', 'RTN', 'END']
             open(t, 'w', encoding='utf-8').write('\n'.join(prog) + '\n')
             pre = ['600000000', 'STO 26'] if depth == 3 else []
             cmds = ['paste ' + PROG, 'paste ' + t, 'xeq CHESS47', 'xeq SETP']

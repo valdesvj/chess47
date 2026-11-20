@@ -1,8 +1,9 @@
 # Chess 47: the manual
 
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
-the number keys, all the rules of chess, a 5-minute clock, two players or the C47 against itself, and Chess960.
-Version 0.9.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+the number keys, all the rules of chess, a chess clock with the tournament time controls (or none), two players or
+the C47 against itself, and Chess960.
+Version 0.10.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
 
 ## Two versions
 
@@ -11,7 +12,7 @@ The release has CHESS47 twice; load the one you like (both are called CHESS47 an
 | | drawn pieces (`draw`) | letters only (`text`) |
 |---|---|---|
 | the pieces | drawn, or letters with **×** | letters of the calculator's font (K Q R B N P, k q r b n p) |
-| the program | 7 508 steps, about 22.7 KB | 6 355 steps, about 18.6 KB |
+| the program | 7 834 steps, about 23.7 KB | 6 681 steps, about 19.6 KB |
 | free memory to start | 43.8 KB (39.0 KB with a saved game) | 31.8 KB (27.0 KB) |
 
 The letters version has no key **×** and no drawings: it is for a calculator that has less memory free.
@@ -69,6 +70,7 @@ The moves are listed in standard algebraic notation, as in a book: `e4`, `Nf3`, 
 | **7** | a new game of normal chess (the level and your side kept; about 7 seconds) |
 | **÷** | a new Chess960 game (below); in a Chess960 game: back to normal chess (a new game, as 7) |
 | **×** | the pieces as letters, or drawn again (below) |
+| **−** | the clock (below): before the first move the time control, in turn; during the game CLOCK OFF? (− again: off) |
 | **0** | the end: an unfinished game is kept and goes on at the next XEQ CHESS47 |
 
 ![you play black](manual/4_black.png) ![CRAZY](manual/6_crazy.png)
@@ -108,10 +110,53 @@ MATERIAL (kings only, or one bishop or knight). There is no 50-move rule.
 
 ## The clock
 
-Each side has 5 minutes and gets 10 seconds more for every move (a Fischer clock). Only a person's clock runs: the
-C47's stops while it thinks, so it never loses on time. When your time runs out you lose (WHITE / BLACK LOST ON TIME),
-unless your opponent could not mate by any series of legal moves (a bare king, for example): then it is a draw
-(DRAW: TIME, NO MATE), as the FIDE rules say.
+Both clocks run, the C47's too: the time it thinks is its own time, as for a person across the board. Each side
+gets the time control's minutes and some seconds more for every move it plays (a Fischer clock). Choose the time
+control with **−** before the first move; each press gives the next one, shown under your side (`- CLOCK 5+10`):
+
+| | time | more a move | |
+|---|---|---|---|
+| **5+10** | 5 min | 10 s | the default |
+| **3+2** | 3 min | 2 s | blitz |
+| **5+3** | 5 min | 3 s | blitz |
+| **10+5** | 10 min | 5 s | rapid |
+| **15+10** | 15 min | 10 s | rapid (FIDE's rapid control) |
+| **90+30** | 90 min | 30 s | classical (FIDE's control for most opens) |
+| **90/40+30** | 90 min for 40 moves, then 30 min more | 30 s | classical (FIDE's control for the big events) |
+| **NO CLOCK** | | | no time limit: the clocks count each side's time up |
+
+![the time control 90+30](manual/13_clock.png)
+
+*− five times: 90+30, each side 1:30:00 (an hour or more is shown h:mm:ss).*
+
+The control is kept for the next games and the next start. During the game **−** does not change it: it asks
+**CLOCK OFF? - AGAIN**. Press **−** again and the clock is off for the rest of the game (for a long game, or
+analysis): `- CLOCK OFF`, and the clocks count each side's time up from 0. Any other key says no and does nothing
+else (0 does not end the game there). Only a new game (7, ÷) turns the clock on again.
+
+![CLOCK OFF?](manual/14_clockoff.png)
+
+*− during the game: CLOCK OFF? - AGAIN.*
+
+When the time of the side to move runs out, it loses (WHITE / BLACK LOST ON TIME), unless the other side could not
+mate by any series of legal moves (a bare king, for example): then it is a draw (DRAW: TIME, NO MATE), as the FIDE
+rules say. The C47 can lose on time too.
+
+**How the C47 uses its time.** It gives each move a budget: its time left divided by the moves still to play
+(30; with 90/40+30, the moves left to move 40, plus 2), plus the seconds it gets a move, and never more than a
+quarter of its time left. Level 2 cannot stop halfway (it needs about 10-20 s a move), so when the budget is below
+15 s the C47 plays that move at level 1 (a few seconds; the status line says THINKING ... (LEVEL 1)), and it goes
+back to level 2 when it has time again. Levels 3, 4 and 5 search their third move within the budget (and never
+longer than their 1, 3 or 9 minutes): at 90+30 level 5 gets about 3 minutes a move early in the game. With the
+blitz controls (3+2, 5+3) it plays mostly at level 1. With NO CLOCK every level thinks as long as it always did.
+
+**While the C47 thinks** the status line shows how far it is, THINKING (the level) and the move it is looking at,
+of how many (`THINKING (2) 8/20`), and its clock runs down on the screen. At levels 3, 4 and 5 **any key makes it
+move now**: it plays the best move it has found so far. Level 2 cannot be stopped (10-20 seconds).
+
+Keys pressed while the C47 thinks are not taken as your moves when your turn comes: nothing moves by itself. Two of
+them ask first: **0** asks **END? 0 AGAIN** (0 again ends and keeps the game, any other key says no), and **−** asks
+CLOCK OFF?.
 
 ## Chess960
 
@@ -138,8 +183,8 @@ Starfleet cadets may try the number 1701.
 ## What it changes on your calculator
 
 Your stack and LASTx come back at the end. R00-R19 are not touched; R20-R99 are used and cleared at the end. WSIZE is
-64 and your integer mode is given back. The game is kept in the variables CHN, GH, TW and TB (delete them to forget it);
+64 and your integer mode is given back. The game is kept in the variables CHN, GH, TW, TB and TOF (delete them to forget it);
 the matrices it uses while running are deleted at the end. The variable CHF (1) stays only while you have
-chosen the letters. One program, CHESS47, with one global label.
+chosen the letters, TC (the time control) only while it is not 5+10. One program, CHESS47, with one global label.
 
 On the computer, `tools/play47.py` is the same game with the same screen and keys (`pip install pygame`).

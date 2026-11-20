@@ -7,8 +7,9 @@ C47) GAMES games at each level, and python-chess (pip install chess) checks the 
     time of a position (the same side to move), DRAW: MATERIAL when no side can mate (python-chess's
     is_insufficient_material; the C47 counts kings with at most one bishop or knight, so two bishops on one colour
     are reported as a note, not an error);
-  - the clock: only a person's runs (5 minutes + 10 s a move), so C47 vs C47 never ends on time (an error if it
-    does); the time-out rule itself (FIDE 6.9) is in tests/test_chess47.py;
+  - the clock (v0.10.0: every side's runs, the C47's too): NO CLOCK by default (TC 7, the games as before: never
+    on time, an error if it ends so); TC=N in the environment plays on the time control N (0 5+10 ... 6 90/40+30,
+    as tools/match47.py --tc), and a time-out must then be the rules' (the side to move at 0, FIDE 6.9);
   - the status line says the same as python-chess.
 
 The simulator's time is its step count (0.17 ms a step, Almanac 47's measure on the C47), so the clock runs as it
@@ -83,11 +84,15 @@ def digit_keys(n):
     return [82 if d == 0 else 10 * (7 - (d - 1) // 3) + (d - 1) % 3 + 2 for d in map(int, '%03d' % n)]
 
 
+TC = int(os.environ.get('TC', 7))                                # the time control (7: NO CLOCK)
+
+
 def game(level, seed, n960=None):
     b = chess.Board() if n960 is None else chess.Board.from_chess960_pos(n960)
     start = b.copy()
     c = c47sim.load([S.PROG])
     c.s = [D(0)] * 4; c.pix = []; c.keys = []; c.steps = 0; c.frames = []
+    c.reg['TC'] = D(TC)
     c.seed = seed
     presses = {2: [], 1: [S.LEVEL], 0: [S.LEVEL, S.LEVEL], 3: [S.LEVEL] * 3}[level]
     first = [] if n960 is None else [55] + digit_keys(n960)    # ÷ and the number: a Chess960 game
@@ -128,10 +133,10 @@ def game(level, seed, n960=None):
         tw, tb = c.reg.get('TW'), c.reg.get('TB')
         st['tw'], st['tb'] = tw, tb
         text = st['status']
-        if 'TIME' in text:                                       # C47 vs C47: no clock runs (only a person's)
-            st['err'] = 'the C47 lost on time (%s): only a person\'s clock should run' % text
+        if 'TIME' in text and TC == 7:                           # NO CLOCK: never on time
+            st['err'] = 'the C47 lost on time (%s) with no clock' % text
             return text
-        if False:
+        if 'TIME' in text:
             loser = b.turn                                       # the side to move ran out
             if (tw if loser else tb) != 0:
                 st['err'] = '%s: the clock of the side to move is %s, not 0' % (text, tw if loser else tb)
@@ -174,6 +179,7 @@ def game(level, seed, n960=None):
             st['tw'], st['tb'] = c.reg.get('TW'), c.reg.get('TB'); c.keys = [S.END]; return
         c.keys = [None]                                          # no key: the C47 plays on
     c.count = hook
+    S.typeahead(c)                                               # the key dropped after the C47's move: none
     t0 = time.time()
     try:
         c.run('CHESS47', maxsteps=10 ** 11)

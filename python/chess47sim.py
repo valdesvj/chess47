@@ -15,17 +15,39 @@ import c47sim
 PROG = os.environ.get('CHESS47_PROG') or os.path.join(ROOT, 'build', 'CHESS47.txt')
 W, H = 400, 240
 LCD_BG, LCD_ON = (199, 205, 186), (34, 38, 30)
-UP, DOWN, LEFT, RIGHT, PICK, HAND, LEVEL, END, NEW, AUTO = 53, 73, 62, 64, 63, 85, 72, 82, 52, 54
+UP, DOWN, LEFT, RIGHT, PICK, HAND, LEVEL, END, NEW, AUTO, CLOCK = 53, 73, 62, 64, 63, 85, 72, 82, 52, 54, 75
 STEP_MS = 0.17                                   # ms a step on the C47 (Almanac 47's measure)
 
 
-def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None, mem=None):
+def typeahead(c):
+    """The firmware keeps the last key pressed while a program runs (lblGtoXeq.c: the key poll every 128 ms) for the
+    next KEY?; CHESS47 reads it with a KEY? that no PAUSE comes before (LBL :TIME3:: move now; after the C47's move:
+    dropped, or 0 / - with a question; before CLOCK OFF?). Such a KEY? takes the next of c.typed (the keys pressed
+    while the program runs; none by default), else it finds no key; the keys (c.keys, for the waits) and the frames
+    stay as they are. The hook already in c.count (a test's) is called for every other step."""
+    prev, held = getattr(c, 'count', None), []
+
+    def hook(op, x):
+        if held:
+            c.keys, c.keyskip, c.frames = held.pop()
+        if op == 'KEY?' and not c.lines[c.at - 1].startswith('PAUSE'):
+            held.append((c.keys, getattr(c, 'keyskip', False), c.frames))
+            typed = getattr(c, 'typed', None)
+            c.keys, c.keyskip, c.frames = ([typed.pop(0)], False, []) if typed else ([], True, [])
+            return
+        if prev is not None:
+            prev(op, x)
+    c.count = hook
+
+
+def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None, mem=None, typed=None):
     """ks: the keys (None: no key at that KEY?); regs, mats: variables kept from an earlier run (the saved game);
-    mem: the free RAM MEM gives (bytes; default a lot)"""
+    mem: the free RAM MEM gives (bytes; default a lot); typed: keys pressed while the program runs (typeahead)"""
     c = c47sim.load([prog])
     if mem is not None:
         c.mem = mem
     c.s = [D(v) for v in (stack or (0, 0, 0, 0))]; c.pix = []; c.keys = list(ks); c.steps = 0
+    c.typed = list(typed or [])
     c.at_steps = []
     if regs:
         c.reg.update(regs)
@@ -35,6 +57,7 @@ def run(ks, prog=PROG, stack=None, regs=None, maxsteps=10 ** 9, mats=None, mem=N
     class F(list):
         def append(self, f): c.at_steps.append(c.steps); super().append(f)
     c.frames = F()
+    typeahead(c)
     try:
         c.run('CHESS47', maxsteps=maxsteps)
         c.ended = True
