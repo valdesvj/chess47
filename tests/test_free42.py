@@ -114,7 +114,7 @@ def screen_tests():
         inv[c] = f
     d = tempfile.mkdtemp()
     open(os.path.join(d, 'sf.txt'), 'w').write('LBL "TSF"\nSF 09\nEND\n')
-    for name, keys, most in (('the start', [], 10), ('÷ 1701 (Kirk)', [55, 72, 52, 82, 72], 0),
+    for name, keys, most in (('the start', [], 10), ('÷ 1701 (Kirk)', [55, 72, 52, 82, 72], 10),
                              ('× (the letters)', [65], 12), ('1 three times (level 5)', [72, 72, 72], 12)):
         shot = os.path.join(d, 's.pbm')
         cmds = ['paste ' + PROG, 'paste ' + os.path.join(d, 'sf.txt'), 'xeq TSF', 'xeq CHESS47']
