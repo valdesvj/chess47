@@ -111,7 +111,8 @@ MATERIAL (kings only, or one bishop or knight). There is no 50-move rule.
 ## The clock
 
 Both clocks run, the C47's too: the time it thinks is its own time, as for a person across the board. Each side
-gets the time control's minutes and some seconds more for every move it plays (a Fischer clock). Choose the time
+gets the time control's minutes and some seconds more for every move it plays (a Fischer clock). The clocks start
+after move 1: White's first move and Black's first move take no time (v0.10.1), so take your time to set up. Choose the time
 control with **−** before the first move; each press gives the next one, shown under your side (`- CLOCK 5+10`):
 
 | | time | more a move | |

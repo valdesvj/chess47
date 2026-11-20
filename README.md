@@ -18,7 +18,8 @@ that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to no
 games), the C47 budgets its time per move (level 1 for a move when the time is short), a key moves now at levels 3-5,
 the status line shows the search going on (THINKING (2) 8/20) with the C47's clock, and a key pressed while it thinks
 is no longer taken as your first key (0 asks END? 0 AGAIN, − CLOCK OFF?). **v0.10.1: the arrows move the cursor again** (in
-v0.10.0 they did nothing on the C47: the firmware's `ABS` of a long integer 0 makes `SIGN` answer 1; only 5 worked).
+v0.10.0 they did nothing on the C47: the firmware's `ABS` of a long integer 0 makes `SIGN` answer 1; only 5 worked). **v0.10.1 also: the clocks start after move 1** (both first moves take no time, a
+person's or the C47's; before, White's clock ran from the start of a new game).
 
 | | |
 |---|---|
@@ -206,7 +207,8 @@ against `python/chess47ref.py`, the same engine in Python:
 - the search gives the same move and value at levels 1 and 2 (mates in one found);
 - a game of the C47 against itself: the book moves are from its lines, then move for move the same, with the same
   board and score; 20 CRAZY moves all legal; the clock runs;
-- the clock (v0.10.0): − cycles the 8 time controls before the first move and sets both clocks; the control is kept
+- the clock (v0.10.0): − cycles the 8 time controls before the first move and sets both clocks (v0.10.1: no time
+  runs during move 1, the clocks start after Black's first move); the control is kept
   between starts; − − during the game turns the clock off (the clocks count up), − then 0 does not (and does not end
   the program); the C47's clock runs and it loses on time with 0.1 s left; with 3+2 it plays a move at level 1 (the
   same move as the twin's search(1)), with 5+10 and NO CLOCK at level 2; LBL :TBUD:'s budgets for the controls;

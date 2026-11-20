@@ -85,7 +85,7 @@
 @ (CRAZY: random legal moves, a crazy face by the title); × the pieces as letters of the firmware's font (K Q R B N P
 @ white, k q r b n p black: the variable CHF 1; LBL :DRAWSQ:) or drawn again: ready for a chess font in the firmware;
 @ 0 ends: the game is kept (CHN, GH, TW, TB, TOF) and goes on at the next start. The clock (v0.10.0): every side's,
-@ the C47's too (its thinking is its time). - before the first move: the time control TC (kept between games)
+@ the C47's too (its thinking is its time), not during move 1 (v0.10.1). - before the first move: the time control TC (kept between games)
 @ 0 5+10, 1 3+2, 2 5+3, 3 10+5, 4 15+10, 5 90+30, 6 90/40+30 (90 minutes for 40 moves, then 30 more; 30 s a move),
 @ 7 NO CLOCK (minutes + seconds added for each move played); - during the game: CLOCK OFF? and - again turns the
 @ clock off for the rest of the game (TOF 1; any other key: no). With no clock the clocks count each side's time up.
@@ -4387,6 +4387,16 @@ MOD
 @ nothing when the game is over (R97 1)
 1
 RCL- 97
+×
+@ v0.10.1: nothing during move 1 (R96 1: both first moves are free, a person's or the C47's): x (1 - IP(1 / R96))
+RCL 96
+1
+X<>Y
+÷
+IP
+1
+X<>Y
+-
 ×
 @ off the time left (TOF 0), or added to the time used (TOF 1: the clock off)
 RCL "TOF"
