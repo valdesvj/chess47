@@ -1,4 +1,4 @@
-REM CHESS47 v0.10.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.10.1 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -4332,13 +4332,17 @@ IF
 ENDIF
 XEQ :STATE:
 RTN
-REM ---- LBL :KEYIS: X = a key code: X = 1 when it is the key R98, else 0 (1 - SIGN |R98 - X|) ----
+REM ---- LBL :KEYIS: X = a key code: X = 1 when it is the key R98, else 0 (1 - SIGN(R98 - X)^2). No ABS before SIGN:
+REM the firmware's ABS of a long integer 0 (KEY? and the digits are long integers) only tags it positive
+REM (magnitude.c magnitudeLonI), and SIGN reads the tag: 1, so v0.10.0's 1 - SIGN |R98 - X| was 0 for every key
+REM (the arrows did nothing) ----
 LBL :KEYIS:
 RCL 98
 X<>Y
 -
-ABS
 SIGN
+ENTER
+×
 1
 X<>Y
 -

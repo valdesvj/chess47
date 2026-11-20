@@ -3,7 +3,7 @@
 Chess against your C47 (or R47, or a DM42n with the C47 firmware): the board on the screen, the pieces moved with
 the number keys, all the rules of chess, a chess clock with the tournament time controls (or none), two players or
 the C47 against itself, and Chess960.
-Version 0.10.0. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
+Version 0.10.1. (The pictures are the C47 simulator's screens, made from the keys by `tools/manual47.py`.)
 
 ## Two versions
 
