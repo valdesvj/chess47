@@ -17,7 +17,8 @@ that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to no
 3+2, 5+3, 10+5, 15+10, 90+30, 90/40+30, NO CLOCK), the clock can be turned off during a game (− and − again: for long
 games), the C47 budgets its time per move (level 1 for a move when the time is short), a key moves now at levels 3-5,
 the status line shows the search going on (THINKING (2) 8/20) with the C47's clock, and a key pressed while it thinks
-is no longer taken as your first key (0 asks END? 0 AGAIN, − CLOCK OFF?).
+is no longer taken as your first key (0 asks END? 0 AGAIN, − CLOCK OFF?). **v0.10.1: the arrows move the cursor again** (in
+v0.10.0 they did nothing on the C47: the firmware's `ABS` of a long integer 0 makes `SIGN` answer 1; only 5 worked).
 
 | | |
 |---|---|
@@ -233,7 +234,7 @@ the local register R.09. The simulator now refuses SINT out of range as the C47 
 Almanac 47's MOON47. New in v0.10.0, still to be confirmed on the C47: `RCL+` / `RCL-` with a named variable (`RCL+ "TOF"`,
 `RCL- "TB"`; `RCL× "name"` ran in Almanac 47); `KEY? 99` right after the C47's move to drop a key pressed while it
 thought, and `KEY? 47` in LBL :TIME3: (move now) (the firmware's `lastKeyCode`, read from the source: to try by
-pressing 5, 0 or − while it thinks); `SIGN` (LBL :KEYIS:); the 14-digit
+pressing 5, 0 or − while it thinks); the 14-digit
 numbers of the time-control tables (`90901510050305`) as program steps.
 New in v0.8.1, still to be confirmed on the C47: `STO J` / `STO I` as the matrix index (instead of `STOIJ`: the
 firmware's `RCLEL` reads the registers I and J, so it should; LBL :BUDG:'s `Y^X` for levels 4 and 5).

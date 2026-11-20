@@ -4163,8 +4163,9 @@ LBL "KEYIS"
 RCL 98
 X<>Y
 -
-ABS
 SIGN
+ENTER
+×
 1
 X<>Y
 -

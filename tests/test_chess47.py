@@ -295,6 +295,14 @@ def clock_tests():
     check(c3.reg.get('TOF') == 1 and c3.reg['TW'] >= c.reg['TW'], 'the clock off kept with the saved game (TOF)')
     shots, c = S.run(E4 + [S.CLOCK, S.PICK])
     check(c.reg.get('TC') == 0 and c.reg.get('TOF') == 0, '- after the first move does not change the control')
+    # v0.10.1: the firmware's ABS of a long integer 0 tags it positive and SIGN then answers 1 (v0.10.0's arrows did
+    # nothing on the C47); c47sim keeps no long integers, so the build must have no ABS right before SIGN
+    steps = [ln.strip() for ln in open(S.PROG, encoding='utf-8')]
+    absign = [i + 1 for i in range(len(steps) - 1) if steps[i] == 'ABS' and steps[i + 1] == 'SIGN']
+    shots, c = S.run([S.CLOCK, S.PICK, S.UP, S.UP, S.LEFT, S.RIGHT, S.RIGHT, S.DOWN])
+    check(not absign and c.reg.get('28') == 47,
+          'no ABS before SIGN (the firmware: SIGN |0| is 1)%s; the arrows after - and 5: the cursor e2 -> e4 -> d4 -> '
+          'f4 -> f3 (%s)' % ('' if not absign else ' BAD at lines %s' % absign, c.reg.get('28')))
     # the C47's budget: Chess960 (no book), the C47 white (+); 3+2: 1800/30 + 20 = 8 s < 15 s: level 1 for the move;
     # 5+10: 3000/30 + 100 = 20 s: level 2; NO CLOCK: level 2
     n, secs = 123, {}

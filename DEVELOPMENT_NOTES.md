@@ -465,4 +465,10 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   simulator (but the clock, a few pixels). C47: 1 in Y before the four one-row STO J that had none (STOIJ in Free42).
   Not on a DM42 yet: memory (about 110-120 KB estimated) and speed unknown; the pg5 rules (promotion choice, 50 moves,
   draw offers) not yet.
-
+- v0.10.1 (Nov 20): the arrows did nothing on the C47 in v0.10.0 (Victor: only 5 worked). LBL :KEYIS: was
+  1 - SIGN |R98 - X|: KEY? stores a long integer, the digits are long integers, and the firmware's ABS of a long
+  integer only sets its sign tag to positive (magnitude.c magnitudeLonI), also for 0; SIGN reads the tag (sign.c
+  signLonI): |53 - 53| SIGN is 1, so KEYIS was 0 for every key. Measured in the firmware's own simulator (c43's c47
+  --headless, the program made by rejig): SIGN of 53 - 53 is 0, of |53 - 53| 1; X=0?, X≠0?, X>0?, X<0? are right on
+  |0|. Now 1 - SIGN(R98 - X)^2 (SIGN ENTER ×): R49 10, -10, -1, 1, 0 for 8, 2, 4, 6, 5 there. c47sim does not keep
+  long integers apart from reals, so tests/test_chess47.py refuses ABS right before SIGN in the build.
