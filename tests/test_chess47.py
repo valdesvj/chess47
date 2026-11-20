@@ -313,13 +313,17 @@ def clock_tests():
     # the C47's budget: Chess960 (no book), the C47 white (+); 3+2: 1800/30 + 20 = 8 s < 15 s: level 1 for the move;
     # 5+10: 3000/30 + 100 = 20 s: level 2; NO CLOCK: level 2
     n, secs = 123, {}
+    # level 1 chosen with the key (NO CLOCK): the time of a level-1 move, steps from the first wait to the next
+    shots, c = S.run([S.LEVEL, S.HAND], regs={'CHN': D((n + 1) * 100000 + 23), 'TC': D(7)})
+    lvl1 = S.secs(c.steps - c.at_steps[1])
     for tc, depth in ((1, 1), (0, 2), (7, 2)):
         shots, c = S.run([S.HAND], regs={'CHN': D((n + 1) * 100000 + 23), 'TC': D(tc)})
         want = C.Pos960(n).search(depth)[0]
         got = int(S.gh(c)[0])
-        used = MINUTES[tc] * 600 + SECONDS[tc] * 10 - int(c.reg['TW']) if tc != 7 else int(c.reg['TW'])
+        # its thinking in steps (v0.10.1: move 1 takes no clock time), from the first wait to the next
+        used = S.secs(c.steps - c.at_steps[0]) * 10
         secs[tc] = used / 10
-        check(got == want and c.reg.get('26') == 2 and 'TLV' not in c.reg and (tc != 0 or secs[1] < secs[0] / 2),
+        check(got == want and c.reg.get('26') == 2 and 'TLV' not in c.reg and (tc != 1 or abs(secs[1] - lvl1) < 0.5) and (tc != 0 or secs[0] > lvl1 + 2),
               'Chess960 %d, the C47 white at level 2, %s: it thinks at level %d (%s, as chess960.search(%d)), %.1f s; '
               'the level kept (+ turning the board is nobody\'s time)' % (n, {1: '3+2', 0: '5+10', 7: 'NO CLOCK'}[tc], depth,
                                                                          R.mname(got), depth, used / 10))
@@ -336,7 +340,7 @@ def clock_tests():
     n, used = 123, []
     for typed in ([], [S.PICK]):
         shots, c = S.run([S.LEVEL] * 5 + [S.HAND], regs={'CHN': D((n + 1) * 100000 + 23), 'TC': D(7)}, typed=typed)
-        used.append((int(c.reg['TW']), int(S.gh(c)[0]), c.reg.get('26')))
+        used.append((S.secs(c.steps - c.at_steps[0]) * 10, int(S.gh(c)[0]), c.reg.get('26')))
     check(used[1][0] < used[0][0] / 3 and used[1][2] == 3 and used[1][1] == C.Pos960(n).search(2)[0],
           'level 3, a key while it thinks: move now (LBL :TIME3:), %.1f s instead of %.1f s, level 2\'s move %s'
           % (used[1][0] / 10, used[0][0] / 10, R.mname(used[1][1])))
