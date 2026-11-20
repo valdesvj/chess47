@@ -472,3 +472,8 @@ would cost about 10 %. Packing pays where reads are rare (GH, OB), not in PT. Wh
   --headless, the program made by rejig): SIGN of 53 - 53 is 0, of |53 - 53| 1; X=0?, X≠0?, X>0?, X<0? are right on
   |0|. Now 1 - SIGN(R98 - X)^2 (SIGN ENTER ×): R49 10, -10, -1, 1, 0 for 8, 2, 4, 6, 5 there. c47sim does not keep
   long integers apart from reals, so tests/test_chess47.py refuses ABS right before SIGN in the build.
+- v0.10.1, also (Nov 20): the clocks start after move 1 (Victor: before the first move White's clock ran). LBL :CLOCK1:
+  multiplies the time since the last call by 1 - IP(1 / R96): 0 during move 1 (R96 = 1: White's and Black's first
+  moves, a person's or the C47's, LIFE's signs of life too), 1 after (the C47's simulator: 0, 7, 7, 7 for R96 1, 2, 3,
+  40). No SIGN (v0.10.1's long-integer 0) and no IF (250 of 255). TK still moves at each call, so the time starts at
+  White's second move. In the simulator: 20 idle waits at the start leave 3000 / 3000 (v0.10.1: 2996).

@@ -199,8 +199,8 @@ def play_tests():
     shots, c3 = S.run([S.PICK, S.UP, S.UP, S.PICK, S.NEW])
     check(S.board(c3)[22:100] == R.Pos().bd[22:100] and not any(int(v) for v in S.gh(c3))
           and onboard(shots[-1]) == mock0 | frame(4, 1), '7: a new game (the start position, the record empty)')
-    check(3000 < keep['TW'] < 3100 and 3000 < keep['TB'] < 3100, 'the clock: 5 minutes each (3000 tenths), 10 s a move, '
-          'the C47\'s (black) runs too (v0.10.0): W %s, B %s' % (keep['TW'], keep['TB']))
+    check(keep['TW'] == 3100 == keep['TB'], 'the clock: 5 minutes each (3000 tenths), 10 s a move, move 1 free '
+          '(v0.10.1): W %s, B %s' % (keep['TW'], keep['TB']))
     low = dict(keep, TW=D(5))
     shots, c4 = S.run([None] * 300 + [S.PICK], regs=low, mats={'GH': gh})
     check(c4.reg.get('97') == 1 and c4.reg.get('TW') == 0 and int(S.gh(c4)[2]) == 0,
@@ -295,6 +295,13 @@ def clock_tests():
     check(c3.reg.get('TOF') == 1 and c3.reg['TW'] >= c.reg['TW'], 'the clock off kept with the saved game (TOF)')
     shots, c = S.run(E4 + [S.CLOCK, S.PICK])
     check(c.reg.get('TC') == 0 and c.reg.get('TOF') == 0, '- after the first move does not change the control')
+    # v0.10.1: no time during move 1 (both first moves free), the clocks run from White's second move
+    shots, c1 = S.run([None] * 20)
+    shots, c2 = S.run(E4 + [None] * 20)
+    check(c1.reg.get('TW') == 3000 == c1.reg.get('TB') and c2.reg.get('96') == 2 and c2.reg.get('TB') == 3100
+          and 3000 < c2.reg.get('TW') < 3100,
+          'the clocks start after move 1: 20 waits at the start W %s B %s; after e4 and the C47\'s reply B %s (5:00 + '
+          '10 s), W %s (running in move 2)' % (c1.reg.get('TW'), c1.reg.get('TB'), c2.reg.get('TB'), c2.reg.get('TW')))
     # v0.10.1: the firmware's ABS of a long integer 0 tags it positive and SIGN then answers 1 (v0.10.0's arrows did
     # nothing on the C47); c47sim keeps no long integers, so the build must have no ABS right before SIGN
     steps = [ln.strip() for ln in open(S.PROG, encoding='utf-8')]
