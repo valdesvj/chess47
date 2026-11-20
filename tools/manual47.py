@@ -37,6 +37,8 @@ def main():
     shot('11_text', [P, U, U, P], 'the text build (build/text/): e2-e4 and the C47\'s reply', TEXT)
     shot('12_kirk', [DIV, 72, 52, 82, 72, S.PICK, S.UP, S.UP, S.PICK], '÷ 1 7 0 1: the Kobayashi Maru (as chess47.pg5)')
     shot('8_960', [DIV, 72, 73, 74, D, R, P, R, P], '÷ 1 2 3: Chess960 No 123; 2 6 5 6 5: castling O-O, the king onto its rook')
+    shot('13_clock', [S.CLOCK] * 5, '- five times: the time control 90+30 (1:30:00 each)')
+    shot('14_clockoff', [P, U, U, P, S.CLOCK], 'e2-e4, the C47\'s reply, then -: CLOCK OFF? - AGAIN')
 
 
 if __name__ == '__main__':

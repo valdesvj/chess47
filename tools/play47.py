@@ -10,11 +10,14 @@ The keys are the C47's (the number row or the keypad; the arrows and Enter too):
     +   swap sides        9   C47 vs C47 (again: you take the side to move)       3   two players
     7   a new game (normal chess)       /   a new Chess960 game: type its number 0-959 and Enter (Enter alone: a
         random one; 518 is normal chess; Esc: back)       1   the level (2, 1, CRAZY)       0 or Esc   the end
+    -   before the first move: the time control (5+10, 3+2, 5+3, 10+5, 15+10, 90+30, 90/40+30, NO CLOCK); during
+        the game: CLOCK OFF? and - again turns the clock off for the game (the clocks count the time used)
 Castling in Chess960: pick the king, then its own rook (the king goes to g or c, the rook to f or d; the king's
 target works too when it is not a normal king move). In normal chess: the king two squares, as on the C47.
 The rules as CHESS47: mate, stalemate, the third repetition, too little material (no pawn, rook or queen and at
-most one knight or bishop), a promotion is a queen; the clock (people only): 5 minutes and 10 s a move, the
-time-out as FIDE 6.9 (a draw when the other side cannot mate). The book (normal chess only) as CHESS47's.
+most one knight or bishop), a promotion is a queen; the clock (every side's, the C47's too, as CHESS47 v0.10.0):
+the time control's minutes and seconds a move (90/40+30: 30 minutes more after move 40), the time-out as FIDE 6.9
+(a draw when the other side cannot mate). The book (normal chess only) as CHESS47's.
 
 python3 tools/play47.py --shot FILE.png --keys "5 8 8 5 ..."   no window: the keys (the C47's, and ENTER ESC
     LEFT RIGHT UP DOWN, R for a random 960) one by one, the C47's moves at once, then the screen into FILE.png."""
@@ -32,8 +35,17 @@ import layout as L
 W, H = 400, 240
 LCD_BG, LCD_ON = (199, 205, 186), (34, 38, 30)          # as python/chess47sim.py (the pictures in docs/)
 SAVE = os.path.expanduser('~/.chess47_play.json')
-START_TIME, BONUS = 3000, 100                            # tenths of a second: 5 minutes, 10 s a move
+# the time controls (CHESS47's TC 0-7): the minutes, the seconds a move; 6 is 90/40+30 (30 minutes more after move 40)
+CONTROLS = ((5, 10), (3, 2), (5, 3), (10, 5), (15, 10), (90, 30), (90, 30), (0, 0))
 LEVELS = {2: '2', 1: '1', 0: 'CRAZY'}
+
+
+def hms(t):
+    """Tenths of a second as CHESS47's LBL :MMSS: m:ss, h:mm:ss from an hour on."""
+    t = int(t)
+    if t >= 36000:
+        return '%d:%02d:%02d' % (t // 36000, t // 600 % 60, t // 10 % 60)
+    return '%d:%02d' % (t // 600, t // 10 % 60)
 
 
 # ---- the screen: pixels (x, y), y 0 = the bottom row (as AGRAPH and ATEXT) ----
@@ -61,7 +73,7 @@ def words_at(pix, x, y, words, invert=False, full=L.FULL):
 
 class Game:
     def __init__(self):
-        self.level, self.me = 2, 1
+        self.level, self.me, self.tc = 2, 1, 0
         self.new(None)
 
     # ---- a game ----
@@ -70,8 +82,8 @@ class Game:
         self.n = n
         self.pos = R.Pos() if n is None else C.Pos960(n)
         self.moves, self.texts, self.keys = [], [], [self.key()]
-        self.tw = self.tb = START_TIME
-        self.over, self.picked, self.prompt = None, None, None
+        self.set_clock()
+        self.over, self.picked, self.prompt, self.ask_off = None, None, None, False
         self.cursor = 36 if self.me != -1 else 86
         self.status = None
         self.last = time.time()
@@ -95,11 +107,12 @@ class Game:
         self.texts.append(('%d. ' % (k // 2 + 1) if side > 0 else '%d... ' % (k // 2 + 1)) + name)
         self.moves.append(m)
         self.keys.append(self.key())
-        if by_person:
+        if not self.off:
+            more = CONTROLS[self.tc][1] * 10 + (18000 if self.tc == 6 and k // 2 + 1 == 40 else 0)
             if side > 0:
-                self.tw += BONUS
+                self.tw += more
             else:
-                self.tb += BONUS
+                self.tb += more
         self.picked = None
         self.status = None
         self.ending()
@@ -129,11 +142,28 @@ class Game:
             return len(colours) > 1 or any(abs(b[s]) in (1, 2) for s in range(22, 100) if b[s] != R.OFF)
         return False
 
+    def set_clock(self):
+        """Both clocks at the control's time (NO CLOCK: 0, counting up)."""
+        self.tw = self.tb = CONTROLS[self.tc][0] * 600
+        self.off = self.tc == 7
+
+    def control(self):
+        if self.off:
+            return 'OFF'
+        m, sec = CONTROLS[self.tc]
+        return '%d%s+%d' % (m, '/40' if self.tc == 6 else '', sec)
+
     def tick(self):
-        """The clock of the side to move, when a person plays it."""
+        """The clock of the side to move (the C47's too); with the clock off the time used is counted up."""
         now = time.time()
         dt, self.last = int((now - self.last) * 10), self.last + int((now - self.last) * 10) / 10
-        if self.over or self.prompt or not self.human(self.pos.sd) or dt <= 0:
+        if self.over or self.prompt or dt <= 0:
+            return
+        if self.off:
+            if self.pos.sd > 0:
+                self.tw += dt
+            else:
+                self.tb += dt
             return
         if self.pos.sd > 0:
             self.tw = max(0, self.tw - dt)
@@ -163,8 +193,20 @@ class Game:
     def press(self, k):
         if self.prompt is not None:
             return self.prompt_key(k)
+        if self.ask_off:                                 # CLOCK OFF? - again: off; any other key: no (and nothing else)
+            self.ask_off, self.status = False, None
+            if k == '-':
+                self.off, self.tw, self.tb = True, 0, 0
+            return
         if k in ('0', 'ESC'):
             return 'quit'
+        if k == '-' and not self.over:
+            if not self.moves:
+                self.tc = (self.tc + 1) % 8
+                self.set_clock()
+            elif not self.off:
+                self.ask_off, self.status = True, 'CLOCK OFF? - AGAIN'
+            return
         if k == '7':
             self.new(None)
         elif k == '/':
@@ -288,7 +330,7 @@ class Game:
             f = 7 - i if self.flipped() else i
             text(pix, 21 + 24 * i, 10, 'abcdefgh'[f], 10)
             text(pix, 3, 28 + 24 * i, str(f + 1), 10)
-        text(pix, 12, 218, 'W %d:%02d  B %d:%02d' % (self.tw // 600, self.tw // 10 % 60, self.tb // 600, self.tb // 10 % 60))
+        text(pix, 12, 218, 'W %s  B %s' % (hms(self.tw), hms(self.tb)))
         text(pix, 212, 218, 'CHESS 47')
         if self.level == 0:
             for j, w in enumerate(L.face_words()):
@@ -297,8 +339,8 @@ class Game:
                         pix.add((330 + j, 214 + i))
         who = {1: 'YOU: WHITE', -1: 'YOU: BLACK', 0: 'C47 VS C47', 2: '2 PLAYERS'}[self.me]
         text(pix, 212, 200, who + '   LEVEL ' + LEVELS[self.level], 10)
-        if self.n is not None:
-            text(pix, 212, 186, 'CHESS960 No %d  %s' % (self.n, C.letters(self.n)), 10)
+        text(pix, 212, 186, ('CHESS960 No %d  %s  ' % (self.n, C.letters(self.n)) if self.n is not None else '')
+             + '- CLOCK ' + self.control(), 10)
         text(pix, 212, 156, self.to_move())
         if self.prompt is not None:
             lines = ['TYPE 0-959 AND ENTER', 'ENTER ALONE: RANDOM', '518: NORMAL CHESS', 'ESC: BACK']
@@ -307,13 +349,14 @@ class Game:
         for i, t in enumerate(lines):
             text(pix, 212, 136 - 12 * i, t, 10)
         for y, t in ((45, '8 2 4 6 CURSOR  5 PICK / PLAY'), (34, '+ SWAP SIDES  9 C47 VS C47'),
-                     (23, '3 TWO PLAYERS  7 NEW GAME'), (12, '1 LEVEL  / CHESS960  0 END')):
+                     (23, '3 TWO PLAYERS  7 NEW GAME'), (12, '1 LEVEL  / 960  - CLOCK  0 END')):
             text(pix, 212, y, t, 10)
         return {(x, y) for x, y in pix if 0 <= x < W and 0 <= y < H}
 
     # ---- the game kept between runs ----
     def save(self):
-        data = {'n': self.n, 'moves': self.moves, 'me': self.me, 'level': self.level, 'tw': self.tw, 'tb': self.tb}
+        data = {'n': self.n, 'moves': self.moves, 'me': self.me, 'level': self.level, 'tw': self.tw, 'tb': self.tb,
+                'tc': self.tc, 'off': self.off}
         try:
             with open(SAVE, 'w') as fh:
                 json.dump(data, fh)
@@ -324,13 +367,13 @@ class Game:
         try:
             with open(SAVE) as fh:
                 data = json.load(fh)
-            self.me, self.level = data['me'], data['level']
+            self.me, self.level, self.tc = data['me'], data['level'], data.get('tc', 0)
             self.new(data['n'])
             for m in data['moves']:
                 if self.over or m not in self.pos.legal():
                     break
                 self.play(m, False)
-            self.tw, self.tb = data['tw'], data['tb']
+            self.tw, self.tb, self.off = data['tw'], data['tb'], data.get('off', self.tc == 7)
             self.cursor_home()
         except (OSError, ValueError, KeyError, TypeError):
             self.new(None)
@@ -349,7 +392,7 @@ def surface(pygame, pix, scale, border=12):
 
 KEYS = {'K_UP': 'UP', 'K_DOWN': 'DOWN', 'K_LEFT': 'LEFT', 'K_RIGHT': 'RIGHT', 'K_RETURN': 'ENTER',
         'K_KP_ENTER': 'ENTER', 'K_SPACE': 'ENTER', 'K_ESCAPE': 'ESC', 'K_BACKSPACE': 'BACK', 'K_KP_PLUS': '+',
-        'K_KP_DIVIDE': '/'}
+        'K_KP_DIVIDE': '/', 'K_KP_MINUS': '-'}
 
 
 def main():
@@ -389,7 +432,7 @@ def main():
             if e.type == pygame.QUIT:
                 g.save(); pygame.quit(); return
             if e.type == pygame.KEYDOWN:
-                k = keymap.get(e.key) or (e.unicode if e.unicode in '0123456789+/' and e.unicode else None)
+                k = keymap.get(e.key) or (e.unicode if e.unicode in '0123456789+/-' and e.unicode else None)
                 if k is None and e.unicode == '=':
                     k = '+'
                 if k and g.press(k) == 'quit':

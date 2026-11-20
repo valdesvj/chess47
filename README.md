@@ -12,15 +12,20 @@ biggest captures first (it beat v0.1 18.5 to 1.5 in 20 games), an opening book, 
 repetition and by material, and a CRAZY level of random moves. v0.3 plays the same moves about 3 times faster (a
 move at level 2 about 13-19 s instead of 46-55 s, in the simulator's step count), v0.3.4 (the killer move) about 7-12 s:
 see *Speed* below. v0.4.0 adds Chess960. v0.5 adds level 3 (three moves ahead, at most 60 s more a move), a new game
-that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose). v0.8.0: about 4 times faster on the calculator (estimated): the firmware copies a whole matrix at each element command, so BD became eight small matrices. v0.8.1: levels 4 and 5 (level 3 with 3 and 9 min), about 20 % faster again (`STO J` instead of `STOIJ`), and two builds: `build/draw/` (the pieces drawn, as before) and `build/text/` (the pieces as letters only: about 18 KB, the start needs 31.8 KB instead of 43.8 KB). ÷ 1701 is now chess47.pg5's Kobayashi Maru (the C47 keeps its king and pawns, KIRK WINS), no longer a normal game with a message. **v0.9.0: also for the DM42 / DM42n stock firmware (Free42), experimental**: the same program converted step for step (`tools/build_free42.py`), the same moves and screens; see [docs/FREE42.md](docs/FREE42.md).
+that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to normal chess. v0.6.0: × shows the pieces as letters of the firmware's font. v0.7.0 needs a third less memory to start (47.8 KB instead of 71.6 KB) and plays the same moves. v0.7.1: the king no longer steps next to the other king (an illegal move the search could choose). v0.8.0: about 4 times faster on the calculator (estimated): the firmware copies a whole matrix at each element command, so BD became eight small matrices. v0.8.1: levels 4 and 5 (level 3 with 3 and 9 min), about 20 % faster again (`STO J` instead of `STOIJ`), and two builds: `build/draw/` (the pieces drawn, as before) and `build/text/` (the pieces as letters only: about 18 KB, the start needs 31.8 KB instead of 43.8 KB). ÷ 1701 is now chess47.pg5's Kobayashi Maru (the C47 keeps its king and pawns, KIRK WINS), no longer a normal game with a message. **v0.9.0: also for the DM42 / DM42n stock firmware (Free42), experimental**: the same program converted step for step (`tools/build_free42.py`), the same moves and screens; see [docs/FREE42.md](docs/FREE42.md). **v0.10.0: real clocks**: the C47's clock runs too
+(its thinking is its time, so the clock gives no side an advantage), the tournament time controls on the key − (5+10,
+3+2, 5+3, 10+5, 15+10, 90+30, 90/40+30, NO CLOCK), the clock can be turned off during a game (− and − again: for long
+games), the C47 budgets its time per move (level 1 for a move when the time is short), a key moves now at levels 3-5,
+the status line shows the search going on (THINKING (2) 8/20) with the C47's clock, and a key pressed while it thinks
+is no longer taken as your first key (0 asks END? 0 AGAIN, − CLOCK OFF?).
 
 | | |
 |---|---|
 | Free42 (DM42 / DM42n) | `build/free42/CHESS47.txt` (a Free42 listing; `CHESS47.raw` in the release), experimental: [docs/FREE42.md](docs/FREE42.md) |
 | File | `build/CHESS47.txt` (convert with rejig), commented: `build/forum/CHESS47.p47u`, source: `programs_rem/CHESS47.txt` |
 | Needs | C47 / R47 firmware with STRUCT, ATEXT, GRFNT, AGRAPH and the bitwise commands (00.109.05.00a0.ALPHA, 5 Oct 2026, or later) |
-| Size | drawn (`build/draw/CHESS47.txt`, also `build/CHESS47.txt`): 7 508 steps, about 22.7 KB (.p47, estimated), the start needs 43 800 bytes free (39 000 with a saved game); text (`build/text/CHESS47.txt`, the pieces as letters, no matrix GL, no key ×): 6 355 steps, about 18.6 KB, 31 800 bytes (27 000). While it runs: BB ML ST PT UN KN SB CR (about 1 420 numbers), GL (32 × 24, drawn only), GH (1 × 300), OB (14 × 2), the variables NW NB |
-| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB); the other matrices, TK and the knight words NW NB deleted; CHF kept only when the letters are chosen; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
+| Size | drawn (`build/draw/CHESS47.txt`, also `build/CHESS47.txt`): 7 834 steps, about 23.7 KB (.p47, estimated), the start needs 43 800 bytes free (39 000 with a saved game); text (`build/text/CHESS47.txt`, the pieces as letters, no matrix GL, no key ×): 6 681 steps, about 19.6 KB, 31 800 bytes (27 000). While it runs: BB ML ST PT UN KN SB CR (about 1 420 numbers), GL (32 × 24, drawn only), GH (1 × 300), OB (14 × 2), the variables NW NB |
+| At the end (0) | your stack and LASTx as before; R00-R19 untouched, R20-R99 cleared; the game kept for the next start (the variables CHN, GH, TW, TB, TOF); the other matrices, TK and the knight words NW NB deleted; CHF kept only when the letters are chosen, TC (the time control) only when it is not 5+10; WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20 |
 
 **The manual, with pictures: [docs/MANUAL.md](docs/MANUAL.md).**
 
@@ -40,6 +45,7 @@ that no longer runs out of memory (7), and ÷ in a Chess960 game goes back to no
 | **÷** | a new **Chess960** game (Fischer random chess): type its number with three digits (066 for 66; 518 is normal chess's start), or ÷ again for a random one; another key goes back. **In a Chess960 game, ÷ goes back to normal chess** (a new game, as 7). The number is shown under your side. Castling: pick the king, then its own rook (the king goes to g or c, the rook to f or d, as FIDE's Chess960 rules); the opening book is not used. 0 keeps the game with its number |
 | **×** | the pieces as **letters** of the firmware's font (K Q R B N P white, k q r b n p black; the piece picked white on black), or drawn again. Kept for the next games and the next start (the variable CHF). Ready for the chess font proposed for the C47 firmware |
 | **1** | the level, in turn: 2 (2 plies, about 11 s a move, estimated), 1 (1 ply, a few seconds), 0 **CRAZY** (random legal moves at once, a crazy face by the title), **5**, **4**, **3** (level 2 first, then 3 plies for at most 9 min, 3 min or 60 s more: the deeper move when it is found in time, else the best found so far or level 2's; v0.8.1: levels 4 and 5 give the 3 plies the time they need, about 1-5 min in the middle game) |
+| **−** | the clock: **before the first move** the time control, in turn: 5+10 → 3+2 → 5+3 → 10+5 → 15+10 → 90+30 → 90/40+30 → NO CLOCK → 5+10 (shown under your side: `- CLOCK 15+10`; kept for the next games and the next start, the variable TC). **During the game** it only asks CLOCK OFF? - AGAIN: − again turns the clock off for the rest of the game (`- CLOCK OFF`, the clocks then count each side's time up); any other key says no and does nothing else |
 | **0** | the end; the game is kept and goes on at the next start (not when it is over) |
 
 The rules are all there: castling (not out of, through or into check), en passant and promotion (always to a queen).
@@ -47,12 +53,41 @@ CHECK, CHECKMATE, STALEMATE, DRAW: REPETITION (the same position the third time,
 (kings only, or one bishop or knight) are shown; there is no 50-move rule. An illegal move is refused (ILLEGAL MOVE, or
 ILLEGAL: CHECK when it leaves your king attacked). The last seven moves are listed on the right in standard algebraic notation, as in a book or a
 scoresheet: e4, Nf3, exd5, Nbd2, R1e2, O-O, e8=Q, Qh7+, Ra8#. The clock at the top
-left shows each side's time left: **5 minutes each, 10 seconds more for every move played** (a Fischer clock, so a
-lively game can go on as long as it flows). **Only a person's clock runs**: the C47's stops while it thinks (at
-level 2 it needs more than the 10 s a move), so it never loses on time, and C47 vs C47 always plays to the end. The side whose time runs out loses (WHITE / BLACK LOST ON TIME), unless the opponent cannot mate by any
+left shows each side's time left (h:mm:ss from an hour on). **Both clocks run, the C47's too** (v0.10.0; before, only
+a person's ran and the C47 never lost on time): the time it thinks is its time. The time control is chosen with −
+before the first move (5+10 by default: 5 minutes each, 10 seconds more for every move played, a Fischer clock; the
+FIDE controls 15+10 rapid, 90+30 and 90/40+30 classical, the blitz 3+2 and 5+3, 10+5, or NO CLOCK). 90/40+30 gives
+30 minutes more after each side's move 40. The side whose time runs out loses (WHITE / BLACK LOST ON TIME), the C47
+too, unless the opponent cannot mate by any
 series of legal moves (FIDE 6.9: a bare king, a lone knight against only king and queens, bishops all on one colour
 with no pawn or knight): then DRAW: TIME, NO MATE. Setting
-up is nobody's time; the clock stops when the game is over and is kept with a saved game.
+up, turning the board (+) and drawing a move played are nobody's time; the clock stops when the game is over and is
+kept with a saved game. With the clock off (NO CLOCK, or − − during a game) nobody loses on time and the clocks count
+each side's time used.
+
+**How the C47 uses its time** (LBL :TBUD:): a budget for each move, its time left over the moves to go (30; with
+90/40+30 the moves left to move 40, plus 2) plus the seconds a move, at most a quarter of its time left. Level 2's
+search cannot stop halfway (about 10-20 s a move on the calculator), so when the budget is below 15 s that move is
+played at level 1 (THINKING ... (LEVEL 1); the level shown stays yours); levels 3-5 give their third ply the budget
+less the time level 2 took (never more than their 1, 3 or 9 minutes). So the levels keep their strength when there is
+time (15+10 and the classical controls: level 2 every move; 90+30 at level 5: about 3 minutes a move early on) and the
+C47 does not lose on time at the faster ones (3+2 and 5+3: mostly level 1). With the clock off they think as before.
+
+**While the C47 thinks.** The status line shows the search: THINKING (the level searched) and the root move it is
+on, of how many (`THINKING (2) 8/20`), and the C47's clock runs down on the screen, at most once a second
+(LBL :LIFE:, between root moves). **At levels 3-5 any key means "move now"**: LBL :TIME3: (its time check) reads it,
+and the C47 plays the best move found so far (level 2's move when the third ply has not finished one); the key does
+nothing else. Level 2 cannot stop halfway.
+
+**Keys pressed while the C47 thinks.** The firmware keeps the last key pressed while a program runs (it looks at the
+keyboard every 128 ms) for the next `KEY?`. Before v0.10.0 that key was taken as your first key when your turn came
+(a 5 or an arrow pressed while waiting moved the cursor or picked a piece by itself). Now it is read when the C47
+has moved (`KEY? 99`) and dropped, except two keys that get a question: **0** asks **END? 0 AGAIN** (0 again ends
+and keeps the game; any other key only says no), **−** asks CLOCK OFF? as on your turn. Nothing moves by itself and
+nothing ends without a second key. Before CLOCK OFF? the key is dropped too (so − − typed fast cannot turn the clock
+off: the second − must come after the question). A key is never read twice: `PAUSE` waits for the key to be
+released, and so does the firmware's key check while the program runs. In C47 vs C47 (9) a key still stops it (at
+levels 3-5 the first key makes it move now, a second one takes the side to move).
 
 The C47 opens from its book (python/book.py: 14 main lines, Ruy Lopez to Réti, 10 plies each) as long as the game
 follows one of them, choosing at random among those that fit; then it thinks.
@@ -170,8 +205,18 @@ against `python/chess47ref.py`, the same engine in Python:
 - the search gives the same move and value at levels 1 and 2 (mates in one found);
 - a game of the C47 against itself: the book moves are from its lines, then move for move the same, with the same
   board and score; 20 CRAZY moves all legal; the clock runs;
+- the clock (v0.10.0): − cycles the 8 time controls before the first move and sets both clocks; the control is kept
+  between starts; − − during the game turns the clock off (the clocks count up), − then 0 does not (and does not end
+  the program); the C47's clock runs and it loses on time with 0.1 s left; with 3+2 it plays a move at level 1 (the
+  same move as the twin's search(1)), with 5+10 and NO CLOCK at level 2; LBL :TBUD:'s budgets for the controls;
+  keys pressed while it thinks (the simulator's `typed`): 0 asks END? (0 again ends, another key says no), − asks
+  CLOCK OFF?, 5 is dropped; at level 3 a key moves now (level 2's move, in a seventh of the time);
 - 10 matches against an independent python-chess player (`tools/match47.py`): every move legal, the board right
   after every move, every game ended as the rules say;
+  v0.10.0: the same 10 games with NO CLOCK (9.5 / 10, docs/MATCHES.md) and with 5+10 (the C47 at level 2 every move:
+  the same games, 9.5 / 10, docs/MATCHES_TC0.md); 3+2 (mostly level 1 for lack of time, no loss on time): 8 / 10,
+  docs/MATCHES_TC1.md (`--tc N`; match47 now keys the opponent's moves on the turned board when the C47 has white: since
+  + turns the board its games as white could not go on);
 - moves keyed with 5 and the arrows work, and illegal moves are refused; the cursor and the piece picked show on a
   dark square; + turns the board; 9 plays on until a key; a game left with 0 comes back the same (also one saved by v0.6.0); 7 starts again;
 - the start screen matches `python/layout.py`'s picture pixel for pixel.
@@ -185,7 +230,12 @@ the local register R.09. The simulator now refuses SINT out of range as the C47 
 
 `AND`, `OR`, `NOT`, `XOR`, `BS?` ran on the calculator in Logic 47, `UNSIGN` / `2COMPL` on Victor's C47; `→REAL`,
 `1COMPL` and `SIGNMT` are still to be confirmed there. `0 STO+ "CHN"` (it creates the variable the first time) ran in
-Almanac 47's MOON47. New in v0.8.1, still to be confirmed on the C47: `STO J` / `STO I` as the matrix index (instead of `STOIJ`: the
+Almanac 47's MOON47. New in v0.10.0, still to be confirmed on the C47: `RCL+` / `RCL-` with a named variable (`RCL+ "TOF"`,
+`RCL- "TB"`; `RCL× "name"` ran in Almanac 47); `KEY? 99` right after the C47's move to drop a key pressed while it
+thought, and `KEY? 47` in LBL :TIME3: (move now) (the firmware's `lastKeyCode`, read from the source: to try by
+pressing 5, 0 or − while it thinks); `SIGN` (LBL :KEYIS:); the 14-digit
+numbers of the time-control tables (`90901510050305`) as program steps.
+New in v0.8.1, still to be confirmed on the C47: `STO J` / `STO I` as the matrix index (instead of `STOIJ`: the
 firmware's `RCLEL` reads the registers I and J, so it should; LBL :BUDG:'s `Y^X` for levels 4 and 5).
 New in v0.7.0, still to be confirmed on the C47: the opening book's numbers of up to 25 digits
 as program steps (five moves to a number; each is stored with `STOSEQ` into the real matrix OB, as v0.6.0's

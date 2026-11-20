@@ -65,27 +65,37 @@ CHESS47 local labels: name (programs_rem/CHESS47.txt), number (build/CHESS47.txt
 :GHADD:    62  the move R40 (by the colour R45) into the game record GH (one row): ply p = 2 R96 - (1 + R
 :HASH:     63  X = the key of the position (a Zobrist-like key with the 64-bit bitwise XOR, WSIZE 32): fo
 :CLOCK:    64  the time since the last call (TICKS, tenths of a second) off the time left of the side to 
-:TMAT:     65  X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by 
-:MMSS:     66  X = tenths of a second: m:ss appended to R48
-:TOMOVE:   67  ======== the screen ========
-:HUMQ:     68  X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0
-:STATUS:   69  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pi
-:PANEL:    70  the title, your side, the level, the keys (x 212), all in GRFNT 21 (v0.6.0: the big font)
-:HSHOW:    71  the last three moves of the list R73-R79 (R77-R79) shown in GRFNT 21 at x 212, rows 128 do
-:HTEXT:    72  the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), 
-:SANDIS:   73  the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the f
-:SANC:     74  the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holdin
-:SQNAME:   75  X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (
-:SQR:      76  
-:SQF:      77  
-:BOARD:    78  the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen 
-:SETME:    79  X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board
-:STATE:    80  the status line of the position: CHECK or whose move it is
-:CURS:     81  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
-:DRAWSQ:   82  the macro :SQW: (v0.8.1) a column word of the square being drawn (DRAWSQ: R33 = 24 ... 1, 
-:INIT:     83  ======== the start ========
-:BACK9:    84  X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
-:NTH:      85  X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the sq
-:PSTALL:   86  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
-:PSTO:     87  X = the kind t: R43 into BD (t + PT, R42)
-:GLYPHS:   88  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the
+:CLOCK1:   65  
+:CLKEY:    66  the key - (75). Before the first move (move 1, white to move): the next time control TC (0
+:KEYIS:    67  X = a key code: X = 1 when it is the key R98, else 0 (1 - SIGN |R98 - X|)
+:ENDQ:     68  0 was pressed while the C47 thought: END? 0 AGAIN in the status line, the clock running (y
+:LIFE:     69  signs of life while the C47 thinks (between root moves: R48 R49 R99 free): THINKING (the l
+:TCF:      70  X = the time control TC, Y = a table of 8 two-digit fields (TC 0 the last two digits): X =
+:TCRST:    71  both clocks at the control's time (TW TB, tenths: the minutes x 600; NO CLOCK 0), TOF 1 fo
+:TBUD:     72  X = the C47's budget for this move, tenths of a second: the time left of the side to move 
+:TLEFT:    73  X = the time of the side to move R20: TW or TB ((TW - TB) R20 + TW + TB) / 2
+:TMAT:     74  X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by 
+:MMSS:     75  X = tenths of a second: m:ss appended to R48, h:mm:ss from an hour on
+:TWO:      76  X = 0-59: its two digits appended to R48 (the tens, the units; R99 work)
+:TOMOVE:   77  ======== the screen ========
+:HUMQ:     78  X = a colour: X = 1 when a person plays it (your side R27, or both: R27 = 2), else 0
+:STATUS:   79  X = a text: the status line (x 212, row 156, GRFNT 21, its line cleared: 23 spaces, 184 pi
+:PANEL:    80  the title, your side, the level, the keys (x 212), all in GRFNT 21 (v0.6.0: the big font)
+:HSHOW:    81  the last three moves of the list R73-R79 (R77-R79) shown in GRFNT 21 at x 212, rows 128 do
+:HTEXT:    82  the move of UN row 3 (R41 -> R42, by R45) as text into the list R73-R79 (the oldest out), 
+:SANDIS:   83  the other pieces like R43 that could go to R42 legally: R33 how many, R34 of them on the f
+:SANC:     84  the piece on R39 could go to R42: legal when its king is not attacked after it (R41 holdin
+:SQNAME:   85  X = a square: its name appended to R79; LBL :SQR: its rank only, LBL :SQF: its file only (
+:SQR:      86  
+:SQF:      87  
+:BOARD:    88  the 64 squares (R41; DRAWSQ uses R30-R36), the files (row 10) and the ranks (x 3) as seen 
+:SETME:    89  X = your new side (1 white, -1 black, 0 the C47 plays both, 2 two players): when the board
+:STATE:    90  the status line of the position: CHECK or whose move it is
+:CURS:     91  the square of the cursor R28 drawn again (LBL :DRAWSQ: draws the cursor's frame)
+:DRAWSQ:   92  the macro :SQW: (v0.8.1) a column word of the square being drawn (DRAWSQ: R33 = 24 ... 1, 
+:INIT:     93  ======== the start ========
+:BACK9:    94  X = n + 1: white's back rank of the Chess960 position n (Scharnagl's numbering, as
+:NTH:      95  X = k: X = the k-th free square (from 0) of white's back rank (R31 counts down, R32 the sq
+:PSTALL:   96  the table PT (rows 5-17 of BD). For each square s (white's view): f the file 0-7, r the ra
+:PSTO:     97  X = the kind t: R43 into BD (t + PT, R42)
+:GLYPHS:   98  the matrix GL: rows 1-13 the light squares (piece + 7: the outline O of a white piece, the

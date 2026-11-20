@@ -1,4 +1,4 @@
-REM CHESS47 v0.9.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
+REM CHESS47 v0.10.0 - Chess 47: a chess engine for the C47 / R47 (and the DM42n with the C47 firmware)
 REM You play the white pieces against the C47 (+ hands your side to the C47: it plays the side to move).
 REM The rules: every legal move, castling (not out of, through or into check), en passant, promotion (always to a
 REM queen); check, checkmate and stalemate; draws by repetition and by material (no 50-move rule).
@@ -26,9 +26,14 @@ REM moves and the end); 7 a new game of normal chess; ÷ a Chess960 game (its nu
 REM random one; castling: the king onto its own rook); 1 the level 2 -> 1 -> 0 -> 5 -> 4 -> 3 -> 2 (3-5: LBL :THINK3: with 60 s, 3 min, 9 min at most)
 REM (CRAZY: random legal moves, a crazy face by the title); × the pieces as letters of the firmware's font (K Q R B N P
 REM white, k q r b n p black: the variable CHF 1; LBL :DRAWSQ:) or drawn again: ready for a chess font in the firmware;
-REM 0 ends: the game is kept (CHN, GH, TW, TB) and goes on at the next start. The clock: 5 minutes each, 10 s more
-REM for each move played, for the sides a person plays (the C47's clock stops while it thinks); a person whose time
-REM runs out loses (LOST ON TIME), or draws when the opponent cannot mate (FIDE 6.9). The C47 thinks about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1.
+REM 0 ends: the game is kept (CHN, GH, TW, TB, TOF) and goes on at the next start. The clock (v0.10.0): every side's,
+REM the C47's too (its thinking is its time). - before the first move: the time control TC (kept between games)
+REM 0 5+10, 1 3+2, 2 5+3, 3 10+5, 4 15+10, 5 90+30, 6 90/40+30 (90 minutes for 40 moves, then 30 more; 30 s a move),
+REM 7 NO CLOCK (minutes + seconds added for each move played); - during the game: CLOCK OFF? and - again turns the
+REM clock off for the rest of the game (TOF 1; any other key: no). With no clock the clocks count each side's time up.
+REM A side whose time runs out loses (LOST ON TIME), or draws when the opponent cannot mate (FIDE 6.9). The C47 thinks
+REM about 10-20 s at level 2 (the simulator's step count), 1-3 s at level 1; on the clock it takes a budget per move
+REM (LBL :TBUD:): level 1 for the move when the budget is below 15 s, levels 3-5 search their deeper level within it.
 REM The user's stack and LASTx are kept (LocR 9: STOS R.00, LASTx in R.08); R00-R19 are not touched; at the end
 REM R20-R99 are cleared, the matrices BD GL GH OB deleted, WSIZE 64, your integer mode back (R.09), GRMOD 0 and GRFNT 20 set.
 REM The integer mode is UNSIGN while CHESS47 runs: its words are bit patterns (keys to 2^32, glyph columns to 2^24, the
@@ -203,7 +208,7 @@ WHILE
 ENDDO
 REM ---- the end: R20-R99 cleared (R-CLR 20.79: 20 + 79 stays below 100, a count 0 is refused; then R99), the matrices deleted, WSIZE 64, your integer mode back, GRMOD 0, GRFNT 20, the screen; your stack back ----
 REM the game kept for the next start when it is not over: CHN = its position x 100000 + plies x 100 + level x 10 + your side + 2 with the
-REM record GH and the clocks TW TB (the plies 2 (R96 - 1) + (1 - R20) / 2, at most 299); else only the level and side
+REM record GH and the clocks TW TB TOF (the plies 2 (R96 - 1) + (1 - R20) / 2, at most 299); else only the level and side
 RCL 26
 10
 ×
@@ -254,6 +259,7 @@ IF
   DELITM "GH"
   DELITM "TW"
   DELITM "TB"
+  DELITM "TOF"
 ENDIF
 20.79
 R-CLR
@@ -278,6 +284,9 @@ RCL "CHF"
 REM (a test skips the step after it when false: no IF needed)
 X=0?
 DELITM "CHF"
+RCL "TC"
+X=0?
+DELITM "TC"
 WSIZE 64
 RCL R.09
 -2
@@ -1893,6 +1902,13 @@ DO
     RCL 40
     STO 62
   ENDIF
+  REM signs of life: a second or more since the clock ran (TK): LBL :LIFE:
+  TICKS
+  RCL "TK"
+  -
+  10
+  X≤Y?
+  XEQ :LIFE:
   RCL 64
   RCL 63
   X<Y?
@@ -2003,6 +2019,13 @@ DO
   ENDIF
   1
   STO+ 63
+  REM signs of life (LBL :LIFE:), a second or more since the clock ran; then the time (or a key: move now)
+  TICKS
+  RCL "TK"
+  -
+  10
+  X≤Y?
+  XEQ :LIFE:
   XEQ :TIME3:
   X≠0?
   IF
@@ -2040,7 +2063,7 @@ RCLEL
 STO 29
 RTN
 REM ---- LBL :TIME3: X = 1 when level 3's time is over (R47 the tenths since BD (ST, 15), not below the budget (ST, 18):
-REM 600, 60 s; the flag (ST, 13) keeps it) ----
+REM 600, 60 s; the flag (ST, 13) keeps it) or a key was pressed (v0.10.0: move now, the best root move so far) ----
 LBL :TIME3:
 @ST
 13
@@ -2049,6 +2072,15 @@ STO J
 RCLEL
 X≠0?
 RTN
+REM a key pressed while it thinks (the firmware keeps it: KEY? 47) is "move now": 10^9 tenths more, the time over
+0
+STO 47
+KEY? 47
+0
+RCL 47
+1000000000
+×
+STO 47
 @ST
 15
 INDEX "ST"
@@ -2056,7 +2088,7 @@ STO J
 TICKS
 RCLEL
 -
-STO 47
+STO+ 47
 @ST
 18
 INDEX "ST"
@@ -3045,6 +3077,14 @@ REM ==== ENDIF
 RCL 97
 X≠0?
 RTN
+REM - (75): the time control before the first move, CLOCK OFF? during the game (LBL :CLKEY:)
+RCL 98
+75
+X=Y?
+IF
+  XEQ :CLKEY:
+  RTN
+ENDIF
 RCL 98
 85
 X=Y?
@@ -3060,6 +3100,9 @@ IF
   CHS
   XEQ :SETME:
   XEQ :STATE:
+  REM the board turned and drawn again: nobody's time (the clock from now)
+  TICKS
+  STO "TK"
   RTN
 ENDIF
 RCL 98
@@ -3101,36 +3144,23 @@ IF
   RTN
 ENDIF
 REM the arrows: 8 (53) +10, 2 (73) -10, 4 (62) -1, 6 (64) +1 (R49); not onto the border (8)
-0
-STO 49
-RCL 98
+REM (LBL :KEYIS: 1 for the key, else 0: no IF, the program has 255 at most)
 53
-X=Y?
-IF
-  10
-  STO 49
-ENDIF
-RCL 98
+XEQ :KEYIS:
+10
+×
+STO 49
 73
-X=Y?
-IF
-  -10
-  STO 49
-ENDIF
-RCL 98
+XEQ :KEYIS:
+10
+×
+STO- 49
 62
-X=Y?
-IF
-  -1
-  STO 49
-ENDIF
-RCL 98
+XEQ :KEYIS:
+STO- 49
 64
-X=Y?
-IF
-  1
-  STO 49
-ENDIF
+XEQ :KEYIS:
+STO+ 49
 RCL 49
 X=0?
 RTN
@@ -3472,6 +3502,8 @@ ENDIF
 0
 STO 29
 XEQ :PLAYED:
+TICKS
+STO "TK"
 RTN
 REM ---- LBL :C47MV: the C47's move: THINKING, the search, the move played (or the end of the game) ----
 LBL :C47MV:
@@ -3492,11 +3524,49 @@ ELSE
   RCL 62
   X=0?
   IF
+    REM the budget of the move (LBL :TBUD:; 10^9 with the clock off): below 15 s the levels think at level 1 for this
+    REM move (level 2's search cannot stop halfway: 10-20 s); the level kept in TLV meanwhile, the move's deadline
+    REM (TICKS + the budget) in TBG
+    RCL 26
+    STO "TLV"
+    XEQ :TBUD:
+    TICKS
+    +
+    STO "TBG"
+    TICKS
+    -
+    150
+    X>Y?
+    IF
+      1
+      STO 26
+      "THINKING ... (LEVEL 1)"
+      XEQ :STATUS:
+    ENDIF
     XEQ :THINK:
+    REM levels 3-5: their time (the macro :BUDG:), not more than what is left to the deadline TBG (LBL :LIFE: moves TK)
+    USE :BUDG:
+    RCL "TBG"
+    TICKS
+    -
+    STO 49
+    @ST
+    18
+    INDEX "ST"
+    STO J
+    RCLEL
+    RCL 49
+    X<Y?
+    STOEL
+    INDEX "BB"
     RCL 26
     3
     X≤Y?
     XEQ :THINK3:
+    RCL "TLV"
+    STO 26
+    DELITM "TLV"
+    DELITM "TBG"
   ENDIF
 ENDIF
 XEQ :CLOCK:
@@ -3522,6 +3592,26 @@ STO 40
 STO 46
 XEQ :MAKE:
 XEQ :PLAYED:
+REM the time of drawing the move is nobody's (the clock from now); a key pressed while the C47 thought is
+REM dropped (KEY? 99), not taken as your first key (not in C47 vs C47: a key there takes the side to move); at levels
+REM 3-5 a key pressed while it thinks is taken by LBL :TIME3: (move now)
+TICKS
+STO "TK"
+0
+STO 99
+RCL 27
+X≠0?
+KEY? 99
+0
+REM of the keys dropped two are kept with a question: 0 asks END? 0 AGAIN (LBL :ENDQ:), - CLOCK OFF? (LBL :CLKEY:)
+82
+RCL 99
+X=Y?
+XEQ :ENDQ:
+75
+RCL 99
+X=Y?
+XEQ :CLKEY:
 RTN
 REM ---- LBL :CRAZY: level 0: a random legal move of the side to move (R62, 0 none; R61 = 0): from a random
 REM place in its moves (RAN#) on, the first that does not leave the king attacked ----
@@ -3655,12 +3745,29 @@ IF
   XEQ :DRAWSQ:
 ENDIF
 XEQ :GHADD:
-REM the clock: 10 s (100 tenths) more for the side that moved (R45), when a person plays it
-RCL 45
-XEQ :HUMQ:
-X≠0?
+REM the clock (not when off: TOF 1): the control's seconds a move (LBL :TCF:, tenths) more for the side that moved
+REM (R45); 90/40+30 (TC 6): 30 minutes more after its move 40 (100 TC + R96 = 640: R96 is still the number of
+REM the move played)
+RCL "TOF"
+X=0?
 IF
+  30301005030210
+  RCL "TC"
+  XEQ :TCF:
+  10
+  ×
+  STO 49
+  RCL "TC"
   100
+  ×
+  RCL+ 96
+  640
+  X=Y?
+  IF
+    18000
+    STO+ 49
+  ENDIF
+  RCL 49
   RCL 45
   X>0?
   IF
@@ -4055,67 +4162,65 @@ RCL 49
 WSIZE 64
 RTN
 REM ---- LBL :CLOCK: the time since the last call (TICKS, tenths of a second) off the time left of the side to move
-REM (TW white, TB black: 5 minutes at the start, 10 s more for each move: LBL :PLAYED:; not when the game is over);
-REM none left: WHITE / BLACK LOST ON TIME, the game over (R97). The clock drawn at the top left: X = 1 ----
+REM (TW white, TB black: the control's time at the start (LBL :TCRST:), more for each move: LBL :PLAYED:; nothing
+REM when the game is over); none left: WHITE / BLACK LOST ON TIME, the game over (R97). With the clock off (TOF 1)
+REM the time is added instead (each side's time used). The clocks drawn at the top left: X = 1. LBL :CLOCK1: the same
+REM with R47 1: no time-out (LBL :LIFE:, inside the search: TMAT would change R30-R39; C47MV's CLOCK sees it after) ----
 LBL :CLOCK:
+0
+STO 47
+XEQ :CLOCK1:
+RTN
+LBL :CLOCK1:
 TICKS
 RCL "TK"
 X<>Y
 STO "TK"
 X<>Y
 -
-RCL 97
-X≠0?
-IF
-  DROP
-  DROP
-  0
-ELSE
-  DROP
-ENDIF
-REM only a person's clock runs (the C47 never loses on time: at level 2 it thinks longer than the 10 s a move)
-STO 49
-RCL 20
-XEQ :HUMQ:
-X=0?
-IF
-  0
-  STO 49
-ENDIF
-RCL 49
+REM past midnight (Free42's TICKS is the time of day): MOD a day of tenths
+864000
+MOD
+REM nothing when the game is over (R97 1)
+1
+RCL- 97
+×
+REM off the time left (TOF 0), or added to the time used (TOF 1: the clock off)
+RCL "TOF"
+2
+×
+1
+-
+×
 RCL 20
 X>0?
 IF
   DROP
-  STO- "TW"
+  STO+ "TW"
 ELSE
   DROP
-  STO- "TB"
+  STO+ "TB"
 ENDIF
-REM the time left of the side to move run out (0 or less) while the game is on: it loses on time
+REM the time left of the side to move run out (0 or less) while the game is on, the clock on: it loses on time
 RCL 97
+RCL+ "TOF"
+RCL+ 47
 X=0?
 IF
-  RCL 20
-  X>0?
-  IF
-    RCL "TW"
-  ELSE
-    RCL "TB"
-  ENDIF
+  XEQ :TLEFT:
   X≤0?
   IF
     1
     STO 97
-    RCL 20
-    X>0?
-    IF
-      0
-      STO "TW"
-    ELSE
-      0
-      STO "TB"
-    ENDIF
+    REM the time run out shown as 0 (a negative time set to 0: a test skips the STO when false)
+    RCL "TW"
+    0
+    X>Y?
+    STO "TW"
+    RCL "TB"
+    0
+    X>Y?
+    STO "TB"
     REM FIDE 6.9: a draw when the opponent cannot mate by any series of legal moves (LBL :TMAT:), else a loss
     RCL 20
     CHS
@@ -4145,6 +4250,9 @@ XEQ :MMSS:
 x→α 48
 RCL "TB"
 XEQ :MMSS:
+REM 4 spaces after it: GRMOD 1 clears what a longer time left (1:00:00 to 59:59: 2 characters); one ATEXT
+"    "
+x→α 48
 1
 GRMOD
 DROP
@@ -4158,6 +4266,206 @@ ATEXT Z
 0
 GRMOD
 1
+RTN
+REM ---- LBL :CLKEY: the key - (75). Before the first move (move 1, white to move): the next time control TC (0-7,
+REM 7 NO CLOCK), both clocks set again (LBL :TCRST:), the panel. During the game, the clock on: CLOCK OFF? - AGAIN in
+REM the status line, a key typed before it dropped (KEY? 99), the clock running while it waits; - turns the clock off
+REM (TOF 1) for the rest of the game, the clocks counting each side's time up from 0; any other key only says no
+REM (R98 0: the key 0 does not end the program here) ----
+LBL :CLKEY:
+REM before the first move: 2 R96 - R20 = 1 (move 1, white to move)
+RCL 96
+2
+×
+RCL- 20
+1
+X=Y?
+IF
+  RCL "TC"
+  1
+  +
+  8
+  MOD
+  STO "TC"
+  XEQ :TCRST:
+  XEQ :PANEL:
+  TICKS
+  STO "TK"
+  XEQ :CLOCK:
+  RTN
+ENDIF
+RCL "TOF"
+X≠0?
+RTN
+"CLOCK OFF? - AGAIN"
+XEQ :STATUS:
+KEY? 99
+0
+DO
+  0
+  PAUSE 10
+  KEY? 98
+  XEQ :CLOCK:
+  X≠0?
+WHILE
+ENDDO
+RCL 98
+STO 49
+0
+STO 98
+RCL 97
+X≠0?
+RTN
+RCL 49
+75
+X=Y?
+IF
+  1
+  STO "TOF"
+  0
+  STO "TW"
+  STO "TB"
+  TICKS
+  STO "TK"
+  XEQ :PANEL:
+  XEQ :CLOCK:
+ENDIF
+XEQ :STATE:
+RTN
+REM ---- LBL :KEYIS: X = a key code: X = 1 when it is the key R98, else 0 (1 - SIGN |R98 - X|) ----
+LBL :KEYIS:
+RCL 98
+X<>Y
+-
+ABS
+SIGN
+1
+X<>Y
+-
+RTN
+REM ---- LBL :ENDQ: 0 was pressed while the C47 thought: END? 0 AGAIN in the status line, the clock running (your
+REM time); 0 again: R98 82 (the program ends, the game kept); any other key: R98 0, only no; the state again ----
+LBL :ENDQ:
+"END? 0 AGAIN"
+XEQ :STATUS:
+DO
+  0
+  PAUSE 10
+  KEY? 98
+  XEQ :CLOCK:
+  X≠0?
+WHILE
+ENDDO
+82
+XEQ :KEYIS:
+82
+×
+STO 98
+RCL+ 97
+X=0?
+XEQ :STATE:
+RTN
+REM ---- LBL :LIFE: signs of life while the C47 thinks (between root moves: R48 R49 R99 free): THINKING (the level
+REM searched) the root move / the root moves (R63 / R64) in the status line, and its clock (LBL :CLOCK:, its time
+REM counted to now); nothing once the game is over (a time-out shown) ----
+LBL :LIFE:
+RCL 97
+X≠0?
+RTN
+"THINKING ("
+STO 48
+RCL 26
+αIP 48
+") "
+x→α 48
+RCL 63
+αIP 48
+"/"
+x→α 48
+RCL 64
+αIP 48
+RCL 48
+XEQ :STATUS:
+1
+STO 47
+XEQ :CLOCK1:
+RTN
+REM ---- LBL :TCF: X = the time control TC, Y = a table of 8 two-digit fields (TC 0 the last two digits): X = its
+REM field (IP(Y / 100^X) MOD 100). The tables: 90901510050305 the minutes, 30301005030210 the seconds a move ----
+LBL :TCF:
+100
+X<>Y
+Y^X
+÷
+IP
+100
+MOD
+RTN
+REM ---- LBL :TCRST: both clocks at the control's time (TW TB, tenths: the minutes x 600; NO CLOCK 0), TOF 1 for NO
+REM CLOCK (TC 7) ----
+LBL :TCRST:
+90901510050305
+RCL "TC"
+XEQ :TCF:
+600
+×
+STO "TW"
+STO "TB"
+RCL "TC"
+7
+÷
+IP
+STO "TOF"
+RTN
+REM ---- LBL :TBUD: X = the C47's budget for this move, tenths of a second: the time left of the side to move (R99,
+REM as at the start of the move: LBL :TLEFT:) over the moves to go (R49: 30; 90/40+30 before its move 40: 43 - the
+REM move number R96) + the seconds a move, not more than a quarter of the time left; the clock off (TOF 1): 10^9 ----
+LBL :TBUD:
+XEQ :TLEFT:
+STO 99
+30
+STO 49
+RCL "TC"
+6
+X=Y?
+IF
+  3
+  43
+  RCL- 96
+  X≥Y?
+  STO 49
+ENDIF
+RCL 99
+RCL 49
+÷
+STO 49
+30301005030210
+RCL "TC"
+XEQ :TCF:
+10
+×
+STO+ 49
+RCL 99
+4
+÷
+RCL 49
+X>Y?
+X<>Y
+IP
+RCL "TOF"
+1000000000
+×
++
+RTN
+REM ---- LBL :TLEFT: X = the time of the side to move R20: TW or TB ((TW - TB) R20 + TW + TB) / 2 ----
+LBL :TLEFT:
+RCL "TW"
+RCL- "TB"
+RCL× 20
+RCL+ "TW"
+RCL+ "TB"
+2
+÷
 RTN
 REM ---- LBL :TMAT: X = a colour w (the opponent of the side whose time ran out): X = 1 when w cannot mate by any
 REM series of legal moves (the time-out is a draw), else 0. As python-chess's has_insufficient_material(w): a pawn,
@@ -4311,13 +4619,31 @@ IF
 ENDIF
 1
 RTN
-REM ---- LBL :MMSS: X = tenths of a second: m:ss appended to R48 ----
+REM ---- LBL :MMSS: X = tenths of a second: m:ss appended to R48, h:mm:ss from an hour on ----
 LBL :MMSS:
 STO 49
-600
-÷
-IP
-αIP 48
+36000
+X≤Y?
+IF
+  ÷
+  IP
+  αIP 48
+  ":"
+  x→α 48
+  RCL 49
+  600
+  ÷
+  IP
+  60
+  MOD
+  XEQ :TWO:
+ELSE
+  DROP
+  600
+  ÷
+  IP
+  αIP 48
+ENDIF
 ":"
 x→α 48
 RCL 49
@@ -4326,14 +4652,18 @@ RCL 49
 IP
 60
 MOD
-STO 49
+XEQ :TWO:
+RTN
+REM ---- LBL :TWO: X = 0-59: its two digits appended to R48 (the tens, the units; R99 work) ----
+LBL :TWO:
+STO 99
 10
-X>Y?
-IF
-  "0"
-  x→α 48
-ENDIF
-RCL 49
+÷
+IP
+αIP 48
+RCL 99
+10
+MOD
 αIP 48
 RTN
 REM ======== the screen ========
@@ -4472,6 +4802,15 @@ REM ==== ENDIF
 4
 212
 ATEXT Z
+REM the row 176: the Chess960 number (960 No n) and the time control (- CLOCK 15+10, - CLOCK OFF: the key -),
+REM its line cleared first (23 spaces: more would go on into the status line below, as ATEXT wraps past x 380)
+"                       "
+176
+212
+ATEXT Z
+""
+STO 48
+DROP
 INDEX "BB"
 @ST
 7
@@ -4480,17 +4819,45 @@ STO J
 RCLEL
 X≠0?
 IF
-  "CHESS960 No "
-  STO 48
+  "960 No "
+  x→α 48
   DROP
   1
   -
   αIP 48
-  RCL 48
-  176
-  212
-  ATEXT Z
+  "  - "
+ELSE
+  "- CLOCK "
 ENDIF
+x→α 48
+RCL "TOF"
+X≠0?
+IF
+  "OFF"
+  x→α 48
+ELSE
+  90901510050305
+  RCL "TC"
+  XEQ :TCF:
+  αIP 48
+  RCL "TC"
+  6
+  X=Y?
+  IF
+    "/40"
+    x→α 48
+  ENDIF
+  "+"
+  x→α 48
+  30301005030210
+  RCL "TC"
+  XEQ :TCF:
+  αIP 48
+ENDIF
+RCL 48
+176
+212
+ATEXT Z
 REM ---- (was LBL :FACE:) the CRAZY level's face next to the title (x 330, rows 214-237), or its place cleared (24 columns
 REM of 0, GRMOD 1) at the levels 1 and 2 ----
 WSIZE 24
@@ -5937,13 +6304,15 @@ STOEL
 INDEX "BB"
 TICKS
 STO "TK"
+REM the clocks: a new game at the control TC's time (LBL :TCRST:; TC 0 STO+: created as 0, 5+10, when missing); a
+REM saved game keeps TW TB TOF (a game of v0.9.0 or before has no TOF: 0, the clock on)
+0
+STO+ "TC"
+STO+ "TOF"
+DROP
 RCL 68
 X=0?
-IF
-  3000
-  STO "TW"
-  STO "TB"
-ENDIF
+XEQ :TCRST:
 REM the knight words, then the saved game's moves played again (R69 the ply): MAKE, the record, the move list
 WSIZE 64
 XEQ :NINIT:
